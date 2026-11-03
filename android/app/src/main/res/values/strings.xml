@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">L\'Âge de Pierre</string>
+    <string name="title_activity_main">L\'Âge de Pierre</string>
+    <string name="package_name">com.agedepierre.game</string>
+    <string name="custom_url_scheme">com.agedepierre.game</string>
+</resources>

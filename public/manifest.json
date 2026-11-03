@@ -1,0 +1,21 @@
+{
+  "name": "L'Âge de Pierre — Édition Numérique Équilibrée",
+  "short_name": "Âge de Pierre",
+  "description": "Jeu de société de gestion préhistorique avec IA et variantes d'équilibrage",
+  "id": "age-de-pierre-pwa",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0c0a09",
+  "theme_color": "#d97706",
+  "lang": "fr",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231c1917'/><circle cx='50' cy='22' r='14' fill='%23f59e0b'/><path d='M40,34 C32,38 20,44 14,50 C10,54 13,60 18,60 C24,60 33,52 38,48 L36,75 L24,92 C20,97 27,100 32,97 L48,76 L52,76 L68,97 C73,100 80,97 76,92 L64,75 L62,48 C67,52 76,60 82,60 C87,60 90,54 86,50 C80,44 68,38 60,34 Z' fill='%23f59e0b'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

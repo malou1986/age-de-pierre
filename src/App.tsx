@@ -1,0 +1,857 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  BoardLocationId, 
+  CivilizationCard,
+  GameSettings, 
+  GameState, 
+  ResourceType,
+  PlayerState
+} from './types/game';
+import { 
+  canPlaceMeeples, 
+  createInitialGameState, 
+  forfeitResolution, 
+  getLocationInfo, 
+  getPlayerUnresolvedLocations, 
+  passPlayerPlacement, 
+  placeMeeples, 
+  resolveBuildingPurchase, 
+  resolveCardPurchase, 
+  resolveCardDiceDraft,
+  resolveDiceHarvest, 
+  resolveHumanFeeding, 
+  resolveVillageAction 
+} from './logic/gameEngine';
+import { 
+  getAiBuildingPayment, 
+  getAiCardPayment, 
+  getAiPlacementChoice, 
+  getAiToolUsage 
+} from './logic/ai';
+import { sound } from './logic/audio';
+import { CompactNativeHUD } from './components/CompactNativeHUD';
+import { GameHeader } from './components/GameHeader';
+import { SmallWorldBoardView } from './components/Board/SmallWorldBoardView';
+import { VirtualBoard3D } from './components/Board/VirtualBoard3D';
+import { GameBoard } from './components/Board/GameBoard';
+import { MobileTribalDrawer } from './components/Mobile/MobileTribalDrawer';
+import { GameTurnGuide } from './components/GameTurnGuide';
+import { PlayerReserveChest } from './components/PlayerReserveChest';
+import { PlayerDashboard } from './components/PlayerDashboard';
+import { GameLog } from './components/GameLog';
+import { AiActionToast, AiActionData } from './components/AiActionToast';
+import { RoundSummaryModal } from './components/Modals/RoundSummaryModal';
+
+// Modals
+import { FirstPlayerDrawModal } from './components/Modals/FirstPlayerDrawModal';
+import { GameSettingsModal } from './components/Modals/GameSettingsModal';
+import { DiceRollModal } from './components/Modals/DiceRollModal';
+import { DiceDraftModal } from './components/Modals/DiceDraftModal';
+import { CardDiceRollModal } from './components/Modals/CardDiceRollModal';
+import { CardPurchaseModal } from './components/Modals/CardPurchaseModal';
+import { BuildingPurchaseModal } from './components/Modals/BuildingPurchaseModal';
+import { FeedingModal } from './components/Modals/FeedingModal';
+import { TutorialModal } from './components/Modals/TutorialModal';
+import { EndGameModal } from './components/Modals/EndGameModal';
+import { QRModal } from './components/Modals/QRModal';
+import { NewGameModal } from './components/Modals/NewGameModal';
+import { MeepleCountModal } from './components/Modals/MeepleCountModal';
+import { DrawnCardRevealModal } from './components/Modals/DrawnCardRevealModal';
+import { ResourceIcon } from './components/Common/ResourceIcon';
+import { Eye, LayoutGrid, Sparkles, Compass, Smartphone, X } from 'lucide-react';
+
+const DEFAULT_SETTINGS: GameSettings = {
+  playerCount: 3,
+  players: [
+    { name: 'Rahan', color: 'red', isAi: false, aiDifficulty: 'normal' },
+    { name: 'Ayla', color: 'blue', isAi: true, aiDifficulty: 'normal' },
+    { name: 'Naoh', color: 'yellow', isAi: true, aiDifficulty: 'hard' },
+  ],
+  variants: {
+    firstTurnCourtesy: true,
+    startingCompensation: true,
+    twoPilesEnd: true,
+    completeCycleEnd: true,
+  },
+};
+
+export const App: React.FC = () => {
+  const [currentSettings, setCurrentSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
+  const [state, setState] = useState<GameState>(() => createInitialGameState(DEFAULT_SETTINGS));
+
+  // Sound toggle
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Board view mode: 'smallworld' (inspired by Small World Android with sidebands), 'virtual' (classic standalone 3D board) or 'grid' (modular)
+  const [boardView, setBoardView] = useState<'smallworld' | 'virtual' | 'grid'>('smallworld');
+
+  // Mobile / Smartphone UI states
+  const [isTribalDrawerOpen, setIsTribalDrawerOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [showLandscapeNotice, setShowLandscapeNotice] = useState(true);
+  const [isNativeFs, setIsNativeFs] = useState(false);
+  const [immersiveMode, setImmersiveMode] = useState(false);
+  const isFullscreen = isNativeFs || immersiveMode;
+
+  // Fullscreen state listener
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsNativeFs(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
+  const handleToggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        }
+        // Attempt landscape lock for smartphones where supported
+        if ('orientation' in screen && screen.orientation && 'lock' in screen.orientation) {
+          // @ts-ignore
+          await screen.orientation.lock('landscape').catch(() => {});
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      }
+    } catch (err) {
+      console.warn('Fullscreen request:', err);
+    } finally {
+      // Toggle immersive mode (ensures full-screen landscape layout on iOS & devices without Fullscreen API)
+      setImmersiveMode(prev => !prev);
+    }
+  };
+
+  // Modals state
+  const [showNewGameModal, setShowNewGameModal] = useState(false);
+  const [showTutorialModal, setShowTutorialModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [showFirstPlayerDrawModal, setShowFirstPlayerDrawModal] = useState(true);
+
+  // Interaction modals
+  const [countModalLoc, setCountModalLoc] = useState<BoardLocationId | null>(null);
+  const [diceModalLoc, setDiceModalLoc] = useState<BoardLocationId | null>(null);
+  const [cardModalLoc, setCardModalLoc] = useState<BoardLocationId | null>(null);
+  const [buildingModalLoc, setBuildingModalLoc] = useState<BoardLocationId | null>(null);
+  const [draftingCard, setDraftingCard] = useState<{
+    card: CivilizationCard;
+    locationId: BoardLocationId;
+    resourcesPaid: Record<ResourceType, number>;
+    buyerId: string;
+  } | null>(null);
+  const [rollingCard, setRollingCard] = useState<{
+    card: CivilizationCard;
+    locationId: BoardLocationId;
+    resourcesPaid: Record<ResourceType, number>;
+    buyerId: string;
+  } | null>(null);
+  const [drawnCardReveal, setDrawnCardReveal] = useState<{
+    card: CivilizationCard;
+    player: PlayerState;
+    originalCard: CivilizationCard;
+  } | null>(null);
+
+  // AI visual action toast & Round summary
+  const [aiActionNotice, setAiActionNotice] = useState<AiActionData | null>(null);
+  const [showRoundSummaryModal, setShowRoundSummaryModal] = useState(false);
+  const prevRoundRef = React.useRef<number>(state.round);
+
+  // Auto-detect round progression to show round summary
+  useEffect(() => {
+    if (state.round > prevRoundRef.current && state.phase === 'placement' && prevRoundRef.current > 0) {
+      setShowRoundSummaryModal(true);
+    }
+    prevRoundRef.current = state.round;
+  }, [state.round, state.phase]);
+
+  const triggerAiNotice = (data: AiActionData) => {
+    setAiActionNotice(data);
+    setTimeout(() => {
+      setAiActionNotice(prev => (prev?.id === data.id ? null : prev));
+    }, 2800);
+  };
+
+  const activePlayer = state.players[state.activePlayerIndex] || state.players[0];
+
+  const toggleSound = () => {
+    sound.enabled = !soundEnabled;
+    setSoundEnabled(!soundEnabled);
+  };
+
+  const handleStartNewGame = (settings: GameSettings) => {
+    setCurrentSettings(settings);
+    setState(createInitialGameState(settings));
+    setShowNewGameModal(false);
+    setShowFirstPlayerDrawModal(true);
+  };
+
+  const handleRestartGame = () => {
+    setState(createInitialGameState(currentSettings));
+    setShowFirstPlayerDrawModal(true);
+  };
+
+  // --- SAFE & REACTIVE AI AUTOMATION LOOP ---
+  useEffect(() => {
+    if (state.phase === 'game_over' || draftingCard || rollingCard || drawnCardReveal) return;
+    if (!activePlayer.isAi) return;
+
+    let isCancelled = false;
+
+    // AI in Placement Phase
+    if (state.phase === 'placement') {
+      const timer = setTimeout(() => {
+        if (isCancelled) return;
+        try {
+          const choice = getAiPlacementChoice(state, activePlayer.id);
+          if (choice) {
+            sound.playMeeplePlace();
+            setState(prev => placeMeeples(prev, activePlayer.id, choice.locationId, choice.count));
+          } else {
+            // No valid placement available for AI: Pass remaining meeples
+            setState(prev => passPlayerPlacement(prev, activePlayer.id));
+          }
+        } catch (e) {
+          console.error('AI placement error', e);
+          setState(prev => passPlayerPlacement(prev, activePlayer.id));
+        }
+      }, 650);
+
+      return () => {
+        isCancelled = true;
+        clearTimeout(timer);
+      };
+    }
+
+    // AI in Resolution Phase
+    if (state.phase === 'resolution') {
+      const unresolved = getPlayerUnresolvedLocations(activePlayer);
+      if (unresolved.length === 0) return;
+
+      // Priority order: village -> harvest -> cards -> buildings
+      const priorityOrder = (loc: BoardLocationId): number => {
+        if (loc === 'tool_maker' || loc === 'hut' || loc === 'field') return 1;
+        if (['hunting', 'forest', 'clay_pit', 'quarry', 'river'].includes(loc)) return 2;
+        if (loc.startsWith('card_')) return 3;
+        if (loc.startsWith('building_')) return 4;
+        return 5;
+      };
+
+      unresolved.sort((a, b) => priorityOrder(a) - priorityOrder(b));
+      const targetLoc = unresolved[0];
+
+      const timer = setTimeout(() => {
+        if (isCancelled) return;
+        try {
+          // Resolve Village
+          if (targetLoc === 'tool_maker' || targetLoc === 'hut' || targetLoc === 'field') {
+            sound.playHarvest();
+            if (targetLoc === 'tool_maker') {
+              triggerAiNotice({
+                id: Date.now().toString(),
+                playerName: activePlayer.name,
+                playerColor: activePlayer.color,
+                actionTitle: "Fabrication d'outils",
+                locationName: "Village",
+                gainBadge: "+1 Outil permanent",
+                icon: "🔨",
+              });
+            } else if (targetLoc === 'hut') {
+              triggerAiNotice({
+                id: Date.now().toString(),
+                playerName: activePlayer.name,
+                playerColor: activePlayer.color,
+                actionTitle: "Agrandissement tribu",
+                locationName: "La Hutte",
+                gainBadge: "+1 Ouvrier au tour suivant",
+                icon: "👶",
+              });
+            } else if (targetLoc === 'field') {
+              triggerAiNotice({
+                id: Date.now().toString(),
+                playerName: activePlayer.name,
+                playerColor: activePlayer.color,
+                actionTitle: "Travail des champs",
+                locationName: "Agriculture",
+                gainBadge: `Niveau ${activePlayer.agriculture + 1} Champs`,
+                icon: "🌾",
+              });
+            }
+            setState(prev => resolveVillageAction(prev, activePlayer.id, targetLoc));
+          }
+          // Resolve Harvest (Hunting or Resources)
+          else if (['hunting', 'forest', 'clay_pit', 'quarry', 'river'].includes(targetLoc)) {
+            const meepleCount = activePlayer.placements[targetLoc] || 1;
+            const diceValues = Array.from({ length: meepleCount }, () => Math.floor(Math.random() * 6) + 1);
+            const diceSum = diceValues.reduce((s, v) => s + v, 0);
+            const divisor = getLocationInfo(targetLoc, state).diceDivisor || 2;
+
+            const toolsToUse = getAiToolUsage(
+              diceSum,
+              divisor,
+              activePlayer.toolTiles,
+              activePlayer.toolsUsedThisRound
+            );
+
+            const resName = targetLoc === 'hunting' ? 'Nourriture' : targetLoc === 'forest' ? 'Bois' : targetLoc === 'clay_pit' ? 'Glaise' : targetLoc === 'quarry' ? 'Pierre' : 'Or';
+            const resIcon = targetLoc === 'hunting' ? '🍗' : targetLoc === 'forest' ? '🪵' : targetLoc === 'clay_pit' ? '🧱' : targetLoc === 'quarry' ? '🪨' : '✨';
+            const toolsBonus = toolsToUse.reduce((s, u, idx) => s + (u ? (activePlayer.toolTiles[idx] || 0) : 0), 0);
+            const totalVal = diceSum + toolsBonus;
+            const harvestedQty = Math.floor(totalVal / divisor);
+
+            triggerAiNotice({
+              id: Date.now().toString(),
+              playerName: activePlayer.name,
+              playerColor: activePlayer.color,
+              actionTitle: `Récolte : ${getLocationInfo(targetLoc, state).name}`,
+              locationName: getLocationInfo(targetLoc, state).name,
+              diceText: `🎲 Dés: [${diceValues.join(', ')}] = ${diceSum}${toolsBonus > 0 ? ` (+${toolsBonus} outils)` : ''} ÷ ${divisor}`,
+              gainBadge: `+${harvestedQty} ${resName}`,
+              icon: resIcon,
+            });
+
+            sound.playHarvest();
+            setState(prev => resolveDiceHarvest(prev, activePlayer.id, targetLoc, diceValues, toolsToUse));
+          }
+          // Resolve Card Purchase
+          else if (targetLoc.startsWith('card_')) {
+            const slot = parseInt(targetLoc.split('_')[1], 10);
+            const cost = slot + 1;
+            const payment = getAiCardPayment(activePlayer, cost);
+            const card = state.activeCards[slot];
+
+            if (payment && card) {
+              sound.playPurchase();
+              if (card.topBonus.type === 'dice_all_players') {
+                setDraftingCard({
+                  card,
+                  locationId: targetLoc,
+                  resourcesPaid: payment,
+                  buyerId: activePlayer.id,
+                });
+                return;
+              }
+              triggerAiNotice({
+                id: Date.now().toString(),
+                playerName: activePlayer.name,
+                playerColor: activePlayer.color,
+                actionTitle: "Achat de Carte Civilisation",
+                locationName: `Marché (Coût: ${cost})`,
+                gainBadge: card.name,
+                icon: "📜",
+              });
+
+              const willDrawCard = card.topBonus.type === 'draw_card' && state.cardsDeck.length > 0;
+              const extraCard = willDrawCard ? state.cardsDeck[0] : null;
+
+              setState(prev => resolveCardPurchase(prev, activePlayer.id, targetLoc, payment));
+
+              if (extraCard && card) {
+                setDrawnCardReveal({
+                  card: extraCard,
+                  player: activePlayer,
+                  originalCard: card,
+                });
+              }
+            } else {
+              setState(prev => forfeitResolution(prev, activePlayer.id, targetLoc));
+            }
+          }
+          // Resolve Building Construction
+          else if (targetLoc.startsWith('building_')) {
+            const pileIndex = parseInt(targetLoc.split('_')[1], 10);
+            const pile = state.buildingPiles[pileIndex];
+            if (pile && pile.length > 0) {
+              const topTile = pile[pile.length - 1];
+              const payment = getAiBuildingPayment(activePlayer, topTile);
+              if (payment) {
+                sound.playPurchase();
+                triggerAiNotice({
+                  id: Date.now().toString(),
+                  playerName: activePlayer.name,
+                  playerColor: activePlayer.color,
+                  actionTitle: "Construction de Bâtiment",
+                  locationName: `Hutte ${pileIndex + 1}`,
+                  gainBadge: topTile.description,
+                  icon: <ResourceIcon type="building" size="xs" />,
+                });
+                setState(prev => resolveBuildingPurchase(prev, activePlayer.id, targetLoc, payment));
+              } else {
+                setState(prev => forfeitResolution(prev, activePlayer.id, targetLoc));
+              }
+            } else {
+              setState(prev => forfeitResolution(prev, activePlayer.id, targetLoc));
+            }
+          } else {
+            setState(prev => forfeitResolution(prev, activePlayer.id, targetLoc));
+          }
+        } catch (e) {
+          console.error('AI resolution error', e);
+          setState(prev => forfeitResolution(prev, activePlayer.id, targetLoc));
+        }
+      }, 1250);
+
+      return () => {
+        isCancelled = true;
+        clearTimeout(timer);
+      };
+    }
+  }, [state, activePlayer, draftingCard, rollingCard, drawnCardReveal]);
+
+  // --- HUMAN ZONE INTERACTION ---
+  const handleZoneClick = (locationId: BoardLocationId) => {
+    if (activePlayer.isAi) return;
+
+    // 1. Placement phase
+    if (state.phase === 'placement') {
+      // Village Spots
+      if (locationId === 'hut') {
+        if (canPlaceMeeples(state, activePlayer.id, 'hut', 2).allowed) {
+          sound.playMeeplePlace();
+          setState(prev => placeMeeples(prev, activePlayer.id, 'hut', 2));
+        }
+        return;
+      }
+      if (locationId === 'tool_maker' || locationId === 'field') {
+        if (canPlaceMeeples(state, activePlayer.id, locationId, 1).allowed) {
+          sound.playMeeplePlace();
+          setState(prev => placeMeeples(prev, activePlayer.id, locationId, 1));
+        }
+        return;
+      }
+
+      // Card / Building Slots (1 meeple fixed)
+      if (locationId.startsWith('card_') || locationId.startsWith('building_')) {
+        if (canPlaceMeeples(state, activePlayer.id, locationId, 1).allowed) {
+          sound.playMeeplePlace();
+          setState(prev => placeMeeples(prev, activePlayer.id, locationId, 1));
+        }
+        return;
+      }
+
+      // Resource zones & Hunting (open meeple count modal)
+      if (['hunting', 'forest', 'clay_pit', 'quarry', 'river'].includes(locationId)) {
+        if (canPlaceMeeples(state, activePlayer.id, locationId, 1).allowed) {
+          setCountModalLoc(locationId);
+        }
+        return;
+      }
+    }
+
+    // 2. Resolution phase
+    if (state.phase === 'resolution') {
+      const hasMyMeeples = (activePlayer.placements[locationId] || 0) > 0;
+      if (!hasMyMeeples) return;
+
+      // Village Actions resolve immediately!
+      if (locationId === 'tool_maker' || locationId === 'hut' || locationId === 'field') {
+        sound.playHarvest();
+        setState(prev => resolveVillageAction(prev, activePlayer.id, locationId));
+        return;
+      }
+
+      // Dice Harvest
+      if (['hunting', 'forest', 'clay_pit', 'quarry', 'river'].includes(locationId)) {
+        setDiceModalLoc(locationId);
+        return;
+      }
+
+      // Card Purchase
+      if (locationId.startsWith('card_')) {
+        setCardModalLoc(locationId);
+        return;
+      }
+
+      // Building Construction
+      if (locationId.startsWith('building_')) {
+        setBuildingModalLoc(locationId);
+        return;
+      }
+    }
+  };
+
+  // Human passes placement phase
+  const handlePassPlacement = () => {
+    setState(prev => passPlayerPlacement(prev, activePlayer.id));
+  };
+
+  // Human forfeits a reserved card or building
+  const handleForfeitPlacement = (locationId: BoardLocationId) => {
+    setState(prev => forfeitResolution(prev, activePlayer.id, locationId));
+    setCardModalLoc(null);
+    setBuildingModalLoc(null);
+  };
+
+  // Human clicks "Résoudre l'action suivante" from HUD, guide or bandeau
+  const handleResolveNextZone = (locationId?: BoardLocationId) => {
+    if (locationId) {
+      handleZoneClick(locationId);
+    } else {
+      const unresolved = getPlayerUnresolvedLocations(activePlayer);
+      if (unresolved.length > 0) {
+        handleZoneClick(unresolved[0]);
+      }
+    }
+  };
+
+  // Confirm meeple count placement
+  const handleConfirmMeepleCount = (count: number) => {
+    if (countModalLoc) {
+      sound.playMeeplePlace();
+      setState(prev => placeMeeples(prev, activePlayer.id, countModalLoc, count));
+      setCountModalLoc(null);
+    }
+  };
+
+  // Confirm dice roll harvest
+  const handleConfirmDiceHarvest = (diceValues: number[], toolsUsed: number[], tempToolsUsed: number = 0) => {
+    if (diceModalLoc) {
+      setState(prev => resolveDiceHarvest(prev, activePlayer.id, diceModalLoc, diceValues, toolsUsed, tempToolsUsed));
+      setDiceModalLoc(null);
+    }
+  };
+
+  // Confirm card purchase
+  const handleConfirmCardPurchase = (resourcesPaid: Record<ResourceType, number>) => {
+    if (cardModalLoc) {
+      const slot = parseInt(cardModalLoc.split('_')[1], 10);
+      const card = state.activeCards[slot];
+      if (card && card.topBonus.type === 'dice_all_players') {
+        setDraftingCard({
+          card,
+          locationId: cardModalLoc,
+          resourcesPaid,
+          buyerId: activePlayer.id,
+        });
+        setCardModalLoc(null);
+        return;
+      }
+      if (card && card.topBonus.type === 'dice_roll') {
+        setRollingCard({
+          card,
+          locationId: cardModalLoc,
+          resourcesPaid,
+          buyerId: activePlayer.id,
+        });
+        setCardModalLoc(null);
+        return;
+      }
+
+      const willDrawCard = card && card.topBonus.type === 'draw_card' && state.cardsDeck.length > 0;
+      const extraCard = willDrawCard ? state.cardsDeck[0] : null;
+
+      setState(prev => resolveCardPurchase(prev, activePlayer.id, cardModalLoc, resourcesPaid));
+      setCardModalLoc(null);
+
+      if (extraCard && card) {
+        setDrawnCardReveal({
+          card: extraCard,
+          player: activePlayer,
+          originalCard: card,
+        });
+      }
+    }
+  };
+
+  // Complete single-player 2-dice roll card
+  const handleCompleteCardDiceRoll = (diceValues: number[], usedTools: number[], tempToolsUsed: number = 0) => {
+    if (!rollingCard) return;
+    const { card, locationId, resourcesPaid, buyerId } = rollingCard;
+    const buyer = state.players.find(p => p.id === buyerId) || activePlayer;
+
+    setState(prev => resolveCardPurchase(prev, buyerId, locationId, resourcesPaid, { diceValues, toolsUsed: usedTools, tempToolsUsed }));
+    setRollingCard(null);
+
+    const resType = card.topBonus.resourceType || 'wood';
+    const divisor = resType === 'wood' ? 3 : resType === 'clay' ? 4 : resType === 'stone' ? 5 : resType === 'gold' ? 6 : 2;
+    const toolBonus = usedTools.reduce((s, idx) => s + (buyer.toolTiles[idx] || 0), 0);
+    const total = diceValues.reduce((s, v) => s + v, 0) + toolBonus;
+    const count = Math.floor(total / divisor);
+
+    triggerAiNotice({
+      id: Date.now().toString(),
+      playerName: buyer.name,
+      playerColor: buyer.color,
+      actionTitle: `Récolte aux dés : ${card.name}`,
+      locationName: "Marché aux cartes",
+      gainBadge: `+${count} ${resType} (Total: ${total})`,
+      icon: "🎲",
+    });
+  };
+
+  // Complete multi-player dice draft
+  const handleCompleteDiceDraft = (selections: any[]) => {
+    if (!draftingCard) return;
+    const { card, locationId, resourcesPaid, buyerId } = draftingCard;
+    const buyer = state.players.find(p => p.id === buyerId);
+
+    setState(prev => resolveCardDiceDraft(prev, buyerId, locationId, resourcesPaid, selections));
+    setDraftingCard(null);
+
+    triggerAiNotice({
+      id: Date.now().toString(),
+      playerName: buyer?.name || 'Tirage',
+      playerColor: buyer?.color || 'red',
+      actionTitle: `Tirage de Dés : ${card.name}`,
+      locationName: "Marché aux cartes",
+      gainBadge: `${selections.length} bonus attribués`,
+      icon: "🎲",
+    });
+  };
+
+  // Confirm building purchase
+  const handleConfirmBuildingPurchase = (resourcesPaid: Record<ResourceType, number>) => {
+    if (buildingModalLoc) {
+      setState(prev => resolveBuildingPurchase(prev, activePlayer.id, buildingModalLoc, resourcesPaid));
+      setBuildingModalLoc(null);
+    }
+  };
+
+  // Confirm human famine resolution
+  const handleConfirmFeeding = (resourcesPaid: Record<ResourceType, number>, acceptPenalty: boolean) => {
+    setState(prev => resolveHumanFeeding(prev, activePlayer.id, resourcesPaid, acceptPenalty));
+  };
+
+  // Check if human needs feeding modal
+  const isFeedingDeficit = 
+    state.phase === 'feeding' &&
+    !activePlayer.isAi &&
+    !activePlayer.fedThisRound &&
+    Math.max(0, activePlayer.totalMeeples - activePlayer.agriculture) > activePlayer.food;
+
+  return (
+    <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-stone-950 text-stone-100 select-none p-0 relative">
+      {/* 1. ULTRA-COMPACT NATIVE MINI-HUD (36-40px) */}
+      <CompactNativeHUD
+        state={state}
+        activePlayer={activePlayer}
+        onOpenTribesDrawer={() => setIsTribalDrawerOpen(prev => !prev)}
+        onOpenSettings={() => setIsSettingsModalOpen(true)}
+        onOpenFirstPlayerDraw={() => setShowFirstPlayerDrawModal(true)}
+        onPassPlacement={handlePassPlacement}
+        onResolveNextZone={() => handleResolveNextZone()}
+        canPassPlacement={!activePlayer.isAi && state.phase === 'placement'}
+        canResolveNextZone={!activePlayer.isAi && state.phase === 'resolution' && getPlayerUnresolvedLocations(activePlayer).length > 0}
+      />
+
+      {/* AI Real-time Action Notification Toast */}
+      <AiActionToast action={aiActionNotice} />
+
+      {/* 2. MAIN BOARD - OCCUPIES 100% OF REMAINING VIEWPORT HEIGHT */}
+      <main className="flex-1 w-full h-full min-h-0 relative overflow-hidden flex items-center justify-center p-0">
+        {boardView === 'smallworld' ? (
+          <SmallWorldBoardView
+            state={state}
+            activePlayer={activePlayer}
+            onZoneClick={handleZoneClick}
+            onPassPlacement={handlePassPlacement}
+            onResolveNextZone={() => handleResolveNextZone()}
+            canPassPlacement={!activePlayer.isAi && state.phase === 'placement'}
+            canResolveNextZone={!activePlayer.isAi && state.phase === 'resolution' && getPlayerUnresolvedLocations(activePlayer).length > 0}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={handleToggleFullscreen}
+            isTribesDrawerOpen={isTribalDrawerOpen}
+            onToggleTribesDrawer={() => setIsTribalDrawerOpen(prev => !prev)}
+          />
+        ) : boardView === 'virtual' ? (
+          <div className="w-full h-full overflow-hidden flex items-center justify-center p-0">
+            <VirtualBoard3D
+              state={state}
+              activePlayer={activePlayer}
+              onZoneClick={handleZoneClick}
+              className="w-full h-full"
+              isFullscreen={isFullscreen}
+              onToggleFullscreen={handleToggleFullscreen}
+            />
+          </div>
+        ) : (
+          <div className="w-full h-full overflow-auto flex items-center justify-center">
+            <GameBoard
+              state={state}
+              activePlayer={activePlayer}
+              onZoneClick={handleZoneClick}
+            />
+          </div>
+        )}
+      </main>
+
+      {/* Sliding Mobile Tribal Drawer for Classic 3D or Modular views when toggled from HUD */}
+      {boardView !== 'smallworld' && (
+        <MobileTribalDrawer
+          state={state}
+          activePlayer={activePlayer}
+          isOpen={isTribalDrawerOpen}
+          onToggle={() => setIsTribalDrawerOpen(prev => !prev)}
+          onClose={() => setIsTribalDrawerOpen(false)}
+        />
+      )}
+
+      {/* --- MODALS --- */}
+      {/* Game Settings & Options Modal */}
+      <GameSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        boardView={boardView}
+        onSelectBoardView={setBoardView}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={handleToggleFullscreen}
+        onNewGame={() => setShowNewGameModal(true)}
+        onOpenTutorial={() => setShowTutorialModal(true)}
+        onOpenQR={() => setShowQRModal(true)}
+        onOpenSummary={() => setShowRoundSummaryModal(true)}
+        onOpenFirstPlayerDraw={() => setShowFirstPlayerDrawModal(true)}
+      />
+
+      {/* First Player Draw Lottery Modal */}
+      <FirstPlayerDrawModal
+        isOpen={showFirstPlayerDrawModal}
+        onClose={() => setShowFirstPlayerDrawModal(false)}
+        state={state}
+      />
+      {/* Meeple Count Picker Modal */}
+      {countModalLoc && (
+        <MeepleCountModal
+          locationId={countModalLoc}
+          player={activePlayer}
+          state={state}
+          onConfirm={handleConfirmMeepleCount}
+          onCancel={() => setCountModalLoc(null)}
+        />
+      )}
+
+      {/* Dice Roll & Tools Modal */}
+      {diceModalLoc && (
+        <DiceRollModal
+          locationId={diceModalLoc}
+          player={activePlayer}
+          state={state}
+          onConfirm={handleConfirmDiceHarvest}
+          onCancel={() => setDiceModalLoc(null)}
+        />
+      )}
+
+      {/* Card Purchase Modal */}
+      {cardModalLoc && (() => {
+        const slot = parseInt(cardModalLoc.split('_')[1], 10);
+        const card = state.activeCards[slot];
+        if (!card) return null;
+        return (
+          <CardPurchaseModal
+            locationId={cardModalLoc}
+            card={card}
+            player={activePlayer}
+            onConfirm={handleConfirmCardPurchase}
+            onForfeit={() => handleForfeitPlacement(cardModalLoc)}
+            onClose={() => setCardModalLoc(null)}
+            isModern={boardView === 'smallworld'}
+          />
+        );
+      })()}
+
+      {/* Multi-player Dice Draft Modal for Special Civilization Cards */}
+      {draftingCard && (
+        <DiceDraftModal
+          card={draftingCard.card}
+          buyerPlayer={state.players.find(p => p.id === draftingCard.buyerId) || activePlayer}
+          allPlayers={state.players}
+          onComplete={handleCompleteDiceDraft}
+        />
+      )}
+
+      {/* 2-Dice Resource Harvest Modal for Special Civilization Cards */}
+      {rollingCard && (
+        <CardDiceRollModal
+          card={rollingCard.card}
+          player={state.players.find(p => p.id === rollingCard.buyerId) || activePlayer}
+          onConfirm={handleCompleteCardDiceRoll}
+        />
+      )}
+
+      {/* Free Civilization Card Reveal Modal */}
+      {drawnCardReveal && (
+        <DrawnCardRevealModal
+          card={drawnCardReveal.card}
+          player={state.players.find(p => p.id === drawnCardReveal.player.id) || drawnCardReveal.player}
+          originalCard={drawnCardReveal.originalCard}
+          onClose={() => setDrawnCardReveal(null)}
+          isModern={boardView === 'smallworld'}
+        />
+      )}
+
+      {/* Building Purchase Modal */}
+      {buildingModalLoc && (() => {
+        const pileIndex = parseInt(buildingModalLoc.split('_')[1], 10);
+        const pile = state.buildingPiles[pileIndex];
+        const tile = pile ? pile[pile.length - 1] : null;
+        if (!tile) return null;
+        return (
+          <BuildingPurchaseModal
+            locationId={buildingModalLoc}
+            tile={tile}
+            player={activePlayer}
+            onConfirm={handleConfirmBuildingPurchase}
+            onForfeit={() => handleForfeitPlacement(buildingModalLoc)}
+            onClose={() => setBuildingModalLoc(null)}
+            isModern={boardView === 'smallworld'}
+          />
+        );
+      })()}
+
+      {/* Feeding Modal (if human in deficit) */}
+      {isFeedingDeficit && (
+        <FeedingModal
+          player={activePlayer}
+          onConfirm={handleConfirmFeeding}
+        />
+      )}
+
+      {/* Round End Summary Modal */}
+      {showRoundSummaryModal && (
+        <RoundSummaryModal
+          state={state}
+          onNextRound={() => setShowRoundSummaryModal(false)}
+          onClose={() => setShowRoundSummaryModal(false)}
+        />
+      )}
+
+      {/* End Game Scoring Modal */}
+      {state.phase === 'game_over' && (
+        <EndGameModal
+          state={state}
+          onRestart={handleRestartGame}
+          onNewGame={() => setShowNewGameModal(true)}
+        />
+      )}
+
+      {/* Tutorial Walkthrough Modal */}
+      {showTutorialModal && (
+        <TutorialModal
+          onClose={() => setShowTutorialModal(false)}
+        />
+      )}
+
+      {/* Smartphone QR Code Modal */}
+      {showQRModal && (
+        <QRModal
+          onClose={() => setShowQRModal(false)}
+        />
+      )}
+
+      {/* New Game Setup Modal */}
+      {showNewGameModal && (
+        <NewGameModal
+          initialSettings={currentSettings}
+          onStart={handleStartNewGame}
+          onClose={() => setShowNewGameModal(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default App;
