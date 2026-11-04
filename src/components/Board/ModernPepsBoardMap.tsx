@@ -538,32 +538,38 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
             const { isInteractive, totalMeeples } = getZoneStatus(locId);
             return (
               <>
-                {/* Zone interactive directement sur le bâtiment circulaire en pierre (Atelier) */}
+                {/* Zone interactive directement sur l'Atelier d'Outils - Dégagée au-dessus des cartes avec z-30 */}
                 <div
                   onClick={() => isInteractive && onZoneClick(locId)}
                   onMouseEnter={() => setHoveredZone(locId)}
                   onMouseLeave={() => setHoveredZone(null)}
-                  className={`absolute left-[51.5%] top-[53.5%] w-[11.5%] h-[14.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-20 ${
+                  className={`absolute left-[50.5%] top-[47.5%] w-[12%] h-[13%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
                     isInteractive
-                      ? 'cursor-pointer border border-dashed border-white/10 hover:border-solid hover:border-amber-400 hover:bg-stone-500/[0.06] hover:shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                      ? 'cursor-pointer border border-dashed border-amber-400/40 hover:border-solid hover:border-amber-400 hover:bg-stone-900/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]'
                       : 'hover:bg-white/[0.02]'
                   }`}
-                  title="Atelier d'Outils en pierre : Poser 1 ouvrier à l'enclume pour forger +1 Outil permanent (1 ouvrier max)"
+                  title="Atelier d'Outils en pierre : Poser 1 ouvrier pour forger +1 Outil permanent (1 ouvrier max)"
                 >
-                  {/* Badge d'atelier visible au survol */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <span className="text-[7px] sm:text-[8px] font-black uppercase text-amber-200 bg-stone-950/85 px-1.5 py-0.5 rounded-full border border-amber-500/60 shadow-md">
-                      Atelier d'Outils
+                  {/* Badge d'atelier toujours lisible ou au survol */}
+                  <div className="transition-opacity duration-200 pointer-events-none">
+                    <span className="text-[7px] sm:text-[8px] font-black uppercase text-amber-200 bg-stone-950/90 px-1.5 py-0.5 rounded-full border border-amber-500/70 shadow-md">
+                      Atelier Outils
                     </span>
                   </div>
 
-                  {/* Emplacement de dépose du pion : directement sur l'enclume dans la cour en pierre */}
-                  <div className="flex-1 w-full flex items-center justify-center">
+                  {/* Emplacement de dépose du pion : sur l'enclume, surélevé et parfaitement visible au-dessus des cartes */}
+                  <div className="flex-1 w-full flex items-center justify-center relative z-30">
                     {totalMeeples > 0 ? (
-                      renderZoneMeeples(locId, 'md')
+                      <div className="bg-stone-950/90 p-1 rounded-full border-2 border-amber-400 shadow-[0_4px_12px_rgba(0,0,0,0.95)] ring-2 ring-amber-500/40 scale-105">
+                        {renderZoneMeeples(locId, 'md')}
+                      </div>
                     ) : (
                       <div 
-                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-dashed border-amber-300/50 bg-stone-950/50 flex items-center justify-center text-[9px] shadow-sm group-hover:scale-110 group-hover:border-amber-300 group-hover:bg-amber-950/60 transition-all"
+                        className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-[10px] shadow-md transition-all ${
+                          isInteractive
+                            ? 'border-amber-400 bg-amber-950/80 text-amber-200 ring-2 ring-amber-400/50 group-hover:scale-110'
+                            : 'border-dashed border-stone-500 bg-stone-950/70 text-stone-300'
+                        }`}
                         title="Déposer 1 ouvrier sur l'enclume de l'atelier"
                       >
                         🔨
@@ -572,22 +578,22 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                   </div>
                 </div>
 
-                {/* Réserve physique des tuiles Outils (1/2 et 3/4) posée sur le chemin à l'entrée de l'atelier */}
+                {/* Réserve physique des tuiles Outils (1/2 et 3/4) positionnée à côté de l'atelier, bien au-dessus des cartes */}
                 <div 
                   onClick={() => isInteractive && onZoneClick(locId)}
-                  className={`absolute left-[46%] top-[59%] flex items-center gap-1 z-20 transition-all select-none ${
+                  className={`absolute left-[45.5%] top-[54.5%] flex items-center gap-1 z-30 transition-all select-none ${
                     isInteractive ? 'cursor-pointer hover:scale-105' : ''
                   }`}
                   title="Réserve d'Outils du village (1-2 / 3-4) : Cliquez pour envoyer un ouvrier à l'atelier"
                 >
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg overflow-hidden border border-stone-600 shadow-md bg-stone-900/90 hover:border-amber-400 transition-colors">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg overflow-hidden border border-stone-500 shadow-md bg-stone-900/90 hover:border-amber-400 transition-colors">
                     <img 
                       src="/tools/tool_1.png" 
                       alt="Tuile Outil 1/2" 
                       className="w-full h-full object-cover" 
                     />
                   </div>
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg overflow-hidden border border-stone-600 shadow-md bg-stone-900/90 hover:border-amber-400 transition-colors">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg overflow-hidden border border-stone-500 shadow-md bg-stone-900/90 hover:border-amber-400 transition-colors">
                     <img 
                       src="/tools/tool_3.png" 
                       alt="Tuile Outil 3/4" 
