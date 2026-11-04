@@ -41,6 +41,7 @@ import { PlayerDashboard } from './components/PlayerDashboard';
 import { GameLog } from './components/GameLog';
 import { AiActionToast, AiActionData } from './components/AiActionToast';
 import { RoundSummaryModal } from './components/Modals/RoundSummaryModal';
+import { HomeScreen } from './components/HomeScreen';
 
 // Modals
 import { FirstPlayerDrawModal } from './components/Modals/FirstPlayerDrawModal';
@@ -61,11 +62,12 @@ import { ResourceIcon } from './components/Common/ResourceIcon';
 import { Eye, LayoutGrid, Sparkles, Compass, Smartphone, X } from 'lucide-react';
 
 const DEFAULT_SETTINGS: GameSettings = {
-  playerCount: 3,
+  playerCount: 4,
   players: [
     { name: 'Rahan', color: 'red', isAi: false, aiDifficulty: 'normal' },
     { name: 'Ayla', color: 'blue', isAi: true, aiDifficulty: 'normal' },
     { name: 'Naoh', color: 'yellow', isAi: true, aiDifficulty: 'hard' },
+    { name: 'Crao', color: 'green', isAi: true, aiDifficulty: 'easy' },
   ],
   variants: {
     firstTurnCourtesy: true,
@@ -126,11 +128,14 @@ export const App: React.FC = () => {
     }
   };
 
+  // App navigation state: Home Screen vs In-Game
+  const [isInGame, setIsInGame] = useState(false);
+
   // Modals state
   const [showNewGameModal, setShowNewGameModal] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
-  const [showFirstPlayerDrawModal, setShowFirstPlayerDrawModal] = useState(true);
+  const [showFirstPlayerDrawModal, setShowFirstPlayerDrawModal] = useState(false);
 
   // Interaction modals
   const [countModalLoc, setCountModalLoc] = useState<BoardLocationId | null>(null);
@@ -187,11 +192,13 @@ export const App: React.FC = () => {
     setState(createInitialGameState(settings));
     setShowNewGameModal(false);
     setShowFirstPlayerDrawModal(true);
+    setIsInGame(true);
   };
 
   const handleRestartGame = () => {
     setState(createInitialGameState(currentSettings));
     setShowFirstPlayerDrawModal(true);
+    setIsInGame(true);
   };
 
   // --- SAFE & REACTIVE AI AUTOMATION LOOP ---
@@ -622,6 +629,42 @@ export const App: React.FC = () => {
     !activePlayer.fedThisRound &&
     Math.max(0, activePlayer.totalMeeples - activePlayer.agriculture) > activePlayer.food;
 
+  // Render Home Screen if not in game
+  if (!isInGame) {
+    return (
+      <div className="h-[100dvh] w-full overflow-hidden bg-stone-950 text-stone-100 select-none">
+        <HomeScreen
+          onStartNewGame={() => setShowNewGameModal(true)}
+          onResumeGame={() => setIsInGame(true)}
+          onOpenTutorial={() => setShowTutorialModal(true)}
+          hasActiveGame={state.round > 1 || state.phase !== 'placement'}
+          soundEnabled={soundEnabled}
+          onToggleSound={toggleSound}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={handleToggleFullscreen}
+        />
+
+        {/* Modal Configuration / Nouvelle Partie */}
+        {showNewGameModal && (
+          <NewGameModal
+            initialSettings={currentSettings}
+            onStart={(settings) => {
+              handleStartNewGame(settings);
+            }}
+            onClose={() => setShowNewGameModal(false)}
+          />
+        )}
+
+        {/* Modal Tutoriel & Règles */}
+        {showTutorialModal && (
+          <TutorialModal
+            onClose={() => setShowTutorialModal(false)}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-stone-950 text-stone-100 select-none p-0 relative">
       {/* 1. ULTRA-COMPACT NATIVE MINI-HUD (36-40px) */}
@@ -705,6 +748,7 @@ export const App: React.FC = () => {
         onOpenQR={() => setShowQRModal(true)}
         onOpenSummary={() => setShowRoundSummaryModal(true)}
         onOpenFirstPlayerDraw={() => setShowFirstPlayerDrawModal(true)}
+        onGoHome={() => setIsInGame(false)}
       />
 
       {/* First Player Draw Lottery Modal */}

@@ -39,24 +39,31 @@ export const NewGameModal: React.FC<NewGameModalProps> = ({
   onStart,
   onClose,
 }) => {
-  const [playerCount, setPlayerCount] = useState<number>(initialSettings?.playerCount || 3);
+  const [playerCount, setPlayerCount] = useState<number>(initialSettings?.playerCount || 4);
   const [selectedPlayerIdx, setSelectedPlayerIdx] = useState<number>(0);
   
   const [players, setPlayers] = useState(() => {
-    if (initialSettings?.players && initialSettings.players.length >= 2) {
-      return initialSettings.players.map((p, i) => ({
-        name: p.name || (i === 0 ? 'Rahan' : PREHISTORIC_NAMES[i] || `Chef ${i + 1}`),
-        color: p.color || COLORS[i % COLORS.length],
-        isAi: p.isAi ?? (i > 0),
-        aiDifficulty: p.aiDifficulty || 'normal',
-      }));
-    }
-    return [
+    const defaultRoster = [
       { name: 'Rahan', color: 'red' as PlayerColor, isAi: false, aiDifficulty: 'normal' as const },
       { name: 'Ayla', color: 'blue' as PlayerColor, isAi: true, aiDifficulty: 'normal' as const },
       { name: 'Naoh', color: 'yellow' as PlayerColor, isAi: true, aiDifficulty: 'hard' as const },
       { name: 'Crao', color: 'green' as PlayerColor, isAi: true, aiDifficulty: 'easy' as const },
     ];
+    if (initialSettings?.players && initialSettings.players.length >= 2) {
+      return defaultRoster.map((def, idx) => {
+        const existing = initialSettings.players[idx];
+        if (existing) {
+          return {
+            name: existing.name || def.name,
+            color: existing.color || def.color,
+            isAi: existing.isAi ?? (idx > 0),
+            aiDifficulty: existing.aiDifficulty || def.aiDifficulty,
+          };
+        }
+        return def;
+      });
+    }
+    return defaultRoster;
   });
 
   const [variants, setVariants] = useState<GameVariants>(initialSettings?.variants || {

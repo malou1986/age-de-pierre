@@ -30,6 +30,7 @@ interface GameSettingsModalProps {
   onOpenQR: () => void;
   onOpenSummary: () => void;
   onOpenFirstPlayerDraw?: () => void;
+  onGoHome?: () => void;
 }
 
 export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
@@ -46,6 +47,7 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
   onOpenQR,
   onOpenSummary,
   onOpenFirstPlayerDraw,
+  onGoHome,
 }) => {
   if (!isOpen) return null;
 
@@ -265,6 +267,20 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
               >
                 <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>🎲 Revoir le tirage au sort du Premier Joueur</span>
+              </button>
+            )}
+
+            {/* Retour Menu / Accueil */}
+            {onGoHome && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onGoHome();
+                }}
+                className="col-span-2 p-2 rounded-xl bg-stone-900/90 hover:bg-stone-800 border border-stone-700 text-stone-200 flex items-center justify-center gap-2 text-xs font-bold cursor-pointer transition-colors shadow-sm"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>🏠 Retour à l'Écran d'Accueil</span>
               </button>
             )}
           </div>
