@@ -20,7 +20,9 @@ import {
   resolveCardDiceDraft,
   resolveDiceHarvest, 
   resolveHumanFeeding, 
-  resolveVillageAction 
+  resolveVillageAction,
+  resolveMerchantVisit,
+  resolveMammothContest
 } from './logic/gameEngine';
 import { 
   getAiBuildingPayment, 
@@ -58,11 +60,14 @@ import { QRModal } from './components/Modals/QRModal';
 import { NewGameModal } from './components/Modals/NewGameModal';
 import { MeepleCountModal } from './components/Modals/MeepleCountModal';
 import { DrawnCardRevealModal } from './components/Modals/DrawnCardRevealModal';
+import { MerchantBarterModal } from './components/Modals/MerchantBarterModal';
+import { MammothContestModal } from './components/Modals/MammothContestModal';
 import { ResourceIcon } from './components/Common/ResourceIcon';
 import { Eye, LayoutGrid, Sparkles, Compass, Smartphone, X } from 'lucide-react';
 
 const DEFAULT_SETTINGS: GameSettings = {
   playerCount: 4,
+  edition: 'modern',
   players: [
     { name: 'Rahan', color: 'red', isAi: false, aiDifficulty: 'normal' },
     { name: 'Ayla', color: 'blue', isAi: true, aiDifficulty: 'normal' },
@@ -74,6 +79,11 @@ const DEFAULT_SETTINGS: GameSettings = {
     startingCompensation: true,
     twoPilesEnd: true,
     completeCycleEnd: true,
+  },
+  expansions: {
+    newHuts: true,
+    styleIsTheGoal: false,
+    mammothHerd: false,
   },
 };
 
@@ -159,6 +169,10 @@ export const App: React.FC = () => {
     player: PlayerState;
     originalCard: CivilizationCard;
   } | null>(null);
+
+  // Extensions modals
+  const [showMerchantModal, setShowMerchantModal] = useState(false);
+  const [showMammothModal, setShowMammothModal] = useState(false);
 
   // AI visual action toast & Round summary
   const [aiActionNotice, setAiActionNotice] = useState<AiActionData | null>(null);
@@ -392,6 +406,63 @@ export const App: React.FC = () => {
             } else {
               setState(prev => forfeitResolution(prev, activePlayer.id, targetLoc));
             }
+          }
+          // Resolve Extension 2 : Merchant Visit
+          else if (targetLoc === 'merchant') {
+            sound.playHarvest();
+            const nextLvl = Math.min(5, (activePlayer.merchantLevel || 0) + 1);
+            triggerAiNotice({
+              id: Date.now().toString(),
+              playerName: activePlayer.name,
+              playerColor: activePlayer.color,
+              actionTitle: "Visite au Marchand",
+              locationName: "Échoppe & Troc",
+              gainBadge: `Niveau ${nextLvl} Troc`,
+              icon: "⚖️",
+            });
+            // AI trades wood for jewelry if available
+            let tradeDetails: any = undefined;
+            if ((activePlayer.resources.wood || 0) >= 3) {
+              tradeDetails = { giveRes: 'wood', giveAmount: nextLvl >= 3 ? 1 : (nextLvl === 2 ? 2 : 3), buyJewelry: true, jewelryCount: 1 };
+            }
+            setState(prev => resolveMerchantVisit(prev, activePlayer.id, tradeDetails));
+          }
+          // Resolve Extension 3 : Mammoth Hunt
+          else if (targetLoc === 'mammoth') {
+            // Check if a human player is also on the hunt: if so, let human trigger the hunt modal!
+            const humanHunter = state.players.find(p => !p.isAi && (p.placements['mammoth'] || 0) > 0);
+            if (humanHunter) {
+              setShowMammothModal(true);
+            } else {
+              sound.playHarvest();
+              const meepleCount = activePlayer.placements['mammoth'] || 1;
+              const dice = Array.from({ length: meepleCount }, () => Math.floor(Math.random() * 6) + 1);
+              const foodWager = activePlayer.food > activePlayer.totalMeeples + 2 ? 2 : 0;
+              
+              const wagers: Record<string, number> = {};
+              const rolls: Record<string, number[]> = {};
+              state.players.forEach(p => {
+                if ((p.placements['mammoth'] || 0) > 0) {
+                  const c = p.placements['mammoth'] || 1;
+                  rolls[p.id] = Array.from({ length: c }, () => Math.floor(Math.random() * 6) + 1);
+                  wagers[p.id] = p.food > p.totalMeeples + 2 ? 2 : 0;
+                }
+              });
+              rolls[activePlayer.id] = dice;
+              wagers[activePlayer.id] = foodWager;
+
+              triggerAiNotice({
+                id: Date.now().toString(),
+                playerName: activePlayer.name,
+                playerColor: activePlayer.color,
+                actionTitle: "Chasse au Mammouth",
+                locationName: state.activeMammoth?.name || "Harde",
+                gainBadge: `🎲 ${dice.reduce((a, b) => a + b, 0)} pts`,
+                icon: "🦣",
+              });
+
+              setState(prev => resolveMammothContest(prev, wagers, rolls));
+            }
           } else {
             setState(prev => forfeitResolution(prev, activePlayer.id, targetLoc));
           }
@@ -475,6 +546,18 @@ export const App: React.FC = () => {
       // Building Construction
       if (locationId.startsWith('building_')) {
         setBuildingModalLoc(locationId);
+        return;
+      }
+
+      // Extension 2 : Échoppe du Marchand
+      if (locationId === 'merchant') {
+        setShowMerchantModal(true);
+        return;
+      }
+
+      // Extension 3 : Chasse au Mammouth
+      if (locationId === 'mammoth') {
+        setShowMammothModal(true);
         return;
       }
     }
@@ -615,6 +698,20 @@ export const App: React.FC = () => {
       setState(prev => resolveBuildingPurchase(prev, activePlayer.id, buildingModalLoc, resourcesPaid));
       setBuildingModalLoc(null);
     }
+  };
+
+  // Extension 2 : Confirm Merchant Visit & Barter
+  const handleConfirmMerchantVisit = (tradeDetails?: any) => {
+    sound.playPurchase();
+    setState(prev => resolveMerchantVisit(prev, activePlayer.id, tradeDetails));
+    setShowMerchantModal(false);
+  };
+
+  // Extension 3 : Confirm Mammoth Contest
+  const handleConfirmMammothContest = (wagers: Record<string, number>, rolls: Record<string, number[]>) => {
+    sound.playHarvest();
+    setState(prev => resolveMammothContest(prev, wagers, rolls));
+    setShowMammothModal(false);
   };
 
   // Confirm human famine resolution
@@ -845,6 +942,26 @@ export const App: React.FC = () => {
           />
         );
       })()}
+
+      {/* Extension 2 : Merchant & Barter Modal */}
+      {showMerchantModal && (
+        <MerchantBarterModal
+          player={activePlayer}
+          onConfirm={handleConfirmMerchantVisit}
+          onClose={() => setShowMerchantModal(false)}
+        />
+      )}
+
+      {/* Extension 3 : Mammoth Contest Modal */}
+      {showMammothModal && state.activeMammoth && (
+        <MammothContestModal
+          state={state}
+          activeMammoth={state.activeMammoth}
+          humanPlayer={activePlayer}
+          onResolve={handleConfirmMammothContest}
+          onClose={() => setShowMammothModal(false)}
+        />
+      )}
 
       {/* Feeding Modal (if human in deficit) */}
       {isFeedingDeficit && (

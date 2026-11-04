@@ -267,11 +267,15 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
         className="relative h-full w-auto max-w-full max-h-full rounded-xl sm:rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95)] border sm:border-4 border-amber-950/90 flex items-center justify-center shrink-0"
         style={{ aspectRatio: '1376 / 768' }}
       >
-        {/* 2. THE HIGH-RES ILLUSTRATED BOARD ARTWORK (100% UNBLOCKED, FULL MAJESTY) */}
+        {/* 2. THE HIGH-RES ILLUSTRATED BOARD ARTWORK (ADAPTIVE ÉDITION MODERNE / CLASSIQUE) */}
         <img
-          src="/board_peps.jpg"
-          alt="Plateau illustré contemporain L'Âge de Pierre"
-          className="absolute inset-0 w-full h-full object-fill pointer-events-none filter saturate-[1.10] contrast-[1.03]"
+          src={state.edition === 'classic' ? '/board.jpg' : '/board_peps.jpg'}
+          alt={state.edition === 'classic' ? "Plateau Édition Initiale Classique 2008" : "Plateau Nouvelle Édition Contemporaine"}
+          className={`absolute inset-0 w-full h-full object-fill pointer-events-none ${
+            state.edition === 'classic' 
+              ? 'sepia-[0.10] contrast-[1.02] brightness-[0.98]' 
+              : 'saturate-[1.10] contrast-[1.03]'
+          }`}
         />
 
         {/* 3. INTERACTIVE ZONES & MEEPLES OVERLAY (CLEAN, TRANSPARENT, NO HEAVY BOXES) */}
@@ -633,6 +637,103 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                     </div>
                   </div>
                 )}
+              </div>
+            );
+          })()}
+
+          {/* ---------------- EXTENSION 2: L'ÉCHOPPE DU MARCHAND & TROC ---------------- */}
+          {state.expansions?.styleIsTheGoal && (() => {
+            const locId: BoardLocationId = 'merchant';
+            const { isInteractive, totalMeeples } = getZoneStatus(locId);
+            return (
+              <div
+                onClick={() => isInteractive && onZoneClick(locId)}
+                onMouseEnter={() => setHoveredZone(locId)}
+                onMouseLeave={() => setHoveredZone(null)}
+                className={`absolute left-[22.8%] top-[52.5%] w-[10.8%] h-[16.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
+                  isInteractive
+                    ? 'cursor-pointer border-2 border-dashed border-purple-400/60 hover:border-solid hover:border-purple-300 hover:bg-purple-950/40 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]'
+                    : 'border border-purple-500/30 bg-purple-950/20'
+                }`}
+                title="Échoppe du Marchand : Poser 1 ouvrier pour monter sur la Piste de Troc et échanger des ressources ou Parures"
+              >
+                <div className="text-center">
+                  <span className="text-[7px] sm:text-[8px] font-black uppercase text-purple-200 bg-stone-950/90 px-1.5 py-0.5 rounded-full border border-purple-500/70 shadow-md flex items-center gap-0.5">
+                    <span>⚖️</span>
+                    <span>Marchand</span>
+                  </span>
+                </div>
+
+                <div className="flex-1 w-full flex items-center justify-center">
+                  {totalMeeples > 0 ? (
+                    <div className="bg-stone-950/90 p-1 rounded-full border-2 border-purple-400 shadow-md ring-2 ring-purple-500/40 scale-105">
+                      {renderZoneMeeples(locId, 'md')}
+                    </div>
+                  ) : (
+                    <div 
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs shadow-md transition-all ${
+                        isInteractive
+                          ? 'border-purple-400 bg-purple-950/80 text-purple-200 ring-2 ring-purple-400/50 group-hover:scale-110'
+                          : 'border-dashed border-purple-500/40 bg-stone-950/60 text-purple-300'
+                      }`}
+                    >
+                      📿
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-[7px] font-bold text-purple-300/80">
+                  Troc & Parures
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ---------------- EXTENSION 3: LA CHASSE AU MAMMOUTH ---------------- */}
+          {state.expansions?.mammothHerd && (() => {
+            const locId: BoardLocationId = 'mammoth';
+            const { isInteractive, totalMeeples } = getZoneStatus(locId);
+            const activeM = state.activeMammoth;
+            return (
+              <div
+                onClick={() => isInteractive && onZoneClick(locId)}
+                onMouseEnter={() => setHoveredZone(locId)}
+                onMouseLeave={() => setHoveredZone(null)}
+                className={`absolute left-[11.5%] top-[52.5%] w-[10.5%] h-[16.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
+                  isInteractive
+                    ? 'cursor-pointer border-2 border-dashed border-amber-400/60 hover:border-solid hover:border-amber-300 hover:bg-amber-950/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                    : 'border border-amber-500/30 bg-amber-950/20'
+                }`}
+                title={activeM ? `Chasse au Mammouth (${activeM.name} - +${activeM.victoryPoints} VP) : Envoyez 1 ou 2 ouvriers` : 'Harde de Mammouths'}
+              >
+                <div className="text-center w-full">
+                  <span className="text-[7px] sm:text-[8px] font-black uppercase text-amber-200 bg-stone-950/90 px-1 py-0.5 rounded-full border border-amber-500/70 shadow-md flex items-center justify-center gap-0.5 truncate">
+                    <span>🦣</span>
+                    <span className="truncate">{activeM ? `+${activeM.victoryPoints} VP` : 'Mammouth'}</span>
+                  </span>
+                </div>
+
+                <div className="flex-1 w-full flex items-center justify-center">
+                  {totalMeeples > 0 ? (
+                    <div className="bg-stone-950/90 p-1 rounded-full border-2 border-amber-400 shadow-md ring-2 ring-amber-500/40 scale-105">
+                      {renderZoneMeeples(locId, 'md')}
+                    </div>
+                  ) : (
+                    <div 
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs shadow-md transition-all ${
+                        isInteractive
+                          ? 'border-amber-400 bg-amber-950/80 text-amber-200 ring-2 ring-amber-400/50 group-hover:scale-110'
+                          : 'border-dashed border-amber-500/40 bg-stone-950/60 text-amber-300'
+                      }`}
+                    >
+                      🦣
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-[7px] font-black text-amber-300/90 truncate w-full text-center">
+                  {totalMeeples}/4 Chasseurs
+                </div>
               </div>
             );
           })()}

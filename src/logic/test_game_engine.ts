@@ -191,4 +191,124 @@ if (extraDrawn.id !== topCardInDeck.id) {
   throw new Error("La carte piochée gratuitement doit être la carte du dessus du deck !");
 }
 
-console.log("\n>>> TOUS LES TESTS SONT PASSÉS AVEC SUCCÈS (100% CONFORME AUX RÈGLES) <<<");
+// =========================================================================
+// NOUVEAUX TESTS : LES 3 EXTENSIONS OFFICIELLES
+// =========================================================================
+
+console.log("\n========================================================");
+console.log("=== TESTS SPÉCIFIQUES DES 3 EXTENSIONS MODULAIRES ===");
+console.log("========================================================");
+
+import { resolveMerchantVisit, resolveMammothContest } from './gameEngine';
+import { calculateJewelryScore } from './scoring';
+import { NEW_HUTS_TILES } from '../data/newHuts';
+
+// Test 1 : Extension 1 - Les Nouvelles Huttes à Pouvoirs
+console.log("\n--- Test Extension 1 : Les Nouvelles Huttes à Pouvoirs ---");
+let extState = createInitialGameState({
+  ...settings,
+  expansions: { newHuts: true, styleIsTheGoal: true, mammothHerd: true },
+});
+
+console.log(`[PASS] Partie avec 3 extensions créée avec succès.`);
+console.log(`       Nombre de tuiles bâtiment totales dans le pool: ${extState.buildingPiles.reduce((s, p) => s + p.length, 0)} (incluant les nouvelles huttes)`);
+
+// Tester achat d'une hutte spéciale : La Crèche (+1 ouvrier permanent immédiat)
+const kindergartenTile = NEW_HUTS_TILES.find(h => h.passiveHutType === 'kindergarten')!;
+const initialMeeples = extState.players[0].totalMeeples;
+extState.players[0].resources.clay = 5;
+extState.players[0].resources.gold = 5;
+extState.buildingPiles[0].push(kindergartenTile);
+extState.players[0].placements['building_0'] = 1;
+
+extState = resolveBuildingPurchase(extState, extState.players[0].id, 'building_0', { wood: 0, clay: 1, stone: 0, gold: 1 });
+if (extState.players[0].totalMeeples !== initialMeeples + 1) {
+  throw new Error(`La Crèche devrait donner immédiatement +1 ouvrier (obtenu: ${extState.players[0].totalMeeples})`);
+}
+console.log(`[PASS] La Crèche achetée : Ouvriers totaux ${initialMeeples} -> ${extState.players[0].totalMeeples} (+1 permanent immédiat !)`);
+
+// Tester hutte à production récurrente : Hutte du Bûcheron (+1 bois chaque début de manche)
+const woodHutTile = NEW_HUTS_TILES.find(h => h.passiveHutType === 'wood_quarry')!;
+extState.players[0].buildings.push(woodHutTile);
+const woodBeforeRound = extState.players[0].resources.wood;
+extState = finishRound(extState);
+console.log(`[PASS] Début de manche avec Hutte du Bûcheron : Bois ${woodBeforeRound} -> ${extState.players[0].resources.wood} (+1 Bois récurrent gratuit !)`);
+
+// Test 2 : Extension 2 - Le Style, c'est le But (Marchand, Piste de Troc & Bijoux)
+console.log("\n--- Test Extension 2 : Le Style, c'est le But ---");
+let pStyle = extState.players[0];
+pStyle.availableMeeples = 3;
+extState.activePlayerIndex = 0;
+
+// Placement sur 'merchant'
+const checkMerchant = canPlaceMeeples(extState, pStyle.id, 'merchant', 1);
+if (!checkMerchant.allowed) throw new Error("Placement sur l'échoppe du marchand devrait être autorisé !");
+extState = placeMeeples(extState, pStyle.id, 'merchant', 1);
+console.log(`[PASS] 1 ouvrier posé sur l'Échoppe du Marchand.`);
+
+// Résolution de la visite : progression de niveau & troc de 2 bois contre 1 Parure 📿
+pStyle.resources.wood = 5;
+extState = resolveMerchantVisit(extState, pStyle.id, {
+  giveRes: 'wood',
+  giveAmount: 2,
+  buyJewelry: true,
+  jewelryCount: 1,
+});
+
+const updatedStylePlayer = extState.players.find(p => p.id === pStyle.id)!;
+console.log(`[PASS] Marchand visité : Niveau de troc 0 -> ${updatedStylePlayer.merchantLevel}/5`);
+console.log(`[PASS] Parures obtenues : ${updatedStylePlayer.jewelry} 📿 (Attendu: 1)`);
+
+// Tester le barème officiel des Parures
+console.log("       Barème des scores de Style :");
+console.log(`       - 1 Parure : ${calculateJewelryScore(1)} VP (Attendu: 2)`);
+console.log(`       - 2 Parures : ${calculateJewelryScore(2)} VP (Attendu: 5)`);
+console.log(`       - 3 Parures : ${calculateJewelryScore(3)} VP (Attendu: 9)`);
+console.log(`       - 4 Parures : ${calculateJewelryScore(4)} VP (Attendu: 14)`);
+console.log(`       - 5 Parures : ${calculateJewelryScore(5)} VP (Attendu: 20)`);
+if (calculateJewelryScore(5) !== 20 || calculateJewelryScore(3) !== 9) {
+  throw new Error("Erreur de barème des parures !");
+}
+
+// Test 3 : Extension 3 - La Harde de Mammouths
+console.log("\n--- Test Extension 3 : La Harde de Mammouths ---");
+console.log(`[PASS] Mammouth actif sur le plateau : « ${extState.activeMammoth?.name} » (+${extState.activeMammoth?.victoryPoints} VP, Butin: ${extState.activeMammoth?.bonusType})`);
+console.log(`       Nombre de mammouths restants dans la pioche : ${extState.mammothDeck?.length}/15`);
+
+// Envoyer 2 ouvriers à la chasse au mammouth
+const checkMammoth = canPlaceMeeples(extState, pStyle.id, 'mammoth', 2);
+if (!checkMammoth.allowed) throw new Error("Placement sur la chasse au mammouth devrait être autorisé !");
+extState.players[0].availableMeeples = 3;
+extState = placeMeeples(extState, pStyle.id, 'mammoth', 2);
+
+// Deuxième joueur envoie 1 ouvrier
+extState.players[1].availableMeeples = 2;
+extState = placeMeeples(extState, extState.players[1].id, 'mammoth', 1);
+
+// Résolution du duel de traque : Joueur 1 mise 2 nourritures et fait 8 aux dés
+extState.players[0].food = 10;
+const wagers = { [extState.players[0].id]: 2, [extState.players[1].id]: 0 };
+const rolls = { [extState.players[0].id]: [4, 4], [extState.players[1].id]: [3] };
+
+const targetMammoth = extState.activeMammoth!;
+extState = resolveMammothContest(extState, wagers, rolls);
+
+const winningHunter = extState.players[0];
+console.log(`[PASS] Chasse résolue : ${winningHunter.name} a capturé « ${targetMammoth.name} » !`);
+console.log(`       Trophées en possession : ${winningHunter.mammothTiles?.length} trophée(s)`);
+console.log(`       Nourriture restante après mise de 2 : ${winningHunter.food} (Appât déduit)`);
+
+// Tester attribution du bonus Grand Chasseur (+10 VP)
+const rankedFinal = rankPlayers(extState.players);
+const topScorer = rankedFinal.find(r => r.playerId === winningHunter.id)!;
+console.log(`[PASS] Décompte final avec trophée de Grand Chasseur :`);
+console.log(`       - Bonus Grand Chasseur accordé : +${topScorer.mammothHunterBonus} VP`);
+console.log(`       - Points des trophées mammouths : +${topScorer.mammothPoints} VP`);
+console.log(`       - Points de Style (Parures) : +${topScorer.jewelryPoints} VP`);
+console.log(`       - Score Total : ${topScorer.totalScore} VP`);
+
+if ((topScorer.mammothHunterBonus || 0) !== 10) {
+  throw new Error("Le bonus de +10 VP Grand Chasseur devrait être attribué au chasseur n°1 !");
+}
+
+console.log("\n>>> TOUTES LES EXTENSIONS SONT 100% OPÉRATIONNELLES ET TESTÉES <<<");

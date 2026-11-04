@@ -121,6 +121,28 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
                     </span>
                     <strong className="text-amber-300">{score.builderPoints} pts</strong>
                   </div>
+
+                  {/* Extensions : Style & Mammouths */}
+                  {(score.jewelryPoints || 0) > 0 && (
+                    <div>
+                      <span className="text-purple-400 text-[10px] block">💎 Parures & Style :</span>
+                      <strong className="text-purple-300">+{score.jewelryPoints} pts</strong>
+                    </div>
+                  )}
+
+                  {(score.mammothPoints || 0) > 0 && (
+                    <div>
+                      <span className="text-amber-400 text-[10px] block">🦣 Trophées Mammouth :</span>
+                      <strong className="text-amber-300">+{score.mammothPoints} pts</strong>
+                    </div>
+                  )}
+
+                  {(score.mammothHunterBonus || 0) > 0 && (
+                    <div className="bg-amber-500/20 px-1 py-0.5 rounded border border-amber-400/40">
+                      <span className="text-amber-300 text-[10px] block font-black">👑 Grand Chasseur :</span>
+                      <strong className="text-amber-200">+{score.mammothHunterBonus} pts</strong>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

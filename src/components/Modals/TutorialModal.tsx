@@ -11,26 +11,39 @@ import {
   Wrench, 
   Utensils, 
   Scale, 
-  Sparkles 
+  Sparkles, 
+  Layers 
 } from 'lucide-react';
 import { ResourceIcon } from '../Common/ResourceIcon';
+import { GameExpansionsConfig } from '../../types/game';
 
 interface TutorialModalProps {
   onClose: () => void;
+  expansions?: GameExpansionsConfig;
+  initialStep?: number;
 }
 
 interface Step {
+  id: string;
+  category: 'base' | 'newHuts' | 'style' | 'mammoth';
   title: string;
   subtitle: string;
   icon: React.ReactNode;
   content: React.ReactNode;
 }
 
-export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
-  const [currentStep, setCurrentStep] = useState(0);
+export const TutorialModal: React.FC<TutorialModalProps> = ({ 
+  onClose,
+  expansions,
+  initialStep = 0,
+}) => {
+  const [currentStep, setCurrentStep] = useState(initialStep);
 
   const steps: Step[] = [
+    // --- TRONC COMMUN ---
     {
+      id: 'welcome',
+      category: 'base',
       title: 'Bienvenue dans L’Âge de Pierre',
       subtitle: 'Le classique du jeu de gestion préhistorique',
       icon: <Users className="w-8 h-8 text-amber-400" />,
@@ -66,6 +79,8 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
       ),
     },
     {
+      id: 'placement',
+      category: 'base',
       title: '1. La Pose des Ouvriers',
       subtitle: 'Anticipation et placement tactique',
       icon: <Users className="w-8 h-8 text-blue-400" />,
@@ -92,6 +107,8 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
       ),
     },
     {
+      id: 'harvest',
+      category: 'base',
       title: '2. La Récolte aux Dés & Les Outils',
       subtitle: 'Maîtriser le hasard avec ingéniosité',
       icon: <Dices className="w-8 h-8 text-amber-400" />,
@@ -133,6 +150,8 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
       ),
     },
     {
+      id: 'village',
+      category: 'base',
       title: '3. Le Village : Votre Moteur',
       subtitle: 'Les trois piliers du développement',
       icon: <Home className="w-8 h-8 text-emerald-400" />,
@@ -174,6 +193,8 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
       ),
     },
     {
+      id: 'scoring',
+      category: 'base',
       title: '4. Cartes, Bâtiments & Nourriture',
       subtitle: 'Scorer et éviter la famine',
       icon: <Utensils className="w-8 h-8 text-red-400" />,
@@ -191,7 +212,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
             <div className="font-semibold text-emerald-300">📜 Cartes & Bâtiments :</div>
             <p className="text-stone-400">
               • <strong>Bâtiments :</strong> rapportent immédiatement la valeur des ressources utilisées en VP.<br/>
-              • <strong>Cartes Vertes :</strong> collections uniques ($K^2$ points : 5 symboles différents = 25 pts !).<br/>
+              • <strong>Cartes Vertes :</strong> collections uniques (5 symboles différents = 25 pts !).<br/>
               • <strong>Cartes Sable :</strong> multiplient vos ouvriers, outils, agriculture ou bâtiments en fin de partie.
             </p>
           </div>
@@ -199,14 +220,15 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
       ),
     },
     {
+      id: 'variants',
+      category: 'base',
       title: '5. Les Variantes d’Équilibrage',
       subtitle: 'Une version moderne, équitable et compétitive',
       icon: <Scale className="w-8 h-8 text-amber-300" />,
       content: (
         <div className="space-y-3 text-sm text-stone-300 leading-relaxed">
           <p>
-            Dans les règles originales, le Joueur 1 a un avantage massif (accès garanti au village) et la fin de partie peut être brutale.
-            Cette application intègre nativement les variantes d'équilibrage :
+            Dans les règles originales, le Joueur 1 a un avantage massif. Cette application intègre nativement les variantes d'équilibrage :
           </p>
 
           <div className="space-y-2 text-xs">
@@ -234,25 +256,133 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
         </div>
       ),
     },
+
+    // --- MODULE EXTENSION 1 : LES NOUVELLES HUTTES ---
+    {
+      id: 'ext_new_huts',
+      category: 'newHuts',
+      title: '🛖 Extension : Les Nouvelles Huttes',
+      subtitle: 'Bâtiments spéciaux dotés de pouvoirs permanents',
+      icon: <Sparkles className="w-8 h-8 text-purple-400" />,
+      content: (
+        <div className="space-y-3 text-sm text-stone-300 leading-relaxed">
+          <p className="text-xs">
+            Cette extension officielle mélange <strong>6 bâtiments uniques</strong> reconnaissables à leur liseré violet étincelant :
+          </p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="bg-stone-950 p-2 rounded-xl border border-purple-500/40 space-y-1">
+              <strong className="text-amber-300 block text-[11px]">🪵 Hutte du Bûcheron (3 bois)</strong>
+              <p className="text-stone-400 text-[10px] leading-tight">+1 Bois gratuit au début de chaque manche !</p>
+            </div>
+
+            <div className="bg-stone-950 p-2 rounded-xl border border-purple-500/40 space-y-1">
+              <strong className="text-amber-300 block text-[11px]">🧱 Fournil de Glaise (3 glaise)</strong>
+              <p className="text-stone-400 text-[10px] leading-tight">+1 Glaise gratuite au début de chaque manche !</p>
+            </div>
+
+            <div className="bg-stone-950 p-2 rounded-xl border border-purple-500/40 space-y-1">
+              <strong className="text-amber-300 block text-[11px]">🪨 Abri du Carrier (3 pierre)</strong>
+              <p className="text-stone-400 text-[10px] leading-tight">+1 Pierre gratuite au début de chaque manche !</p>
+            </div>
+
+            <div className="bg-stone-950 p-2 rounded-xl border border-purple-500/40 space-y-1">
+              <strong className="text-purple-300 block text-[11px]">👥 La Crèche (1 glaise + 1 or)</strong>
+              <p className="text-stone-400 text-[10px] leading-tight">Accorde immédiatement +1 Ouvrier permanent (max 10).</p>
+            </div>
+
+            <div className="bg-stone-950 p-2 rounded-xl border border-purple-500/40 space-y-1">
+              <strong className="text-purple-300 block text-[11px]">🔨 Atelier de Forge (1 bois + 1 pierre)</strong>
+              <p className="text-stone-400 text-[10px] leading-tight">Accorde immédiatement +1 Outil réutilisable.</p>
+            </div>
+
+            <div className="bg-stone-950 p-2 rounded-xl border border-purple-500/40 space-y-1">
+              <strong className="text-purple-300 block text-[11px]">🌾 La Serre (3 ressources au choix)</strong>
+              <p className="text-stone-400 text-[10px] leading-tight">Avance immédiatement de +1 sur la piste d'agriculture.</p>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+
+    // --- MODULE EXTENSION 2 : LE STYLE, C'EST LE BUT ---
+    {
+      id: 'ext_style',
+      category: 'style',
+      title: '💍 Extension : Le Style, c’est le But',
+      subtitle: 'Échoppe du Marchand, Troc & Parures',
+      icon: <Sparkles className="w-8 h-8 text-amber-400" />,
+      content: (
+        <div className="space-y-3 text-sm text-stone-300 leading-relaxed">
+          <p className="text-xs">
+            Les tribus se parent de bijoux et découvrent le commerce équitable :
+          </p>
+          <div className="space-y-2 text-xs">
+            <div className="bg-stone-950 p-2.5 rounded-xl border border-amber-500/40">
+              <strong className="text-amber-300 block">🏪 L'Échoppe du Marchand :</strong>
+              <p className="text-stone-400">
+                Envoyez 1 ouvrier chez le marchand pour progresser sur la <strong>piste de commerce (0 à 10)</strong> et recevoir immédiatement <strong>2 parures/bijoux 💍</strong>.
+              </p>
+            </div>
+            <div className="bg-stone-950 p-2.5 rounded-xl border border-amber-500/40">
+              <strong className="text-amber-300 block">⚖️ Troc & Ratios avantageux :</strong>
+              <p className="text-stone-400">
+                Plus votre niveau de troc est élevé, plus vous pouvez convertir facilement des parures ou matières premières excédentaires pour obtenir les ressources exactes dont vous avez besoin pour vos cartes et bâtiments.
+              </p>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+
+    // --- MODULE EXTENSION 3 : LA HARDE DE MAMMOUTHS ---
+    {
+      id: 'ext_mammoth',
+      category: 'mammoth',
+      title: '🦣 Extension : La Harde de Mammouths',
+      subtitle: 'Apprivoisement, Enchères & Récompenses',
+      icon: <Sparkles className="w-8 h-8 text-emerald-400" />,
+      content: (
+        <div className="space-y-3 text-sm text-stone-300 leading-relaxed">
+          <p className="text-xs">
+            Une harde de mammouths parcourt la steppe !
+          </p>
+          <div className="space-y-2 text-xs">
+            <div className="bg-stone-950 p-2.5 rounded-xl border border-emerald-500/40">
+              <strong className="text-emerald-300 block">🍗 Enchère de Nourriture :</strong>
+              <p className="text-stone-400">
+                Placez des ouvriers sur la Harde et consacrez de la nourriture pour les amadouer.
+              </p>
+            </div>
+            <div className="bg-stone-950 p-2.5 rounded-xl border border-emerald-500/40">
+              <strong className="text-emerald-300 block">🎲 Duel de Dés & Tuiles Bonus :</strong>
+              <p className="text-stone-400">
+                En phase de résolution, les tribus lancent un dé de confrontation. Les meilleurs scores remportent les 16 tuiles récompenses exclusives (ressources, outils, meeples). Le chef avec le plus de tuiles gagne <strong>+10 VP en fin de partie</strong> !
+              </p>
+            </div>
+          </div>
+        </div>
+      ),
+    },
   ];
 
-  const current = steps[currentStep];
+  const current = steps[currentStep] || steps[0];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-stone-900 border-2 border-amber-600/80 rounded-2xl max-w-lg w-full p-6 text-stone-100 shadow-2xl space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in select-none overflow-hidden">
+      <div className="bg-stone-900 border-2 border-amber-600/80 rounded-2xl sm:rounded-3xl max-w-xl w-full p-4 sm:p-6 text-stone-100 shadow-2xl flex flex-col max-h-[95vh] justify-between">
+        
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stone-800 pb-3">
           <div className="flex items-center gap-3">
-            <span className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
-              <BookOpen className="w-6 h-6" />
+            <span className="p-2 sm:p-2.5 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
+              <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
             </span>
             <div>
-              <h3 className="text-lg font-bold text-amber-200">
-                Didacticiel de Jeu
+              <h3 className="text-base sm:text-lg font-black text-amber-200">
+                Règles & Extensions de Jeu
               </h3>
-              <p className="text-xs text-stone-400">
-                Étape {currentStep + 1} sur {steps.length}
+              <p className="text-[10px] sm:text-xs text-stone-400">
+                Module {currentStep + 1} sur {steps.length} • {current.category === 'base' ? 'Tronc Commun' : 'Extension Officielle'}
               </p>
             </div>
           </div>
@@ -264,42 +394,91 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
           </button>
         </div>
 
+        {/* Category Jump Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
+          <button
+            onClick={() => setCurrentStep(0)}
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              current.category === 'base'
+                ? 'bg-amber-500 text-stone-950 shadow-sm ring-1 ring-amber-400'
+                : 'bg-stone-950 text-stone-400 hover:text-stone-200 border border-stone-800'
+            }`}
+          >
+            📖 Tronc Commun
+          </button>
+
+          <button
+            onClick={() => setCurrentStep(6)}
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              current.id === 'ext_new_huts'
+                ? 'bg-purple-600 text-white shadow-sm ring-1 ring-purple-400'
+                : 'bg-stone-950 text-purple-300 hover:text-purple-100 border border-purple-900/60'
+            }`}
+          >
+            🛖 Nouvelles Huttes
+          </button>
+
+          <button
+            onClick={() => setCurrentStep(7)}
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              current.id === 'ext_style'
+                ? 'bg-amber-600 text-white shadow-sm ring-1 ring-amber-400'
+                : 'bg-stone-950 text-amber-300 hover:text-amber-100 border border-amber-900/60'
+            }`}
+          >
+            💍 Le Style
+          </button>
+
+          <button
+            onClick={() => setCurrentStep(8)}
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+              current.id === 'ext_mammoth'
+                ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400'
+                : 'bg-stone-950 text-emerald-300 hover:text-emerald-100 border border-emerald-900/60'
+            }`}
+          >
+            🦣 Mammouths
+          </button>
+        </div>
+
         {/* Step Content */}
-        <div className="space-y-4">
+        <div className="space-y-3 flex-1 min-h-[260px] max-h-[50vh] overflow-y-auto py-2 pr-1">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-stone-950 rounded-xl border border-stone-800 shrink-0">
               {current.icon}
             </div>
             <div>
-              <h4 className="text-base font-bold text-stone-100">{current.title}</h4>
+              <h4 className="text-sm sm:text-base font-bold text-stone-100">{current.title}</h4>
               <p className="text-xs text-amber-400/90">{current.subtitle}</p>
             </div>
           </div>
 
-          <div className="min-h-[220px]">
+          <div className="text-stone-300">
             {current.content}
           </div>
         </div>
 
         {/* Step Indicator dots */}
-        <div className="flex items-center justify-center gap-2">
-          {steps.map((_, idx) => (
+        <div className="flex items-center justify-center gap-1.5 py-1">
+          {steps.map((s, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentStep(idx)}
               className={`h-2 rounded-full transition-all cursor-pointer ${
-                idx === currentStep ? 'w-6 bg-amber-400' : 'w-2 bg-stone-700 hover:bg-stone-500'
+                idx === currentStep 
+                  ? s.category === 'base' ? 'w-6 bg-amber-400' : 'w-6 bg-purple-400' 
+                  : 'w-2 bg-stone-700 hover:bg-stone-500'
               }`}
             />
           ))}
         </div>
 
         {/* Navigation buttons */}
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-3 pt-2 border-t border-stone-800/80">
           <button
             onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
             disabled={currentStep === 0}
-            className="px-4 py-2.5 bg-stone-800 hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-300 font-semibold rounded-xl transition-colors flex items-center gap-1 text-sm cursor-pointer"
+            className="px-4 py-2 bg-stone-800 hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-300 font-semibold rounded-xl transition-colors flex items-center gap-1 text-xs sm:text-sm cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Précédent</span>
@@ -308,7 +487,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
           {currentStep < steps.length - 1 ? (
             <button
               onClick={() => setCurrentStep(currentStep + 1)}
-              className="flex-1 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-bold rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-1.5 text-sm cursor-pointer"
+              className="flex-1 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-bold rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-1.5 text-xs sm:text-sm cursor-pointer"
             >
               <span>Suivant</span>
               <ChevronRight className="w-4 h-4" />
@@ -316,10 +495,9 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ onClose }) => {
           ) : (
             <button
               onClick={onClose}
-              className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-stone-950 font-bold rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-1.5 text-sm cursor-pointer"
+              className="flex-1 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-stone-950 font-bold rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-1.5 text-xs sm:text-sm cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>Prêt à jouer !</span>
+              <span>Fermer le guide</span>
             </button>
           )}
         </div>

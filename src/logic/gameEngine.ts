@@ -6,11 +6,17 @@ import {
   GamePhase, 
   GameState, 
   GameVariants, 
+  GameExpansionsConfig,
+  GraphicEdition,
+  DEFAULT_EXPANSIONS,
+  MammothTile,
   PlayerState, 
   ResourceType 
 } from '../types/game';
 import { INITIAL_CIVILIZATION_CARDS } from '../data/cards';
 import { ALL_BUILDING_TILES, RESOURCE_VALUES } from '../data/buildings';
+import { NEW_HUTS_TILES } from '../data/newHuts';
+import { ALL_MAMMOTH_TILES } from '../data/mammothTiles';
 
 // Shuffle helper
 export function shuffle<T>(array: T[]): T[] {
@@ -56,9 +62,13 @@ export function createInitialGameState(params: {
     aiDifficulty: 'easy' | 'normal' | 'hard';
   }[];
   variants: GameVariants;
+  expansions?: GameExpansionsConfig;
+  edition?: GraphicEdition;
   firstPlayerIndex?: number;
 }): GameState {
   const { players: playerConfigs, variants } = params;
+  const expansions = params.expansions || DEFAULT_EXPANSIONS;
+  const edition = params.edition || 'modern';
   const numPlayers = playerConfigs.length;
 
   // Draw the starting player by lot (or use provided index if explicitly set)
@@ -111,6 +121,9 @@ export function createInitialGameState(params: {
       victoryPoints: 0,
       civilizationCards: [],
       buildings: [],
+      jewelry: 0,
+      merchantLevel: 0,
+      mammothTiles: [],
       placements: {},
     };
   });
@@ -125,11 +138,28 @@ export function createInitialGameState(params: {
   ];
 
   // Prepare Building Piles (numPlayers piles of 7 tiles)
-  const shuffledBuildings = shuffle(ALL_BUILDING_TILES);
+  // If "The New Huts" expansion is active, mix the 6 new unique huts into the building pool!
+  const buildingPool = expansions.newHuts ? [...ALL_BUILDING_TILES, ...NEW_HUTS_TILES] : ALL_BUILDING_TILES;
+  const shuffledBuildings = shuffle(buildingPool);
   const buildingPiles: BuildingTile[][] = [];
   for (let i = 0; i < numPlayers; i++) {
     buildingPiles.push(shuffledBuildings.slice(i * 7, (i + 1) * 7));
   }
+
+  // Extension 3 : Préparer la pioche de Mammouths si activée
+  let mammothDeck: MammothTile[] = [];
+  let activeMammoth: MammothTile | null = null;
+  if (expansions.mammothHerd) {
+    const shuffledMammoths = shuffle(ALL_MAMMOTH_TILES);
+    activeMammoth = shuffledMammoths.pop() || null;
+    mammothDeck = shuffledMammoths;
+  }
+
+  const activeExpansionsList = [
+    expansions.newHuts ? 'Nouvelles Huttes' : null,
+    expansions.styleIsTheGoal ? 'Le Style c’est le But' : null,
+    expansions.mammothHerd ? 'Harde de Mammouths' : null,
+  ].filter(Boolean);
 
   const initialLog: GameLogEntry[] = [
     {
@@ -142,7 +172,7 @@ export function createInitialGameState(params: {
     {
       id: uid(),
       round: 1,
-      text: `Partie lancée avec ${numPlayers} joueurs ! Variantes actives : ${variants.firstTurnCourtesy ? 'Courtoisie T1 (Village)' : ''} ${variants.twoPilesEnd ? '• Fin à 2 Piles' : ''} ${variants.completeCycleEnd ? '• Égalité des tours' : ''}`,
+      text: `Partie lancée (${edition === 'modern' ? 'Nouvelle Édition' : 'Édition Classique'}) avec ${numPlayers} joueurs ! ${activeExpansionsList.length > 0 ? `Extensions : ${activeExpansionsList.join(', ')} • ` : ''}Variantes : ${variants.firstTurnCourtesy ? 'Courtoisie T1' : ''} ${variants.twoPilesEnd ? '• Fin à 2 Piles' : ''} ${variants.completeCycleEnd ? '• Égalité des tours' : ''}`,
       type: 'info',
       timestamp: Date.now() + 1,
     }
@@ -160,7 +190,11 @@ export function createInitialGameState(params: {
     activeCards,
     buildingPiles,
     currentResolutionZone: null,
+    mammothDeck,
+    activeMammoth,
     variants,
+    expansions,
+    edition,
     log: initialLog,
   };
 }
@@ -206,6 +240,10 @@ export function getLocationInfo(locationId: BoardLocationId, state: GameState) {
       return { name: 'Hutte (Reproduction)', minMeeples: 2, maxMeeples: 2, maxTotal: 2 };
     case 'field':
       return { name: 'Champ (Agriculture)', minMeeples: 1, maxMeeples: 1, maxTotal: 1 };
+    case 'merchant':
+      return { name: 'Échoppe du Marchand (Troc & Parures)', minMeeples: 1, maxMeeples: 1, maxTotal: 1 };
+    case 'mammoth':
+      return { name: 'Chasse au Mammouth (Trophée de Harde)', minMeeples: 1, maxMeeples: 2, maxTotal: 4 };
     default:
       if (locationId.startsWith('card_')) {
         const slot = parseInt(locationId.split('_')[1], 10);
@@ -320,6 +358,37 @@ export function canPlaceMeeples(
     }
     if (count !== 1) return { allowed: false, reason: '1 seul ouvrier pour construire un bâtiment.' };
     if (zoneTotal > 0) return { allowed: false, reason: 'Cet emplacement de bâtiment est déjà réservé.' };
+    return { allowed: true };
+  }
+
+  // Extension 2 : Échoppe du Marchand (Le Style, c'est le But)
+  if (locationId === 'merchant') {
+    if (!state.expansions?.styleIsTheGoal) {
+      return { allowed: false, reason: 'L’extension Le Style, c’est le But n’est pas active.' };
+    }
+    if (count !== 1) {
+      return { allowed: false, reason: 'L’échoppe du marchand requiert exactement 1 ouvrier.' };
+    }
+    if (zoneTotal > 0) {
+      return { allowed: false, reason: 'L’échoppe du marchand est déjà occupée cette manche.' };
+    }
+    return { allowed: true };
+  }
+
+  // Extension 3 : La Chasse au Mammouth (La Harde de Mammouths)
+  if (locationId === 'mammoth') {
+    if (!state.expansions?.mammothHerd) {
+      return { allowed: false, reason: 'L’extension La Harde de Mammouths n’est pas active.' };
+    }
+    if (!state.activeMammoth) {
+      return { allowed: false, reason: 'Aucun mammouth n’est présent sur la plaine de chasse.' };
+    }
+    if (count < 1 || count > 2) {
+      return { allowed: false, reason: 'Vous pouvez envoyer 1 ou 2 chasseurs au mammouth.' };
+    }
+    if (zoneTotal + count > 4) {
+      return { allowed: false, reason: `Chasse complète (max 4 chasseurs au total, reste ${4 - zoneTotal}).` };
+    }
     return { allowed: true };
   }
 
@@ -495,6 +564,176 @@ export function resolveVillageAction(
     log: [
       ...state.log,
       { id: uid(), round: state.round, playerId, text: logText, type: 'village', timestamp: Date.now() }
+    ],
+  });
+}
+
+// Extension 2 : Résolution de la visite chez le Marchand & Piste de Troc
+export function resolveMerchantVisit(
+  state: GameState,
+  playerId: string,
+  tradeDetails?: {
+    giveRes?: ResourceType;
+    giveAmount?: number;
+    getRes?: ResourceType;
+    getAmount?: number;
+    buyJewelry?: boolean;
+    jewelryCount?: number;
+  }
+): GameState {
+  const player = state.players.find(p => p.id === playerId);
+  if (!player) return state;
+
+  const currentLevel = player.merchantLevel || 0;
+  const newLevel = Math.min(5, currentLevel + 1);
+  let bonusJewelry = 0;
+  if (newLevel === 3 && currentLevel < 3) bonusJewelry += 1;
+  if (newLevel === 4 && currentLevel < 4) bonusJewelry += 1;
+  if (newLevel === 5 && currentLevel < 5) bonusJewelry += 2;
+
+  let logText = `⚖️ ${player.name} visite l'échoppe du marchand : niveau de troc ${newLevel}/5`;
+  if (bonusJewelry > 0) {
+    logText += ` (+${bonusJewelry} Parure(s) offerte(s) !)`;
+  }
+
+  const updatedPlayers = state.players.map(p => {
+    if (p.id !== playerId) return p;
+    const newPlacements = { ...p.placements };
+    delete newPlacements['merchant'];
+
+    const newResources = { ...p.resources };
+    let totalJewelry = (p.jewelry || 0) + bonusJewelry;
+
+    if (tradeDetails) {
+      if (tradeDetails.giveRes && tradeDetails.giveAmount && (newResources[tradeDetails.giveRes] || 0) >= tradeDetails.giveAmount) {
+        newResources[tradeDetails.giveRes] -= tradeDetails.giveAmount;
+        if (tradeDetails.buyJewelry && tradeDetails.jewelryCount) {
+          totalJewelry += tradeDetails.jewelryCount;
+          logText += ` • Troc : ${tradeDetails.giveAmount} ${tradeDetails.giveRes} contre ${tradeDetails.jewelryCount} Parure(s) 📿`;
+        } else if (tradeDetails.getRes && tradeDetails.getAmount) {
+          newResources[tradeDetails.getRes] += tradeDetails.getAmount;
+          logText += ` • Troc : ${tradeDetails.giveAmount} ${tradeDetails.giveRes} contre ${tradeDetails.getAmount} ${tradeDetails.getRes}`;
+        }
+      }
+    }
+
+    return {
+      ...p,
+      merchantLevel: newLevel,
+      jewelry: totalJewelry,
+      resources: newResources,
+      placements: newPlacements,
+    };
+  });
+
+  return checkAdvanceResolution({
+    ...state,
+    players: updatedPlayers,
+    log: [
+      ...state.log,
+      { id: uid(), round: state.round, playerId, text: logText, type: 'village', timestamp: Date.now() }
+    ],
+  });
+}
+
+// Extension 3 : Résolution de la Chasse au Mammouth
+export function resolveMammothContest(
+  state: GameState,
+  wagers: Record<string, number>, // playerId -> food wagered
+  rolls: Record<string, number[]> // playerId -> dice roll values
+): GameState {
+  if (!state.activeMammoth) return state;
+
+  const mammoth = state.activeMammoth;
+  const hunters = state.players.filter(p => (p.placements['mammoth'] || 0) > 0);
+  if (hunters.length === 0) return state;
+
+  // Calcul des scores pour chaque chasseur
+  const results = hunters.map(hunter => {
+    const dice = rolls[hunter.id] || [Math.floor(Math.random() * 6) + 1];
+    const diceSum = dice.reduce((s, v) => s + v, 0);
+    const wager = Math.min(hunter.food, Math.max(0, wagers[hunter.id] || 0));
+    const totalScore = diceSum + wager;
+    return {
+      hunter,
+      dice,
+      diceSum,
+      wager,
+      totalScore,
+    };
+  });
+
+  // Tri décroissant
+  results.sort((a, b) => b.totalScore - a.totalScore);
+  const winner = results[0];
+
+  let logText = `🦣 Chasse au Mammouth (${mammoth.name}) : ${winner.hunter.name} l'emporte avec ${winner.totalScore} pts (${winner.diceSum} dés + ${winner.wager} vivres) !`;
+
+  const updatedPlayers = state.players.map(p => {
+    const participant = results.find(r => r.hunter.id === p.id);
+    if (!participant) return p;
+
+    const newPlacements = { ...p.placements };
+    delete newPlacements['mammoth'];
+
+    const newFood = Math.max(0, p.food - participant.wager);
+    let newTiles = p.mammothTiles ? [...p.mammothTiles] : [];
+    let resources = { ...p.resources };
+    let agri = p.agriculture;
+    let toolTiles = [...p.toolTiles];
+
+    if (p.id === winner.hunter.id) {
+      newTiles.push(mammoth);
+
+      // Appliquer les bonus instantanés de la tuile
+      if (mammoth.bonusType === 'food') {
+        const added = mammoth.bonusAmount || 2;
+        logText += ` • Récompense : +${added} Nourritures & ${mammoth.victoryPoints} VP`;
+        return {
+          ...p,
+          food: newFood + added,
+          mammothTiles: newTiles,
+          placements: newPlacements,
+        };
+      } else if (mammoth.bonusType === 'resource' && mammoth.bonusResource) {
+        resources[mammoth.bonusResource] = (resources[mammoth.bonusResource] || 0) + (mammoth.bonusAmount || 1);
+        logText += ` • Récompense : +${mammoth.bonusAmount} ${mammoth.bonusResource} & ${mammoth.victoryPoints} VP`;
+      } else if (mammoth.bonusType === 'tool') {
+        toolTiles = addToolLevel(toolTiles);
+        logText += ` • Récompense : +1 Outil permanent & ${mammoth.victoryPoints} VP`;
+      } else if (mammoth.bonusType === 'agriculture') {
+        agri = Math.min(10, agri + 1);
+        logText += ` • Récompense : +1 Agriculture & ${mammoth.victoryPoints} VP`;
+      } else {
+        logText += ` • Récompense : +${mammoth.victoryPoints} VP direct`;
+      }
+
+      return {
+        ...p,
+        food: newFood,
+        resources,
+        agriculture: agri,
+        toolTiles,
+        mammothTiles: newTiles,
+        placements: newPlacements,
+      };
+    } else {
+      // Consolation pour les autres participants : +1 nourriture
+      return {
+        ...p,
+        food: newFood + 1,
+        placements: newPlacements,
+      };
+    }
+  });
+
+  return checkAdvanceResolution({
+    ...state,
+    activeMammoth: null, // Capturé !
+    players: updatedPlayers,
+    log: [
+      ...state.log,
+      { id: uid(), round: state.round, text: logText, type: 'hunting', timestamp: Date.now() }
     ],
   });
 }
@@ -838,8 +1077,30 @@ export function resolveBuildingPurchase(
     if (p.id !== playerId) return p;
     const newPlacements = { ...p.placements };
     delete newPlacements[locationId];
+
+    // Handle immediate special hut benefits (The New Huts expansion)
+    let totalMeeples = p.totalMeeples;
+    let availableMeeples = p.availableMeeples;
+    let toolTiles = [...p.toolTiles];
+    let agriculture = p.agriculture;
+
+    if (building.isSpecialHut) {
+      if (building.passiveHutType === 'kindergarten') {
+        totalMeeples = Math.min(10, totalMeeples + 1);
+        availableMeeples = Math.min(10, availableMeeples + 1);
+      } else if (building.passiveHutType === 'workshop_forge') {
+        toolTiles = addToolLevel(toolTiles);
+      } else if (building.passiveHutType === 'greenhouse') {
+        agriculture = Math.min(10, agriculture + 1);
+      }
+    }
+
     return {
       ...p,
+      totalMeeples,
+      availableMeeples,
+      toolTiles,
+      agriculture,
       resources: newResources,
       victoryPoints: p.victoryPoints + vpEarned,
       buildings: [...p.buildings, building],
@@ -850,7 +1111,11 @@ export function resolveBuildingPurchase(
   const newBuildingPiles = [...state.buildingPiles];
   newBuildingPiles[pileIndex] = newPile;
 
-  const logText = `${player.name} construit une hutte / bâtiment et gagne +${vpEarned} VP !`;
+  const specialPowerNotice = building.isSpecialHut && building.passiveEffectDescription 
+    ? ` ✨ Pouvoir activé : ${building.passiveEffectDescription} !`
+    : '';
+
+  const logText = `${player.name} construit ${building.isSpecialHut ? 'la ' + building.description.split(':')[0] : 'un bâtiment'} et gagne +${vpEarned} VP !${specialPowerNotice}`;
 
   return checkAdvanceResolution({
     ...state,
@@ -1085,11 +1350,43 @@ export function resolveHumanFeeding(
 // Finish Round: Maintenance, Card refilling, and End Game verification
 export function finishRound(state: GameState): GameState {
   const numPlayers = state.players.length;
+  const recurringLogs: GameLogEntry[] = [];
 
-  // 1. Tribe growth and tool untap
+  // 1. Tribe growth, tool untap and recurring New Huts production
   const updatedPlayers: PlayerState[] = state.players.map(p => {
     const grew = p.newMeepleNextRound;
     const total = Math.min(10, p.totalMeeples + (grew ? 1 : 0));
+
+    // Handle recurring hut production (The New Huts expansion)
+    const resources = { ...p.resources };
+    const gained: string[] = [];
+
+    p.buildings.forEach(b => {
+      if (b.isSpecialHut) {
+        if (b.passiveHutType === 'wood_quarry') {
+          resources.wood += 1;
+          gained.push('+1 Bois (Bûcheron)');
+        } else if (b.passiveHutType === 'clay_kiln') {
+          resources.clay += 1;
+          gained.push('+1 Glaise (Fournil)');
+        } else if (b.passiveHutType === 'stone_shed') {
+          resources.stone += 1;
+          gained.push('+1 Pierre (Carrier)');
+        }
+      }
+    });
+
+    if (gained.length > 0) {
+      recurringLogs.push({
+        id: uid(),
+        round: state.round + 1,
+        playerId: p.id,
+        text: `🛖 ${p.name} récolte ses huttes de production : ${gained.join(', ')} !`,
+        type: 'village',
+        timestamp: Date.now(),
+      });
+    }
+
     return {
       ...p,
       totalMeeples: total,
@@ -1097,6 +1394,7 @@ export function finishRound(state: GameState): GameState {
       newMeepleNextRound: false,
       toolsUsedThisRound: [false, false, false],
       temporaryTools: 0,
+      resources,
       placements: {},
       fedThisRound: false,
     };
@@ -1122,6 +1420,20 @@ export function finishRound(state: GameState): GameState {
   let emptyPilesThreshold = 1;
   if (state.variants.twoPilesEnd && numPlayers >= 3) {
     emptyPilesThreshold = 2; // Discussion variant: 2 piles empty to trigger end
+  }
+
+  // Handle active mammoth replenishment if needed
+  let nextActiveMammoth = state.activeMammoth;
+  let nextMammothDeck = state.mammothDeck ? [...state.mammothDeck] : [];
+  if (state.expansions?.mammothHerd && !nextActiveMammoth && nextMammothDeck.length > 0) {
+    nextActiveMammoth = nextMammothDeck.pop() || null;
+    recurringLogs.push({
+      id: uid(),
+      round: state.round + 1,
+      text: `🦣 Un nouveau mammouth est apparu sur la toundra : ${nextActiveMammoth?.name} !`,
+      type: 'info',
+      timestamp: Date.now() + 2,
+    });
   }
 
   let endTriggered = state.endGameTriggered;
@@ -1175,10 +1487,13 @@ export function finishRound(state: GameState): GameState {
           activePlayerIndex: nextFirstPlayer,
           activeCards: newActiveCards,
           cardsDeck: newDeck,
+          activeMammoth: nextActiveMammoth,
+          mammothDeck: nextMammothDeck,
           endGameTriggered: true,
           endGameReason: endReason,
           log: [
             ...state.log,
+            ...recurringLogs,
             {
               id: uid(),
               round: state.round + 1,
@@ -1201,6 +1516,7 @@ export function finishRound(state: GameState): GameState {
         endGameReason: endReason,
         log: [
           ...state.log,
+          ...recurringLogs,
           {
             id: uid(),
             round: state.round,
@@ -1223,8 +1539,11 @@ export function finishRound(state: GameState): GameState {
     activePlayerIndex: nextFirstPlayer,
     activeCards: newActiveCards,
     cardsDeck: newDeck,
+    activeMammoth: nextActiveMammoth,
+    mammothDeck: nextMammothDeck,
     log: [
       ...state.log,
+      ...recurringLogs,
       {
         id: uid(),
         round: state.round + 1,

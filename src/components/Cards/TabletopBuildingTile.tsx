@@ -190,6 +190,11 @@ export const TabletopBuildingTile: React.FC<TabletopBuildingTileProps> = ({
       {/* 2. SUBTLE CARD EDGE VIGNETTE */}
       <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-stone-950/60 pointer-events-none" />
 
+      {/* Special Hut Extension Glow / Badge */}
+      {tile.isSpecialHut && (
+        <div className="absolute inset-0 pointer-events-none rounded-xl ring-2 ring-purple-400/80 shadow-[inset_0_0_12px_rgba(168,85,247,0.4)]" />
+      )}
+
       {/* 3. TOP ROW: Pile Count & Victory Points */}
       <div className="relative z-10 p-1 flex items-center justify-between w-full pointer-events-none">
         {/* Pile count chip */}
@@ -197,6 +202,21 @@ export const TabletopBuildingTile: React.FC<TabletopBuildingTileProps> = ({
           <ResourceIcon type="building" size="xs" className="w-2.5 h-2.5 drop-shadow" />
           <span>{pileCount !== undefined ? pileCount : 1}</span>
         </div>
+
+        {/* Special Hut Power Chip */}
+        {tile.isSpecialHut && (
+          <div className="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 border border-purple-400 text-purple-200 px-1.5 py-0.2 rounded-full text-[7px] sm:text-[8px] font-black shadow-md flex items-center gap-0.5 animate-pulse">
+            <span>✨</span>
+            <span>
+              {tile.passiveHutType === 'wood_quarry' ? '+1 🪵/tour' :
+               tile.passiveHutType === 'clay_kiln' ? '+1 🧱/tour' :
+               tile.passiveHutType === 'stone_shed' ? '+1 🪨/tour' :
+               tile.passiveHutType === 'kindergarten' ? '+1 👥' :
+               tile.passiveHutType === 'workshop_forge' ? '+1 🔨' :
+               tile.passiveHutType === 'greenhouse' ? '+1 🌾' : 'Pouvoir'}
+            </span>
+          </div>
+        )}
 
         {/* Victory Points seal */}
         {fixedVp !== null ? (

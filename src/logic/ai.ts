@@ -52,6 +52,22 @@ export function getAiPlacementChoice(state: GameState, aiPlayerId: string): AiPl
     candidates.push({ locationId: 'tool_maker', count: 1, score: toolScore });
   }
 
+  // Extension 2 : Échoppe du Marchand (1 ouvrier)
+  if (state.expansions?.styleIsTheGoal && player.availableMeeples >= 1 && canPlaceMeeples(state, aiPlayerId, 'merchant', 1).allowed) {
+    const merchantLevel = player.merchantLevel || 0;
+    const merchantScore = (5 - merchantLevel) * 10 + 20;
+    candidates.push({ locationId: 'merchant', count: 1, score: merchantScore });
+  }
+
+  // Extension 3 : Chasse au Mammouth (1 ou 2 ouvriers)
+  if (state.expansions?.mammothHerd && state.activeMammoth && player.availableMeeples >= 1) {
+    const count = Math.min(player.availableMeeples, 2);
+    if (canPlaceMeeples(state, aiPlayerId, 'mammoth', count).allowed) {
+      const mammothVal = state.activeMammoth.victoryPoints * 8;
+      candidates.push({ locationId: 'mammoth', count, score: 25 + mammothVal });
+    }
+  }
+
   // 2. Hunting (Food)
   if (foodDeficit > 0) {
     const neededMeeples = Math.min(player.availableMeeples, Math.max(1, Math.ceil((foodDeficit * 2) / 3.5)));

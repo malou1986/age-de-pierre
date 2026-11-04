@@ -18,7 +18,11 @@ export type BoardLocationId =
   | 'building_0'
   | 'building_1'
   | 'building_2'
-  | 'building_3';
+  | 'building_3'
+  // Extension 2 : Le Style, c'est le But
+  | 'merchant'
+  // Extension 3 : La Harde de Mammouths
+  | 'mammoth';
 
 export type GreenCultureSymbol =
   | 'writing'      // Écriture
@@ -76,6 +80,14 @@ export type BuildingCostType =
   | '5_different'    // Legacy alias
   | '2_types_x2';    // Legacy alias
 
+export type PassiveHutType = 
+  | 'greenhouse'       // La Serre : +1 agriculture permanent immédiat
+  | 'kindergarten'     // La Crèche : +1 ouvrier permanent immédiat
+  | 'workshop_forge'   // L'Atelier de forge : +1 outil permanent immédiat
+  | 'wood_quarry'      // Hutte de bois : +1 bois au début de chaque manche
+  | 'clay_kiln'        // Hutte de glaise : +1 glaise au début de chaque manche
+  | 'stone_shed';      // Hutte de pierre : +1 pierre au début de chaque manche
+
 export interface BuildingTile {
   id: string;
   imageUrl?: string;
@@ -87,6 +99,21 @@ export interface BuildingTile {
   resourceCount?: number;            // Total resources required (e.g. 4 or 5)
   differentTypesRequired?: number;   // Number of different resource types (1, 2, 3, 4)
   description: string;
+  // Module Extensions : Les Nouvelles Huttes à Pouvoirs
+  isSpecialHut?: boolean;
+  passiveHutType?: PassiveHutType;
+  passiveEffectDescription?: string;
+}
+
+export interface MammothTile {
+  id: string;
+  name: string;
+  victoryPoints: number;
+  bonusType: 'food' | 'resource' | 'tool' | 'agriculture' | 'pure_vp';
+  bonusAmount: number;
+  bonusResource?: ResourceType;
+  description: string;
+  imageUrl?: string;
 }
 
 export type PlayerColor = 'red' | 'blue' | 'yellow' | 'green';
@@ -118,6 +145,13 @@ export interface PlayerState {
   civilizationCards: CivilizationCard[];
   buildings: BuildingTile[];
   
+  // Extension 2 : Le Style c'est le But
+  jewelry?: number;         // Ornements / Parures (0..10+)
+  merchantLevel?: number;   // Niveau sur la Piste de Troc (0..5)
+
+  // Extension 3 : La Harde de Mammouths
+  mammothTiles?: MammothTile[]; // Trophées de chasse remportés
+
   // Placements in current round: locationId -> number of meeples
   placements: Partial<Record<BoardLocationId, number>>;
   
@@ -142,8 +176,23 @@ export interface GameVariants {
   completeCycleEnd: boolean;     // Game ends only after full cycle (strict first-player equality)
 }
 
+export type GraphicEdition = 'modern' | 'classic';
+
+export interface GameExpansionsConfig {
+  newHuts: boolean;        // Extension 1 : Les 6 Nouvelles Huttes à Pouvoirs
+  styleIsTheGoal: boolean; // Extension 2 : Échoppe du Marchand, Piste de Troc & Bijoux
+  mammothHerd: boolean;    // Extension 3 : La Harde de Mammouths & Enchères nourriture
+}
+
+export const DEFAULT_EXPANSIONS: GameExpansionsConfig = {
+  newHuts: false,
+  styleIsTheGoal: false,
+  mammothHerd: false,
+};
+
 export interface GameSettings {
   playerCount: number;
+  edition?: GraphicEdition;
   players: {
     name: string;
     color: PlayerColor;
@@ -151,6 +200,7 @@ export interface GameSettings {
     aiDifficulty: 'easy' | 'normal' | 'hard';
   }[];
   variants: GameVariants;
+  expansions?: GameExpansionsConfig;
 }
 
 export interface GameLogEntry {
@@ -158,7 +208,7 @@ export interface GameLogEntry {
   round: number;
   playerId?: string;
   text: string;
-  type: 'action' | 'dice' | 'harvest' | 'village' | 'card' | 'building' | 'food' | 'info';
+  type: 'action' | 'dice' | 'harvest' | 'village' | 'card' | 'building' | 'food' | 'info' | 'hunting';
   timestamp: number;
 }
 
@@ -180,8 +230,14 @@ export interface GameState {
   // Current resolution state (when in resolution phase)
   currentResolutionZone: BoardLocationId | null;
   
-  // Variants active
+  // Extension 3 : La Harde de Mammouths
+  mammothDeck?: MammothTile[];
+  activeMammoth?: MammothTile | null;
+
+  // Variants & Extensions active
   variants: GameVariants;
+  expansions: GameExpansionsConfig;
+  edition: GraphicEdition;
   
   // Game log
   log: GameLogEntry[];
@@ -202,6 +258,11 @@ export interface FinalPlayerScore {
   builderPoints: number;          // Builders * Buildings count
   remainingResourcePoints: number;// 1 VP per remaining resource
   
+  // Extensions scoring
+  jewelryPoints?: number;         // Points de parures / bijoux
+  mammothPoints?: number;         // Points des tuiles de mammouth
+  mammothHunterBonus?: number;    // +10 VP pour le plus grand chasseur
+
   totalScore: number;
   rank: number;
 }

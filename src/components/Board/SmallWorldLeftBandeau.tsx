@@ -525,6 +525,48 @@ export const SmallWorldLeftBandeau: React.FC<SmallWorldLeftBandeauProps> = ({
               </div>
             </div>
 
+            {/* Extensions Panel (Style & Mammouths) */}
+            {(state.expansions?.styleIsTheGoal || state.expansions?.mammothHerd) && (
+              <div className="bg-stone-950/90 rounded-xl p-2.5 border border-purple-500/40 space-y-2">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-purple-300 flex items-center justify-between">
+                  <span>Trésors & Expéditions</span>
+                  <span className="text-[9px] text-stone-400">Extensions</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-1.5">
+                  {state.expansions?.styleIsTheGoal && (
+                    <div className="bg-purple-950/40 rounded-lg p-1.5 border border-purple-500/30 flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <span className="text-base">📿</span>
+                        <div>
+                          <div className="text-[9px] text-stone-400 font-semibold">Parures</div>
+                          <div className="text-[8px] text-purple-300">Troc: Niv.{activePlayer.merchantLevel || 0}/5</div>
+                        </div>
+                      </div>
+                      <span className="text-xs font-black text-purple-200 px-1.5 py-0.5 bg-purple-900/60 rounded">
+                        {activePlayer.jewelry || 0}
+                      </span>
+                    </div>
+                  )}
+
+                  {state.expansions?.mammothHerd && (
+                    <div className="bg-amber-950/40 rounded-lg p-1.5 border border-amber-500/30 flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <span className="text-base">🦣</span>
+                        <div>
+                          <div className="text-[9px] text-stone-400 font-semibold">Mammouths</div>
+                          <div className="text-[8px] text-amber-300">Trophées</div>
+                        </div>
+                      </div>
+                      <span className="text-xs font-black text-amber-200 px-1.5 py-0.5 bg-amber-900/60 rounded">
+                        {(activePlayer.mammothTiles || []).length}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* E. Synthèse des Cartes Civilisation : Symboles Verts (Possédés & Non) & Coefficients */}
             <div className="bg-stone-950/90 rounded-xl p-2.5 border border-stone-800 space-y-2">
               {/* Header Symboles Verts */}

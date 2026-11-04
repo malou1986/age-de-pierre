@@ -35,6 +35,14 @@ export function calculateGreenSets(symbols: GreenCultureSymbol[]): { sets: Green
   return { sets, points };
 }
 
+// Extension 2 : Barème officiel des Parures / Bijoux (Le Style, c'est le But)
+export function calculateJewelryScore(count: number = 0): number {
+  if (!count || count <= 0) return 0;
+  const table = [0, 2, 5, 9, 14, 20];
+  if (count <= 5) return table[count];
+  return 20 + (count - 5) * 5;
+}
+
 export function calculatePlayerScore(player: PlayerState): FinalPlayerScore {
   // Extract green symbols
   const greenSymbols: GreenCultureSymbol[] = [];
@@ -72,6 +80,12 @@ export function calculatePlayerScore(player: PlayerState): FinalPlayerScore {
     player.resources.stone + 
     player.resources.gold;
 
+  // Extension 2 : Style / Parures
+  const jewelryPoints = calculateJewelryScore(player.jewelry || 0);
+
+  // Extension 3 : Tuiles de Mammouth
+  const mammothPoints = (player.mammothTiles || []).reduce((acc, t) => acc + t.victoryPoints, 0);
+
   const totalScore = 
     player.victoryPoints +
     greenCardPoints +
@@ -79,7 +93,9 @@ export function calculatePlayerScore(player: PlayerState): FinalPlayerScore {
     farmerPoints +
     toolMakerPoints +
     builderPoints +
-    remainingResourcePoints;
+    remainingResourcePoints +
+    jewelryPoints +
+    mammothPoints;
 
   return {
     playerId: player.id,
@@ -94,13 +110,29 @@ export function calculatePlayerScore(player: PlayerState): FinalPlayerScore {
     toolMakerPoints,
     builderPoints,
     remainingResourcePoints,
+    jewelryPoints,
+    mammothPoints,
+    mammothHunterBonus: 0, // Assigned in rankPlayers
     totalScore,
     rank: 1, // Will be set in ranking
   };
 }
 
 export function rankPlayers(players: PlayerState[]): FinalPlayerScore[] {
-  const scores = players.map(calculatePlayerScore);
+  // Déterminer le Grand Chasseur (+10 VP pour le joueur ayant le plus de mammouths chassés)
+  const maxMammoths = Math.max(0, ...players.map(p => (p.mammothTiles || []).length));
+
+  const scores = players.map(p => {
+    const s = calculatePlayerScore(p);
+    const count = (p.mammothTiles || []).length;
+    const isGrandHunter = maxMammoths > 0 && count === maxMammoths;
+    const hunterBonus = isGrandHunter ? 10 : 0;
+    return {
+      ...s,
+      mammothHunterBonus: hunterBonus,
+      totalScore: s.totalScore + hunterBonus,
+    };
+  });
 
   // Sort descending by total score, then tie break (food track + tools + meeples)
   scores.sort((a, b) => {
