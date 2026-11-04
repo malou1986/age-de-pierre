@@ -486,7 +486,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[69.0%] top-[55.5%] w-[11.5%] h-[8.5%] rounded-xl p-1 flex flex-col justify-between transition-all duration-200 group z-20 ${
+                className={`absolute left-[69.0%] top-[60.5%] w-[11.5%] h-[8.5%] rounded-xl p-1 flex flex-col justify-between transition-all duration-200 group z-20 ${
                   isInteractive
                     ? 'cursor-pointer border border-dashed border-white/20 hover:border-solid hover:border-cyan-400 hover:bg-cyan-400/[0.06] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]'
                     : 'hover:bg-white/[0.02]'

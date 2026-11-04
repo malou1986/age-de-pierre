@@ -170,6 +170,7 @@ export const NewGameModal: React.FC<NewGameModalProps> = ({
       startingCompensation: false,
       twoPilesEnd: false,
       completeCycleEnd: false,
+      openResources2P: false,
     });
   };
 
@@ -179,6 +180,7 @@ export const NewGameModal: React.FC<NewGameModalProps> = ({
       startingCompensation: true,
       twoPilesEnd: true,
       completeCycleEnd: true,
+      openResources2P: false,
     });
   };
 
@@ -659,6 +661,24 @@ export const NewGameModal: React.FC<NewGameModalProps> = ({
                         <span className="text-stone-400 text-[8px] leading-none">Tours strictement égaux</span>
                       </div>
                     </label>
+
+                    {/* Variante 2J uniquement : partage des zones de ressources */}
+                    {playerCount === 2 && (
+                      <label className="flex items-start gap-1.5 bg-stone-900/60 p-2 rounded-xl border border-cyan-900/50 cursor-pointer hover:border-cyan-700/60 transition-colors col-span-2">
+                        <input
+                          type="checkbox"
+                          checked={variants.openResources2P ?? false}
+                          onChange={e => setVariants({ ...variants, openResources2P: e.target.checked })}
+                          className="mt-0.5 rounded text-cyan-500 focus:ring-0"
+                        />
+                        <div>
+                          <strong className="text-cyan-200 block text-[10px] leading-tight">🏕️ Ressources partagées (2J)</strong>
+                          <span className="text-stone-400 text-[8px] leading-none">
+                            Variante maison : à 2 joueurs, les deux peuvent placer dans la même zone de ressources (max 7 ouvriers). La règle officielle réserve chaque zone à 1 seul joueur.
+                          </span>
+                        </div>
+                      </label>
+                    )}
                   </div>
                 </div>
 

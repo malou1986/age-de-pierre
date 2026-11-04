@@ -331,10 +331,25 @@ export function canPlaceMeeples(
       return { allowed: false, reason: `Zone pleine ! (Maximum 7 ouvriers, reste ${7 - zoneTotal}).` };
     }
 
-    // In 2 or 3 players: only 1 player can be in a given resource zone!
-    if (numPlayers <= 3 && zonePlayers.length > 0 && !zonePlayers.includes(playerId)) {
-      return { allowed: false, reason: 'À 2 ou 3 joueurs, un seul joueur peut occuper cette zone de ressources.' };
+    // Règles officielles de partage des ressources selon le nombre de joueurs :
+    // - À 2 joueurs : un seul joueur peut occuper chaque zone de ressources par manche (sauf si variante openResources2P activée)
+    if (numPlayers === 2 && !state.variants?.openResources2P) {
+      if (zonePlayers.length >= 1 && !zonePlayers.includes(playerId)) {
+        return { 
+          allowed: false, 
+          reason: 'À 2 joueurs (règle officielle), un seul joueur peut occuper chaque zone de ressources.' 
+        };
+      }
+    } else if (numPlayers === 3) {
+      // - À 3 joueurs : au maximum 2 joueurs différents peuvent partager une zone de ressources (max 7 ouvriers au total)
+      if (zonePlayers.length >= 2 && !zonePlayers.includes(playerId)) {
+        return { 
+          allowed: false, 
+          reason: 'À 3 joueurs, au maximum 2 joueurs différents peuvent partager une zone de ressources.' 
+        };
+      }
     }
+    // - À 4 ou 5 joueurs : tous les joueurs peuvent placer des ouvriers dans la même zone (tant que le total <= 7).
 
     return { allowed: true };
   }

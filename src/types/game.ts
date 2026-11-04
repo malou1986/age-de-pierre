@@ -174,6 +174,9 @@ export interface GameVariants {
   // End Game balance
   twoPilesEnd: boolean;          // In 3-4 players: requires 2 piles empty instead of 1
   completeCycleEnd: boolean;     // Game ends only after full cycle (strict first-player equality)
+
+  // Resource sharing at 2 players
+  openResources2P?: boolean;     // À 2 joueurs : permet de partager les zones de ressources au lieu de la restriction stricte officielle (1 seul joueur)
 }
 
 export type GraphicEdition = 'modern' | 'classic';
