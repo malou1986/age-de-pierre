@@ -281,7 +281,56 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
         {/* 3. INTERACTIVE ZONES & MEEPLES OVERLAY (CLEAN, TRANSPARENT, NO HEAVY BOXES) */}
         <div className="absolute inset-0 z-10 pointer-events-auto">
 
-          {/* ---------------- 1. HUNTING GROUND (Savane de Chasse, Haut Gauche) ---------------- */}
+          {/* ---------------- EXTENSION 3: LA CHASSE AU MAMMOUTH (Haut Gauche du Plateau) ---------------- */}
+          {state.expansions?.mammothHerd && (() => {
+            const locId: BoardLocationId = 'mammoth';
+            const { isInteractive, totalMeeples } = getZoneStatus(locId);
+            const activeM = state.activeMammoth;
+            return (
+              <div
+                onClick={() => isInteractive && onZoneClick(locId)}
+                onMouseEnter={() => setHoveredZone(locId)}
+                onMouseLeave={() => setHoveredZone(null)}
+                className={`absolute left-[5.2%] top-[5.2%] w-[11.8%] h-[13.2%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
+                  isInteractive
+                    ? 'cursor-pointer border-2 border-dashed border-amber-400/70 hover:border-solid hover:border-amber-300 hover:bg-amber-950/50 hover:shadow-[0_0_18px_rgba(245,158,11,0.35)]'
+                    : 'border border-amber-500/30 bg-amber-950/25'
+                }`}
+                title={activeM ? `Chasse au Mammouth (${activeM.name} - +${activeM.victoryPoints} VP) : Envoyez 1 ou 2 ouvriers` : 'Harde de Mammouths'}
+              >
+                <div className="text-center w-full">
+                  <span className="text-[7px] sm:text-[8px] font-black uppercase text-amber-200 bg-stone-950/90 px-1 py-0.5 rounded-full border border-amber-500/70 shadow-md flex items-center justify-center gap-0.5 truncate">
+                    <span>🦣</span>
+                    <span className="truncate">{activeM ? `+${activeM.victoryPoints} VP` : 'Mammouth'}</span>
+                  </span>
+                </div>
+
+                <div className="flex-1 w-full flex items-center justify-center">
+                  {totalMeeples > 0 ? (
+                    <div className="bg-stone-950/90 p-1 rounded-full border-2 border-amber-400 shadow-md ring-2 ring-amber-500/40 scale-105">
+                      {renderZoneMeeples(locId, 'md')}
+                    </div>
+                  ) : (
+                    <div 
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs shadow-md transition-all ${
+                        isInteractive
+                          ? 'border-amber-400 bg-amber-950/80 text-amber-200 ring-2 ring-amber-400/50 group-hover:scale-110'
+                          : 'border-dashed border-amber-500/40 bg-stone-950/60 text-amber-300'
+                      }`}
+                    >
+                      🦣
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-[7px] font-black text-amber-300/90 truncate w-full text-center">
+                  {totalMeeples}/4 Chasseurs
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ---------------- 1. HUNTING GROUND (Savane de Chasse, Haut Gauche-Centre) ---------------- */}
           {(() => {
             const locId: BoardLocationId = 'hunting';
             const { isInteractive, canPlace } = getZoneStatus(locId);
@@ -290,7 +339,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[11%] top-[7%] w-[21%] h-[44%] rounded-3xl p-2 flex flex-col justify-between transition-all duration-200 group ${
+                className={`absolute left-[17.2%] top-[6.5%] w-[15.5%] h-[37%] rounded-3xl p-2 flex flex-col justify-between transition-all duration-200 group ${
                   isInteractive
                     ? 'cursor-pointer border border-dashed border-white/10 hover:border-solid hover:border-amber-400 hover:bg-amber-400/[0.04] hover:shadow-[0_0_15px_rgba(245,158,11,0.15)]'
                     : 'hover:bg-white/[0.02]'
@@ -641,40 +690,100 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
             );
           })()}
 
-          {/* ---------------- EXTENSION 2: L'ÉCHOPPE DU MARCHAND & TROC ---------------- */}
+          {/* ---------------- EXTENSION 2: L'ÉCHOPPE DES MARCHANDS & PISTE DE TROC (Le long du chemin dans l'herbe) ---------------- */}
           {state.expansions?.styleIsTheGoal && (() => {
             const locId: BoardLocationId = 'merchant';
-            const { isInteractive, totalMeeples } = getZoneStatus(locId);
+            const { isInteractive, totalMeeples, canPlace } = getZoneStatus(locId);
             return (
               <div
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[22.8%] top-[52.5%] w-[10.8%] h-[16.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
+                className={`absolute left-[14.5%] top-[49%] w-[19%] h-[20.5%] rounded-3xl p-1.5 flex flex-col items-center justify-between transition-all duration-200 group z-30 overflow-hidden ${
                   isInteractive
-                    ? 'cursor-pointer border-2 border-dashed border-purple-400/60 hover:border-solid hover:border-purple-300 hover:bg-purple-950/40 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]'
-                    : 'border border-purple-500/30 bg-purple-950/20'
+                    ? 'cursor-pointer border-2 border-dashed border-purple-400/70 hover:border-solid hover:border-purple-300 hover:bg-stone-950/70 hover:shadow-[0_0_20px_rgba(168,85,247,0.35)]'
+                    : 'border border-purple-500/30 bg-stone-950/40 backdrop-blur-[1px]'
                 }`}
-                title="Échoppe du Marchand : Poser 1 ouvrier pour monter sur la Piste de Troc et échanger des ressources ou Parures"
+                title="Échoppe des Marchands : Poser 1 ouvrier le long du chemin pour monter sur la Piste de Troc et échanger des Parures ou ressources"
               >
-                <div className="text-center">
-                  <span className="text-[7px] sm:text-[8px] font-black uppercase text-purple-200 bg-stone-950/90 px-1.5 py-0.5 rounded-full border border-purple-500/70 shadow-md flex items-center gap-0.5">
+                {/* FILIGRANE ARTISTIQUE : MARCHANDS ITINÉRANTS & SENTIER DANS L'HERBE */}
+                <svg
+                  viewBox="0 0 200 120"
+                  className="absolute inset-0 w-full h-full pointer-events-none opacity-35 group-hover:opacity-55 transition-opacity duration-300 select-none"
+                  preserveAspectRatio="xMidYMid meet"
+                >
+                  {/* Sentier de terre sinueux dans l'herbe */}
+                  <path
+                    d="M 10 95 Q 60 75 100 80 T 190 60"
+                    fill="none"
+                    stroke="#d97706"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                    opacity="0.25"
+                  />
+                  <path
+                    d="M 10 95 Q 60 75 100 80 T 190 60"
+                    fill="none"
+                    stroke="#fbbf24"
+                    strokeWidth="2"
+                    strokeDasharray="4 4"
+                    opacity="0.4"
+                  />
+
+                  {/* Silhouette Marchand 1 : Porteur avec Bâton de marche et Balluchon de troc */}
+                  <g transform="translate(35, 30) scale(0.70)" fill="#f59e0b" opacity="0.75">
+                    {/* Tête */}
+                    <circle cx="16" cy="8" r="5" />
+                    {/* Corps & Fardeau de marchandises */}
+                    <path d="M 12 14 L 20 14 L 22 36 L 10 36 Z" />
+                    <path d="M 6 16 C 4 16 2 20 2 26 C 2 32 5 34 8 34 L 12 34 L 12 18 Z" fill="#b45309" />
+                    {/* Bâton de marcheur */}
+                    <line x1="26" y1="6" x2="28" y2="48" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
+                    {/* Jambes en marche */}
+                    <line x1="13" y1="36" x2="9" y2="52" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+                    <line x1="19" y1="36" x2="24" y2="50" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
+                  </g>
+
+                  {/* Silhouette Marchand 2 : Négociateur avec Panier de parures et bijoux */}
+                  <g transform="translate(110, 18) scale(0.65)" fill="#c084fc" opacity="0.80">
+                    {/* Tête */}
+                    <circle cx="16" cy="8" r="5" />
+                    {/* Corps */}
+                    <path d="M 12 14 L 20 14 L 21 36 L 11 36 Z" />
+                    {/* Panier tressé sur le dos */}
+                    <ellipse cx="6" cy="24" rx="7" ry="10" fill="#a855f7" />
+                    <circle cx="6" cy="18" r="2" fill="#fbbf24" />
+                    <circle cx="9" cy="23" r="1.5" fill="#38bdf8" />
+                    {/* Jambes en marche */}
+                    <line x1="13" y1="36" x2="8" y2="52" stroke="#c084fc" strokeWidth="3" strokeLinecap="round" />
+                    <line x1="19" y1="36" x2="23" y2="50" stroke="#c084fc" strokeWidth="3" strokeLinecap="round" />
+                  </g>
+
+                  {/* Touffes d'herbe préhistoriques le long du chemin */}
+                  <path d="M 20 102 L 23 90 M 23 102 L 27 88 M 27 102 L 30 92" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+                  <path d="M 160 72 L 163 60 M 165 72 L 168 58 M 169 72 L 172 63" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+                </svg>
+
+                {/* En-tête de la zone */}
+                <div className="text-center relative z-10">
+                  <span className="text-[7px] sm:text-[8px] font-black uppercase text-purple-200 bg-stone-950/90 px-2 py-0.5 rounded-full border border-purple-500/70 shadow-md flex items-center gap-1">
                     <span>⚖️</span>
-                    <span>Marchand</span>
+                    <span>Marchands & Troc</span>
                   </span>
                 </div>
 
-                <div className="flex-1 w-full flex items-center justify-center">
+                {/* Emplacement du Meeple au centre du chemin */}
+                <div className="flex-1 w-full flex items-center justify-center relative z-10">
                   {totalMeeples > 0 ? (
-                    <div className="bg-stone-950/90 p-1 rounded-full border-2 border-purple-400 shadow-md ring-2 ring-purple-500/40 scale-105">
+                    <div className="bg-stone-950/90 p-1.5 rounded-full border-2 border-purple-400 shadow-xl ring-2 ring-purple-500/50 scale-105">
                       {renderZoneMeeples(locId, 'md')}
                     </div>
                   ) : (
                     <div 
-                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs shadow-md transition-all ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-sm shadow-md transition-all ${
                         isInteractive
                           ? 'border-purple-400 bg-purple-950/80 text-purple-200 ring-2 ring-purple-400/50 group-hover:scale-110'
-                          : 'border-dashed border-purple-500/40 bg-stone-950/60 text-purple-300'
+                          : 'border-dashed border-purple-500/40 bg-stone-950/70 text-purple-300'
                       }`}
                     >
                       📿
@@ -682,57 +791,9 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                   )}
                 </div>
 
-                <div className="text-[7px] font-bold text-purple-300/80">
-                  Troc & Parures
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* ---------------- EXTENSION 3: LA CHASSE AU MAMMOUTH ---------------- */}
-          {state.expansions?.mammothHerd && (() => {
-            const locId: BoardLocationId = 'mammoth';
-            const { isInteractive, totalMeeples } = getZoneStatus(locId);
-            const activeM = state.activeMammoth;
-            return (
-              <div
-                onClick={() => isInteractive && onZoneClick(locId)}
-                onMouseEnter={() => setHoveredZone(locId)}
-                onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[11.5%] top-[52.5%] w-[10.5%] h-[16.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
-                  isInteractive
-                    ? 'cursor-pointer border-2 border-dashed border-amber-400/60 hover:border-solid hover:border-amber-300 hover:bg-amber-950/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]'
-                    : 'border border-amber-500/30 bg-amber-950/20'
-                }`}
-                title={activeM ? `Chasse au Mammouth (${activeM.name} - +${activeM.victoryPoints} VP) : Envoyez 1 ou 2 ouvriers` : 'Harde de Mammouths'}
-              >
-                <div className="text-center w-full">
-                  <span className="text-[7px] sm:text-[8px] font-black uppercase text-amber-200 bg-stone-950/90 px-1 py-0.5 rounded-full border border-amber-500/70 shadow-md flex items-center justify-center gap-0.5 truncate">
-                    <span>🦣</span>
-                    <span className="truncate">{activeM ? `+${activeM.victoryPoints} VP` : 'Mammouth'}</span>
-                  </span>
-                </div>
-
-                <div className="flex-1 w-full flex items-center justify-center">
-                  {totalMeeples > 0 ? (
-                    <div className="bg-stone-950/90 p-1 rounded-full border-2 border-amber-400 shadow-md ring-2 ring-amber-500/40 scale-105">
-                      {renderZoneMeeples(locId, 'md')}
-                    </div>
-                  ) : (
-                    <div 
-                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs shadow-md transition-all ${
-                        isInteractive
-                          ? 'border-amber-400 bg-amber-950/80 text-amber-200 ring-2 ring-amber-400/50 group-hover:scale-110'
-                          : 'border-dashed border-amber-500/40 bg-stone-950/60 text-amber-300'
-                      }`}
-                    >
-                      🦣
-                    </div>
-                  )}
-                </div>
-
-                <div className="text-[7px] font-black text-amber-300/90 truncate w-full text-center">
-                  {totalMeeples}/4 Chasseurs
+                {/* Sous-titre et indicateur d'action */}
+                <div className="text-[7px] font-black text-purple-300/90 bg-stone-950/80 px-2 py-0.5 rounded-full border border-purple-900/60 shadow-sm relative z-10">
+                  Piste de Troc • Parures
                 </div>
               </div>
             );

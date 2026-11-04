@@ -47,8 +47,8 @@ const ZONE_COORDINATES: Record<BoardLocationId, { xPct: number; yPct: number; ra
   card_2: { xPct: 0.676, yPct: 0.781, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 3 res.' },
   card_1: { xPct: 0.785, yPct: 0.781, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 2 res.' },
   card_0: { xPct: 0.893, yPct: 0.781, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 1 res.' },
-  merchant: { xPct: 0.280, yPct: 0.600, radius: 6.0, label: 'Marchand', sublabel: 'Troc & Parures' },
-  mammoth: { xPct: 0.170, yPct: 0.600, radius: 6.5, label: 'Mammouth', sublabel: 'Harde & Chasse' },
+  merchant: { xPct: 0.240, yPct: 0.600, radius: 6.5, label: 'Marchands', sublabel: 'Troc & Parures' },
+  mammoth: { xPct: 0.110, yPct: 0.120, radius: 6.5, label: 'Mammouth', sublabel: 'Harde de Mammouths' },
 };
 
 // Player 3D colors
