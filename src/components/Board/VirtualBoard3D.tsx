@@ -31,14 +31,14 @@ const BOARD_DEPTH = 100;
 
 // Zone definitions with board percentage coordinates (X: 0..1, Y: 0..1)
 const ZONE_COORDINATES: Record<BoardLocationId, { xPct: number; yPct: number; radius: number; label: string; sublabel: string }> = {
-  hunting: { xPct: 0.184, yPct: 0.235, radius: 10, label: 'Chasse', sublabel: 'Nourriture ÷2' },
-  forest: { xPct: 0.385, yPct: 0.230, radius: 8, label: 'Forêt', sublabel: 'Bois ÷3' },
-  clay_pit: { xPct: 0.579, yPct: 0.226, radius: 8, label: 'Glaisière', sublabel: 'Glaise ÷4' },
-  quarry: { xPct: 0.855, yPct: 0.226, radius: 8, label: 'Carrière', sublabel: 'Pierre ÷5' },
-  river: { xPct: 0.822, yPct: 0.508, radius: 9, label: 'Rivière', sublabel: 'Or ÷6' },
-  tool_maker: { xPct: 0.556, yPct: 0.485, radius: 6, label: 'Outils', sublabel: '+1 Outil' },
-  field: { xPct: 0.345, yPct: 0.551, radius: 7, label: 'Champs', sublabel: '+1 Agriculture' },
-  hut: { xPct: 0.408, yPct: 0.673, radius: 6, label: 'Hutte', sublabel: '+1 Ouvrier' },
+  hunting: { xPct: 0.272, yPct: 0.275, radius: 9, label: 'Chasse', sublabel: 'Nourriture ÷2' },
+  forest: { xPct: 0.442, yPct: 0.200, radius: 8, label: 'Forêt', sublabel: 'Bois ÷3' },
+  clay_pit: { xPct: 0.667, yPct: 0.200, radius: 8, label: 'Glaisière', sublabel: 'Glaise ÷4' },
+  quarry: { xPct: 0.877, yPct: 0.527, radius: 8, label: 'Carrière', sublabel: 'Pierre ÷5' },
+  river: { xPct: 0.747, yPct: 0.597, radius: 7, label: 'Rivière', sublabel: 'Or ÷6' },
+  tool_maker: { xPct: 0.532, yPct: 0.450, radius: 5, label: 'Outils', sublabel: '+1 Outil' },
+  field: { xPct: 0.380, yPct: 0.572, radius: 6, label: 'Champs', sublabel: '+1 Agriculture' },
+  hut: { xPct: 0.427, yPct: 0.422, radius: 6, label: 'Hutte', sublabel: '+1 Ouvrier' },
   building_0: { xPct: 0.147, yPct: 0.824, radius: 6.0, label: 'Pile Hutte 1', sublabel: 'Bâtiment' },
   building_1: { xPct: 0.244, yPct: 0.824, radius: 6.0, label: 'Pile Hutte 2', sublabel: 'Bâtiment' },
   building_2: { xPct: 0.341, yPct: 0.824, radius: 6.0, label: 'Pile Hutte 3', sublabel: 'Bâtiment' },
@@ -47,8 +47,8 @@ const ZONE_COORDINATES: Record<BoardLocationId, { xPct: number; yPct: number; ra
   card_2: { xPct: 0.676, yPct: 0.781, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 3 res.' },
   card_1: { xPct: 0.785, yPct: 0.781, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 2 res.' },
   card_0: { xPct: 0.893, yPct: 0.781, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 1 res.' },
-  merchant: { xPct: 0.240, yPct: 0.600, radius: 6.5, label: 'Marchands', sublabel: 'Troc & Parures' },
-  mammoth: { xPct: 0.110, yPct: 0.120, radius: 6.5, label: 'Mammouth', sublabel: 'Harde de Mammouths' },
+  merchant: { xPct: 0.220, yPct: 0.577, radius: 6.5, label: 'Marchands', sublabel: 'Troc & Parures' },
+  mammoth: { xPct: 0.104, yPct: 0.109, radius: 6.5, label: 'Mammouth', sublabel: 'Harde de Mammouths' },
 };
 
 // Player 3D colors
