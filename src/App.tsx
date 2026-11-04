@@ -30,7 +30,7 @@ import {
   getAiPlacementChoice, 
   getAiToolUsage 
 } from './logic/ai';
-import { sound } from './logic/audio';
+import { sound, ambientMusic } from './logic/audio';
 import { CompactNativeHUD } from './components/CompactNativeHUD';
 import { GameHeader } from './components/GameHeader';
 import { SmallWorldBoardView } from './components/Board/SmallWorldBoardView';
@@ -87,12 +87,57 @@ const DEFAULT_SETTINGS: GameSettings = {
   },
 };
 
+const SAVE_KEY_STATE = 'age_de_pierre_saved_game_state';
+const SAVE_KEY_SETTINGS = 'age_de_pierre_saved_game_settings';
+
 export const App: React.FC = () => {
   const [currentSettings, setCurrentSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
   const [state, setState] = useState<GameState>(() => createInitialGameState(DEFAULT_SETTINGS));
 
   // Sound toggle
   const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Celtic Ambient Music toggle
+  const [ambientMusicEnabled, setAmbientMusicEnabled] = useState(() => ambientMusic.enabled);
+
+  // Game Persistence / Save state
+  const [hasSavedGame, setHasSavedGame] = useState(false);
+  const [savedRound, setSavedRound] = useState<number | undefined>(undefined);
+
+  // Check on initial load if a saved game exists in localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SAVE_KEY_STATE);
+      if (saved) {
+        const parsed: GameState = JSON.parse(saved);
+        if (parsed && parsed.round && parsed.phase !== 'game_over') {
+          setHasSavedGame(true);
+          setSavedRound(parsed.round);
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  // Auto-save game state on meaningful state updates
+  useEffect(() => {
+    if (state && state.phase !== 'game_over') {
+      try {
+        localStorage.setItem(SAVE_KEY_STATE, JSON.stringify(state));
+        localStorage.setItem(SAVE_KEY_SETTINGS, JSON.stringify(currentSettings));
+        setHasSavedGame(true);
+        setSavedRound(state.round);
+      } catch (e) {
+        console.warn('Auto-save error', e);
+      }
+    } else if (state?.phase === 'game_over') {
+      try {
+        localStorage.removeItem(SAVE_KEY_STATE);
+        setHasSavedGame(false);
+      } catch {}
+    }
+  }, [state, currentSettings]);
 
   // Board view mode: 'smallworld' (inspired by Small World Android with sidebands), 'virtual' (classic standalone 3D board) or 'grid' (modular)
   const [boardView, setBoardView] = useState<'smallworld' | 'virtual' | 'grid'>('smallworld');
@@ -201,16 +246,69 @@ export const App: React.FC = () => {
     setSoundEnabled(!soundEnabled);
   };
 
+  const toggleAmbientMusic = () => {
+    const active = ambientMusic.toggle();
+    setAmbientMusicEnabled(active);
+  };
+
+  // Pause & Save game state
+  const handlePauseGame = () => {
+    try {
+      localStorage.setItem(SAVE_KEY_STATE, JSON.stringify(state));
+      localStorage.setItem(SAVE_KEY_SETTINGS, JSON.stringify(currentSettings));
+      setHasSavedGame(true);
+      setSavedRound(state.round);
+    } catch (e) {
+      console.warn('Pause error', e);
+    }
+    setIsInGame(false);
+    setIsSettingsModalOpen(false);
+  };
+
+  // Resume game from in-memory or persisted localStorage
+  const handleResumeGame = () => {
+    try {
+      const saved = localStorage.getItem(SAVE_KEY_STATE);
+      const savedSettings = localStorage.getItem(SAVE_KEY_SETTINGS);
+      if (saved) {
+        const parsed: GameState = JSON.parse(saved);
+        if (parsed && parsed.round) {
+          setState(parsed);
+          if (savedSettings) {
+            setCurrentSettings(JSON.parse(savedSettings));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Resume parse error', e);
+    }
+    setIsInGame(true);
+  };
+
   const handleStartNewGame = (settings: GameSettings) => {
     setCurrentSettings(settings);
-    setState(createInitialGameState(settings));
+    const freshState = createInitialGameState(settings);
+    setState(freshState);
+    try {
+      localStorage.setItem(SAVE_KEY_STATE, JSON.stringify(freshState));
+      localStorage.setItem(SAVE_KEY_SETTINGS, JSON.stringify(settings));
+      setHasSavedGame(true);
+      setSavedRound(1);
+    } catch {}
     setShowNewGameModal(false);
     setShowFirstPlayerDrawModal(true);
     setIsInGame(true);
   };
 
   const handleRestartGame = () => {
-    setState(createInitialGameState(currentSettings));
+    const freshState = createInitialGameState(currentSettings);
+    setState(freshState);
+    try {
+      localStorage.setItem(SAVE_KEY_STATE, JSON.stringify(freshState));
+      localStorage.setItem(SAVE_KEY_SETTINGS, JSON.stringify(currentSettings));
+      setHasSavedGame(true);
+      setSavedRound(1);
+    } catch {}
     setShowFirstPlayerDrawModal(true);
     setIsInGame(true);
   };
@@ -732,11 +830,14 @@ export const App: React.FC = () => {
       <div className="h-[100dvh] w-full overflow-hidden bg-stone-950 text-stone-100 select-none">
         <HomeScreen
           onStartNewGame={() => setShowNewGameModal(true)}
-          onResumeGame={() => setIsInGame(true)}
+          onResumeGame={handleResumeGame}
           onOpenTutorial={() => setShowTutorialModal(true)}
-          hasActiveGame={state.round > 1 || state.phase !== 'placement'}
+          hasActiveGame={hasSavedGame || state.round > 1 || state.phase !== 'placement'}
+          savedRound={savedRound || state.round}
           soundEnabled={soundEnabled}
           onToggleSound={toggleSound}
+          ambientMusicEnabled={ambientMusicEnabled}
+          onToggleAmbientMusic={toggleAmbientMusic}
           isFullscreen={isFullscreen}
           onToggleFullscreen={handleToggleFullscreen}
         />
@@ -773,6 +874,7 @@ export const App: React.FC = () => {
         onOpenFirstPlayerDraw={() => setShowFirstPlayerDrawModal(true)}
         onPassPlacement={handlePassPlacement}
         onResolveNextZone={() => handleResolveNextZone()}
+        onPauseGame={handlePauseGame}
         canPassPlacement={!activePlayer.isAi && state.phase === 'placement'}
         canResolveNextZone={!activePlayer.isAi && state.phase === 'resolution' && getPlayerUnresolvedLocations(activePlayer).length > 0}
       />
@@ -838,6 +940,8 @@ export const App: React.FC = () => {
         onSelectBoardView={setBoardView}
         soundEnabled={soundEnabled}
         onToggleSound={toggleSound}
+        ambientMusicEnabled={ambientMusicEnabled}
+        onToggleAmbientMusic={toggleAmbientMusic}
         isFullscreen={isFullscreen}
         onToggleFullscreen={handleToggleFullscreen}
         onNewGame={() => setShowNewGameModal(true)}
@@ -845,7 +949,8 @@ export const App: React.FC = () => {
         onOpenQR={() => setShowQRModal(true)}
         onOpenSummary={() => setShowRoundSummaryModal(true)}
         onOpenFirstPlayerDraw={() => setShowFirstPlayerDrawModal(true)}
-        onGoHome={() => setIsInGame(false)}
+        onPauseGame={handlePauseGame}
+        onGoHome={handlePauseGame}
       />
 
       {/* First Player Draw Lottery Modal */}

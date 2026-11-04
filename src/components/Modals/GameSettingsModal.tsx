@@ -13,7 +13,10 @@ import {
   LayoutGrid, 
   History,
   Sliders,
-  Crown
+  Crown,
+  Music,
+  Pause,
+  Save
 } from 'lucide-react';
 
 interface GameSettingsModalProps {
@@ -23,6 +26,8 @@ interface GameSettingsModalProps {
   onSelectBoardView: (view: 'smallworld' | 'virtual' | 'grid') => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
+  ambientMusicEnabled?: boolean;
+  onToggleAmbientMusic?: () => void;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
   onNewGame: () => void;
@@ -30,6 +35,7 @@ interface GameSettingsModalProps {
   onOpenQR: () => void;
   onOpenSummary: () => void;
   onOpenFirstPlayerDraw?: () => void;
+  onPauseGame?: () => void;
   onGoHome?: () => void;
 }
 
@@ -40,6 +46,8 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
   onSelectBoardView,
   soundEnabled,
   onToggleSound,
+  ambientMusicEnabled = false,
+  onToggleAmbientMusic,
   isFullscreen,
   onToggleFullscreen,
   onNewGame,
@@ -47,6 +55,7 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
   onOpenQR,
   onOpenSummary,
   onOpenFirstPlayerDraw,
+  onPauseGame,
   onGoHome,
 }) => {
   if (!isOpen) return null;
@@ -172,10 +181,10 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
         {/* 2. CONTRÔLES RAPIDES AUDIO & AFFICHAGE */}
         <div className="space-y-1.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
-            Confort de Jeu
+            Confort de Jeu & Son
           </span>
           <div className="grid grid-cols-2 gap-2">
-            {/* Son */}
+            {/* Bruitages & Sons tactiles */}
             <button
               onClick={onToggleSound}
               className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs cursor-pointer transition-colors ${
@@ -199,15 +208,46 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
               {isFullscreen ? <Minimize className="w-4 h-4 text-amber-400" /> : <Maximize className="w-4 h-4 text-amber-400" />}
               <span>{isFullscreen ? 'Fenêtré' : 'Plein écran'}</span>
             </button>
+
+            {/* Musique d'ambiance celtique & aventure facultative */}
+            {onToggleAmbientMusic && (
+              <button
+                onClick={onToggleAmbientMusic}
+                className={`col-span-2 p-2.5 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs cursor-pointer transition-all ${
+                  ambientMusicEnabled
+                    ? 'bg-amber-950/70 border-amber-500 text-amber-200 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                    : 'bg-stone-900/70 border-stone-800 text-stone-400 hover:border-stone-700'
+                }`}
+              >
+                <Music className={`w-4 h-4 ${ambientMusicEnabled ? 'text-amber-400 animate-pulse' : 'text-stone-500'}`} />
+                <span>
+                  {ambientMusicEnabled ? '🎶 Ambiance Celtique & Aventure : Active' : '🎵 Ambiance Celtique : Désactivée (Facultatif)'}
+                </span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* 3. ACTIONS DE PARTIE */}
+        {/* 3. ACTIONS DE PARTIE & SAUVEGARDE */}
         <div className="space-y-1.5 pt-1 border-t border-stone-800/80">
           <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
-            Partie & Outils
+            Partie, Pause & Sauvegarde
           </span>
           <div className="grid grid-cols-2 gap-2">
+            {/* Pause & Sauvegarder */}
+            {onPauseGame && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onPauseGame();
+                }}
+                className="col-span-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 text-stone-950 flex items-center justify-center gap-2 text-xs font-black cursor-pointer transition-transform active:scale-98 shadow-md border border-amber-300"
+              >
+                <Pause className="w-4 h-4 fill-stone-950 text-stone-950" />
+                <span>⏸️ Mettre en Pause & Sauvegarder la partie</span>
+              </button>
+            )}
+
             {/* Nouvelle Partie */}
             <button
               onClick={() => {

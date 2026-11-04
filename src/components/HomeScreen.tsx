@@ -1,13 +1,16 @@
 import React from 'react';
-import { Play, RotateCcw, BookOpen, Volume2, VolumeX, Maximize2, Minimize2, Sparkles, Users, Award } from 'lucide-react';
+import { Play, RotateCcw, BookOpen, Volume2, VolumeX, Maximize2, Minimize2, Sparkles, Users, Award, Music, Pause } from 'lucide-react';
 
 interface HomeScreenProps {
   onStartNewGame: () => void;
   onResumeGame?: () => void;
   onOpenTutorial: () => void;
   hasActiveGame: boolean;
+  savedRound?: number;
   soundEnabled: boolean;
   onToggleSound: () => void;
+  ambientMusicEnabled?: boolean;
+  onToggleAmbientMusic?: () => void;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
 }
@@ -17,8 +20,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onResumeGame,
   onOpenTutorial,
   hasActiveGame,
+  savedRound,
   soundEnabled,
   onToggleSound,
+  ambientMusicEnabled = false,
+  onToggleAmbientMusic,
   isFullscreen,
   onToggleFullscreen,
 }) => {
@@ -44,11 +50,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Ambient Celtic Music Toggle */}
+          {onToggleAmbientMusic && (
+            <button
+              onClick={onToggleAmbientMusic}
+              className={`p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer backdrop-blur-md shadow-md active:scale-95 flex items-center gap-1.5 ${
+                ambientMusicEnabled
+                  ? 'bg-amber-950/90 border-amber-500 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.35)]'
+                  : 'bg-stone-900/80 border-stone-700/80 hover:border-stone-600 text-stone-400'
+              }`}
+              title={ambientMusicEnabled ? 'Ambiance Celtique : Activée' : 'Ambiance Celtique : Coupée (Facultatif)'}
+              aria-label="Toggle Ambient Music"
+            >
+              <Music className={`w-4 h-4 sm:w-5 sm:h-5 ${ambientMusicEnabled ? 'text-amber-400' : 'text-stone-400'}`} />
+              <span className="text-[10px] sm:text-xs font-bold hidden md:inline">
+                {ambientMusicEnabled ? 'Celtique ON' : 'Ambiance OFF'}
+              </span>
+            </button>
+          )}
+
           {/* Sound Toggle */}
           <button
             onClick={onToggleSound}
             className="p-2 sm:p-2.5 rounded-xl bg-stone-900/80 border border-stone-700/80 hover:border-amber-500 text-stone-200 hover:text-amber-300 transition-all cursor-pointer backdrop-blur-md shadow-md active:scale-95"
-            title={soundEnabled ? 'Couper le son' : 'Activer le son'}
+            title={soundEnabled ? 'Couper les effets sonores' : 'Activer les effets sonores'}
             aria-label="Toggle Sound"
           >
             {soundEnabled ? <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" /> : <VolumeX className="w-4 h-4 sm:w-5 sm:h-5 text-stone-400" />}
@@ -96,14 +121,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <span>Nouvelle Partie</span>
           </button>
 
-          {/* Resume Game Button (if game already started) */}
+          {/* Resume Game Button (if game already started or saved) */}
           {hasActiveGame && onResumeGame && (
             <button
               onClick={onResumeGame}
-              className="w-full py-2.5 sm:py-3 px-6 rounded-2xl bg-stone-900/90 hover:bg-stone-800 text-amber-300 font-bold text-xs sm:text-sm tracking-wide transition-all border border-amber-500/40 hover:border-amber-400 backdrop-blur-md cursor-pointer flex items-center justify-center gap-2.5 shadow-lg active:scale-95"
+              className="w-full py-3 sm:py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-950/90 via-stone-900/90 to-emerald-950/90 hover:bg-stone-800 text-emerald-300 font-black text-xs sm:text-sm tracking-wide transition-all border-2 border-emerald-500/60 hover:border-emerald-400 backdrop-blur-md cursor-pointer flex items-center justify-center gap-2.5 shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-95"
             >
-              <RotateCcw className="w-4 h-4 text-amber-400" />
-              <span>Reprendre la Partie en cours</span>
+              <RotateCcw className="w-4 h-4 text-emerald-400" />
+              <span>Reprendre la Partie {savedRound ? `(Manche ${savedRound})` : 'en cours'}</span>
             </button>
           )}
 

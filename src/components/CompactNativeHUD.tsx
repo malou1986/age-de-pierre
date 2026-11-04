@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameState, PlayerState, ResourceType } from '../types/game';
-import { Users, Wheat, Hammer, Trophy, Sliders, ArrowRight, Bot, Crown, Sparkles, Check, Dices } from 'lucide-react';
+import { Users, Wheat, Hammer, Trophy, Sliders, ArrowRight, Bot, Crown, Sparkles, Check, Dices, Pause } from 'lucide-react';
 import { ResourceIcon } from './Common/ResourceIcon';
 
 interface CompactNativeHUDProps {
@@ -11,6 +11,7 @@ interface CompactNativeHUDProps {
   onOpenFirstPlayerDraw?: () => void;
   onPassPlacement?: () => void;
   onResolveNextZone?: () => void;
+  onPauseGame?: () => void;
   canPassPlacement?: boolean;
   canResolveNextZone?: boolean;
 }
@@ -30,6 +31,7 @@ export const CompactNativeHUD: React.FC<CompactNativeHUDProps> = ({
   onOpenFirstPlayerDraw,
   onPassPlacement,
   onResolveNextZone,
+  onPauseGame,
   canPassPlacement = false,
   canResolveNextZone = false,
 }) => {
@@ -203,6 +205,17 @@ export const CompactNativeHUD: React.FC<CompactNativeHUDProps> = ({
           <span className="text-stone-500 font-normal hidden xs:inline">|</span>
           <span className="text-stone-400 hidden xs:inline">Tribus</span>
         </button>
+
+        {/* Button Pause & Sauvegarde */}
+        {onPauseGame && (
+          <button
+            onClick={onPauseGame}
+            className="p-1 sm:p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-amber-400 hover:text-amber-300 border border-stone-800 hover:border-amber-500/50 transition-colors cursor-pointer"
+            title="Mettre en pause et sauvegarder la partie"
+          >
+            <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          </button>
+        )}
 
         {/* Button Paramètres / Options */}
         <button

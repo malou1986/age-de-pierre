@@ -591,36 +591,40 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
             const { isInteractive, totalMeeples } = getZoneStatus(locId);
             return (
               <>
-                {/* Zone interactive directement sur l'Atelier d'Outils - Dégagée au-dessus des cartes avec z-30 */}
+                {/* Zone interactive directement sur l'Atelier d'Outils - Totalement dégagée au-dessus des cartes (Top: 40.5%, Hauteur: 11.5%, Se termine à 52% -> 12.5% au-dessus de card_3) */}
                 <div
                   onClick={() => isInteractive && onZoneClick(locId)}
                   onMouseEnter={() => setHoveredZone(locId)}
                   onMouseLeave={() => setHoveredZone(null)}
-                  className={`absolute left-[50.5%] top-[47.5%] w-[12%] h-[13%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
+                  className={`absolute left-[47.0%] top-[40.5%] w-[11.5%] h-[11.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
                     isInteractive
-                      ? 'cursor-pointer border border-dashed border-amber-400/40 hover:border-solid hover:border-amber-400 hover:bg-stone-900/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                      ? 'cursor-pointer border-2 border-dashed border-amber-400/60 hover:border-solid hover:border-amber-400 hover:bg-stone-900/50 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)]'
                       : 'hover:bg-white/[0.02]'
                   }`}
                   title="Atelier d'Outils en pierre : Poser 1 ouvrier pour forger +1 Outil permanent (1 ouvrier max)"
                 >
-                  {/* Badge d'atelier toujours lisible ou au survol */}
+                  {/* Badge d'atelier avec statut d'occupation très clair */}
                   <div className="transition-opacity duration-200 pointer-events-none">
-                    <span className="text-[7px] sm:text-[8px] font-black uppercase text-amber-200 bg-stone-950/90 px-1.5 py-0.5 rounded-full border border-amber-500/70 shadow-md">
-                      Atelier Outils
+                    <span className={`text-[7px] sm:text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full border shadow-md ${
+                      totalMeeples > 0
+                        ? 'bg-amber-950 text-amber-200 border-amber-500'
+                        : 'bg-stone-950/90 text-amber-200 border-amber-500/70'
+                    }`}>
+                      {totalMeeples > 0 ? '🔨 Outils : Pris' : 'Atelier Outils'}
                     </span>
                   </div>
 
                   {/* Emplacement de dépose du pion : sur l'enclume, surélevé et parfaitement visible au-dessus des cartes */}
                   <div className="flex-1 w-full flex items-center justify-center relative z-30">
                     {totalMeeples > 0 ? (
-                      <div className="bg-stone-950/90 p-1 rounded-full border-2 border-amber-400 shadow-[0_4px_12px_rgba(0,0,0,0.95)] ring-2 ring-amber-500/40 scale-105">
+                      <div className="bg-stone-950/95 p-1 rounded-full border-2 border-amber-400 shadow-[0_4px_14px_rgba(0,0,0,0.95)] ring-2 ring-amber-500/50 scale-105">
                         {renderZoneMeeples(locId, 'md')}
                       </div>
                     ) : (
                       <div 
                         className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-[10px] shadow-md transition-all ${
                           isInteractive
-                            ? 'border-amber-400 bg-amber-950/80 text-amber-200 ring-2 ring-amber-400/50 group-hover:scale-110'
+                            ? 'border-amber-400 bg-amber-950/85 text-amber-200 ring-2 ring-amber-400/50 group-hover:scale-110'
                             : 'border-dashed border-stone-500 bg-stone-950/70 text-stone-300'
                         }`}
                         title="Déposer 1 ouvrier sur l'enclume de l'atelier"
@@ -631,10 +635,10 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                   </div>
                 </div>
 
-                {/* Réserve physique des tuiles Outils (1/2 et 3/4) positionnée à côté de l'atelier, bien au-dessus des cartes */}
+                {/* Réserve physique des tuiles Outils (1/2 et 3/4) positionnée immédiatement à gauche de l'atelier, bien au-dessus des cartes */}
                 <div 
                   onClick={() => isInteractive && onZoneClick(locId)}
-                  className={`absolute left-[45.5%] top-[54.5%] flex items-center gap-1 z-30 transition-all select-none ${
+                  className={`absolute left-[41.0%] top-[41.5%] flex items-center gap-1 z-30 transition-all select-none ${
                     isInteractive ? 'cursor-pointer hover:scale-105' : ''
                   }`}
                   title="Réserve d'Outils du village (1-2 / 3-4) : Cliquez pour envoyer un ouvrier à l'atelier"
@@ -690,7 +694,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
             );
           })()}
 
-          {/* ---------------- EXTENSION 2: L'ÉCHOPPE DES MARCHANDS & PISTE DE TROC (Le long du chemin dans l'herbe) ---------------- */}
+          {/* ---------------- EXTENSION 2: L'ÉCHOPPE DES MARCHANDS & PISTE DE TROC (Tuile Cartonné d'Extension) ---------------- */}
           {state.expansions?.styleIsTheGoal && (() => {
             const locId: BoardLocationId = 'merchant';
             const { isInteractive, totalMeeples, canPlace } = getZoneStatus(locId);
@@ -699,101 +703,59 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[14.5%] top-[49%] w-[19%] h-[20.5%] rounded-3xl p-1.5 flex flex-col items-center justify-between transition-all duration-200 group z-30 overflow-hidden ${
+                className={`absolute left-[13.5%] top-[48%] w-[19%] h-[21%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-300 group z-30 select-none ${
                   isInteractive
-                    ? 'cursor-pointer border-2 border-dashed border-purple-400/70 hover:border-solid hover:border-purple-300 hover:bg-stone-950/70 hover:shadow-[0_0_20px_rgba(168,85,247,0.35)]'
-                    : 'border border-purple-500/30 bg-stone-950/40 backdrop-blur-[1px]'
+                    ? 'cursor-pointer border-2 border-purple-400/90 shadow-[0_12px_28px_rgba(0,0,0,0.85),0_0_20px_rgba(168,85,247,0.45)] hover:scale-[1.03] hover:border-purple-300'
+                    : 'border-2 border-stone-800/90 shadow-[0_8px_20px_rgba(0,0,0,0.8)]'
                 }`}
-                title="Échoppe des Marchands : Poser 1 ouvrier le long du chemin pour monter sur la Piste de Troc et échanger des Parures ou ressources"
+                style={{
+                  boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.8), 0 4px 6px -2px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2)'
+                }}
+                title="Échoppe des Marchands (Extension 'Le Style, c'est le But') : Poser 1 ouvrier pour monter sur la Piste de Troc et échanger des Parures ou ressources"
               >
-                {/* FILIGRANE ARTISTIQUE : MARCHANDS ITINÉRANTS & SENTIER DANS L'HERBE */}
-                <svg
-                  viewBox="0 0 200 120"
-                  className="absolute inset-0 w-full h-full pointer-events-none opacity-35 group-hover:opacity-55 transition-opacity duration-300 select-none"
-                  preserveAspectRatio="xMidYMid meet"
-                >
-                  {/* Sentier de terre sinueux dans l'herbe */}
-                  <path
-                    d="M 10 95 Q 60 75 100 80 T 190 60"
-                    fill="none"
-                    stroke="#d97706"
-                    strokeWidth="10"
-                    strokeLinecap="round"
-                    opacity="0.25"
-                  />
-                  <path
-                    d="M 10 95 Q 60 75 100 80 T 190 60"
-                    fill="none"
-                    stroke="#fbbf24"
-                    strokeWidth="2"
-                    strokeDasharray="4 4"
-                    opacity="0.4"
-                  />
+                {/* 1. Illustration Authentique Haute Définition de la Tuile d'Extension Cartonné */}
+                <img
+                  src="/extensions/merchant_tile.jpg"
+                  alt="Tuile d'Extension : Échoppe des Marchands"
+                  className="absolute inset-0 w-full h-full object-cover rounded-2xl pointer-events-none filter brightness-95 group-hover:brightness-105 transition-all"
+                />
 
-                  {/* Silhouette Marchand 1 : Porteur avec Bâton de marche et Balluchon de troc */}
-                  <g transform="translate(35, 30) scale(0.70)" fill="#f59e0b" opacity="0.75">
-                    {/* Tête */}
-                    <circle cx="16" cy="8" r="5" />
-                    {/* Corps & Fardeau de marchandises */}
-                    <path d="M 12 14 L 20 14 L 22 36 L 10 36 Z" />
-                    <path d="M 6 16 C 4 16 2 20 2 26 C 2 32 5 34 8 34 L 12 34 L 12 18 Z" fill="#b45309" />
-                    {/* Bâton de marcheur */}
-                    <line x1="26" y1="6" x2="28" y2="48" stroke="#f59e0b" strokeWidth="2.5" strokeLinecap="round" />
-                    {/* Jambes en marche */}
-                    <line x1="13" y1="36" x2="9" y2="52" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
-                    <line x1="19" y1="36" x2="24" y2="50" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
-                  </g>
+                {/* Subtile patine cartonné & biseau physique */}
+                <div className="absolute inset-0 rounded-2xl border border-amber-500/25 pointer-events-none" />
 
-                  {/* Silhouette Marchand 2 : Négociateur avec Panier de parures et bijoux */}
-                  <g transform="translate(110, 18) scale(0.65)" fill="#c084fc" opacity="0.80">
-                    {/* Tête */}
-                    <circle cx="16" cy="8" r="5" />
-                    {/* Corps */}
-                    <path d="M 12 14 L 20 14 L 21 36 L 11 36 Z" />
-                    {/* Panier tressé sur le dos */}
-                    <ellipse cx="6" cy="24" rx="7" ry="10" fill="#a855f7" />
-                    <circle cx="6" cy="18" r="2" fill="#fbbf24" />
-                    <circle cx="9" cy="23" r="1.5" fill="#38bdf8" />
-                    {/* Jambes en marche */}
-                    <line x1="13" y1="36" x2="8" y2="52" stroke="#c084fc" strokeWidth="3" strokeLinecap="round" />
-                    <line x1="19" y1="36" x2="23" y2="50" stroke="#c084fc" strokeWidth="3" strokeLinecap="round" />
-                  </g>
-
-                  {/* Touffes d'herbe préhistoriques le long du chemin */}
-                  <path d="M 20 102 L 23 90 M 23 102 L 27 88 M 27 102 L 30 92" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-                  <path d="M 160 72 L 163 60 M 165 72 L 168 58 M 169 72 L 172 63" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-                </svg>
-
-                {/* En-tête de la zone */}
-                <div className="text-center relative z-10">
-                  <span className="text-[7px] sm:text-[8px] font-black uppercase text-purple-200 bg-stone-950/90 px-2 py-0.5 rounded-full border border-purple-500/70 shadow-md flex items-center gap-1">
+                {/* Ruban d'en-tête de l'extension */}
+                <div className="relative z-10 w-full text-center">
+                  <span className="text-[7px] sm:text-[8px] font-black uppercase text-purple-200 bg-stone-950/90 px-2 py-0.5 rounded-full border border-purple-500/80 shadow-md inline-flex items-center gap-1">
                     <span>⚖️</span>
                     <span>Marchands & Troc</span>
                   </span>
                 </div>
 
-                {/* Emplacement du Meeple au centre du chemin */}
+                {/* Emplacement de dépose du pion : cercle gravé au centre de la tuile */}
                 <div className="flex-1 w-full flex items-center justify-center relative z-10">
                   {totalMeeples > 0 ? (
-                    <div className="bg-stone-950/90 p-1.5 rounded-full border-2 border-purple-400 shadow-xl ring-2 ring-purple-500/50 scale-105">
+                    <div className="bg-stone-950/95 p-1.5 rounded-full border-2 border-purple-400 shadow-[0_4px_16px_rgba(0,0,0,0.95)] ring-2 ring-purple-500/60 scale-105">
                       {renderZoneMeeples(locId, 'md')}
                     </div>
                   ) : (
                     <div 
-                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-sm shadow-md transition-all ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center text-xs shadow-md transition-all ${
                         isInteractive
-                          ? 'border-purple-400 bg-purple-950/80 text-purple-200 ring-2 ring-purple-400/50 group-hover:scale-110'
-                          : 'border-dashed border-purple-500/40 bg-stone-950/70 text-purple-300'
+                          ? 'border-purple-400 bg-purple-950/85 text-purple-200 ring-2 ring-purple-400/50 group-hover:scale-110'
+                          : 'border-dashed border-purple-500/50 bg-stone-950/75 text-purple-300'
                       }`}
+                      title="Poser 1 ouvrier sur la tuile des marchands"
                     >
                       📿
                     </div>
                   )}
                 </div>
 
-                {/* Sous-titre et indicateur d'action */}
-                <div className="text-[7px] font-black text-purple-300/90 bg-stone-950/80 px-2 py-0.5 rounded-full border border-purple-900/60 shadow-sm relative z-10">
-                  Piste de Troc • Parures
+                {/* Pied de tuile : Piste de troc & Parures */}
+                <div className="relative z-10 w-full text-center pb-0.5">
+                  <span className="text-[6.5px] sm:text-[7.5px] font-bold text-amber-200/90 bg-stone-950/85 px-1.5 py-0.5 rounded-md border border-amber-600/40 shadow-xs">
+                    Piste de Troc • Parures
+                  </span>
                 </div>
               </div>
             );

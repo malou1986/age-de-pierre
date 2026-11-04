@@ -153,4 +153,200 @@ class SoundEffects {
   }
 }
 
+// Celtic & Adventure Calm Ambient Music Synthesizer & Player
+class AmbientMusicManager {
+  private ctx: AudioContext | null = null;
+  public enabled: boolean = false;
+  private isRunning: boolean = false;
+  private audioNodeGains: GainNode[] = [];
+  private melodyInterval: any = null;
+  private audioTag: HTMLAudioElement | null = null;
+  private volume: number = 0.35;
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('age_de_pierre_ambient_music');
+      this.enabled = saved === 'true';
+    }
+  }
+
+  private getContext(): AudioContext | null {
+    if (!this.ctx && typeof window !== 'undefined') {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AudioCtx) {
+        this.ctx = new AudioCtx();
+      }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+    return this.ctx;
+  }
+
+  start() {
+    this.enabled = true;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('age_de_pierre_ambient_music', 'true');
+    }
+
+    if (this.isRunning) return;
+    this.isRunning = true;
+
+    // First try HTML5 audio file if exists
+    try {
+      if (!this.audioTag) {
+        this.audioTag = new Audio('/audio/ambient_celtic.mp3');
+        this.audioTag.loop = true;
+        this.audioTag.volume = this.volume;
+      }
+      const playPromise = this.audioTag.play();
+      if (playPromise) {
+        playPromise.catch(() => {
+          // If mp3 is not present or blocked, fallback gracefully to procedural Celtic synthesizer
+          this.startProceduralCeltic();
+        });
+      }
+    } catch {
+      this.startProceduralCeltic();
+    }
+  }
+
+  private startProceduralCeltic() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(this.volume * 0.4, ctx.currentTime);
+      masterGain.connect(ctx.destination);
+      this.audioNodeGains.push(masterGain);
+
+      // 1. Celtic low drone: D2 (73.4 Hz) + A2 (110 Hz) with warm filter
+      const droneOsc1 = ctx.createOscillator();
+      const droneOsc2 = ctx.createOscillator();
+      const droneFilter = ctx.createBiquadFilter();
+      const droneGain = ctx.createGain();
+
+      droneOsc1.type = 'sawtooth';
+      droneOsc1.frequency.setValueAtTime(73.41, ctx.currentTime); // D2
+      droneOsc2.type = 'sine';
+      droneOsc2.frequency.setValueAtTime(110.00, ctx.currentTime); // A2
+
+      droneFilter.type = 'lowpass';
+      droneFilter.frequency.setValueAtTime(180, ctx.currentTime);
+      droneFilter.Q.setValueAtTime(3.5, ctx.currentTime);
+
+      droneGain.gain.setValueAtTime(0.25, ctx.currentTime);
+
+      // Breathing LFO on drone filter
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.frequency.setValueAtTime(0.08, ctx.currentTime); // slow breathing cycle ~12s
+      lfoGain.gain.setValueAtTime(60, ctx.currentTime);
+      lfo.connect(lfoGain);
+      lfoGain.connect(droneFilter.frequency);
+      lfo.start();
+
+      droneOsc1.connect(droneFilter);
+      droneOsc2.connect(droneFilter);
+      droneFilter.connect(droneGain);
+      droneGain.connect(masterGain);
+
+      droneOsc1.start();
+      droneOsc2.start();
+
+      // 2. Soft Celtic Harp / Wooden Whistle pentatonic arpeggio generator
+      // D Celtic Pentatonic: D4, E4, F#4, A4, B4, D5, E5
+      const celticScale = [293.66, 329.63, 369.99, 440.00, 493.88, 587.33, 659.25];
+
+      const playCelticNote = () => {
+        if (!this.isRunning || !this.ctx) return;
+        try {
+          const noteFreq = celticScale[Math.floor(Math.random() * celticScale.length)];
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const filter = this.ctx.createBiquadFilter();
+
+          osc.type = Math.random() > 0.4 ? 'sine' : 'triangle';
+          osc.frequency.setValueAtTime(noteFreq, this.ctx.currentTime);
+
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(1400, this.ctx.currentTime);
+
+          // Gentle pluck envelope with long reverb-like decay
+          const now = this.ctx.currentTime;
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.18, now + 0.15);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 3.2);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(masterGain);
+
+          osc.start(now);
+          osc.stop(now + 3.4);
+        } catch {
+          // Ignore
+        }
+      };
+
+      // Play first note immediately, then schedule calm Celtic notes every 2.5 to 5.5 seconds
+      playCelticNote();
+      this.melodyInterval = setInterval(() => {
+        playCelticNote();
+      }, 3500);
+
+    } catch (e) {
+      console.warn('Procedural Celtic audio error', e);
+    }
+  }
+
+  stop() {
+    this.enabled = false;
+    this.isRunning = false;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('age_de_pierre_ambient_music', 'false');
+    }
+
+    if (this.melodyInterval) {
+      clearInterval(this.melodyInterval);
+      this.melodyInterval = null;
+    }
+
+    if (this.audioTag) {
+      try {
+        this.audioTag.pause();
+        this.audioTag.currentTime = 0;
+      } catch {
+        // Ignore
+      }
+    }
+
+    this.audioNodeGains.forEach(g => {
+      try {
+        g.disconnect();
+      } catch {}
+    });
+    this.audioNodeGains = [];
+  }
+
+  toggle(): boolean {
+    if (this.enabled) {
+      this.stop();
+      return false;
+    } else {
+      this.start();
+      return true;
+    }
+  }
+
+  setVolume(vol: number) {
+    this.volume = Math.max(0, Math.min(1, vol));
+    if (this.audioTag) {
+      this.audioTag.volume = this.volume;
+    }
+  }
+}
+
 export const sound = new SoundEffects();
+export const ambientMusic = new AmbientMusicManager();
