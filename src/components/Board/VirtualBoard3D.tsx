@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { BoardLocationId, GameState, PlayerState, CivilizationCard, BuildingTile } from '../../types/game';
+import { BoardLocationId, GameState, PlayerState, CivilizationCard, BuildingTile, ResourceType } from '../../types/game';
 import { canPlaceMeeples, getZoneTotalMeeples } from '../../logic/gameEngine';
+import { ResourceIcon } from '../Common/ResourceIcon';
 import { 
   RotateCcw, 
   ZoomIn, 
@@ -489,9 +490,9 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
         return;
       }
 
-      // Card 3D Slab (Uses classic card artwork for the 3D classic board)
+      // Card 3D Slab (Strictly uses authentic classic card artwork for the 3D classic board)
       const cardGeom = new THREE.BoxGeometry(cardWidth, cardThickness, cardDepth);
-      const cardTex = getCachedTexture(card.classicImageUrl || card.imageUrl || '/board.jpg', loader);
+      const cardTex = getCachedTexture(card.classicImageUrl || '/cards/card_00.png', loader);
 
       const sideMat = new THREE.MeshStandardMaterial({ color: 0xd8ceba, roughness: 0.8 });
       const topMat = new THREE.MeshStandardMaterial({
@@ -1052,22 +1053,6 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
             const status = getZoneStatus(locId);
             if (!topTile) return null;
 
-            let costLabel = '';
-            if (topTile.fixedCost) {
-              const parts = [];
-              if (topTile.fixedCost.wood) parts.push(`🪵x${topTile.fixedCost.wood}`);
-              if (topTile.fixedCost.clay) parts.push(`🧱x${topTile.fixedCost.clay}`);
-              if (topTile.fixedCost.stone) parts.push(`🪨x${topTile.fixedCost.stone}`);
-              if (topTile.fixedCost.gold) parts.push(`✨x${topTile.fixedCost.gold}`);
-              costLabel = parts.join(' ');
-            } else if (topTile.costType === 'any_1_to_7') {
-              costLabel = '1-7 res.';
-            } else if (topTile.costType === '4_different') {
-              costLabel = '4 diff.';
-            } else {
-              costLabel = `${topTile.resourceCount || 4} res.`;
-            }
-
             const vp = topTile.isSpecialHut && topTile.victoryPoints !== undefined
               ? topTile.victoryPoints
               : topTile.costType === 'fixed' && topTile.fixedCost
@@ -1078,7 +1063,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
               <div
                 key={idx}
                 onClick={() => (status.canPlace || status.canResolve) && onZoneClick(locId)}
-                className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold shadow-md backdrop-blur-md flex items-center gap-1 cursor-pointer transition-transform hover:scale-105 ${
+                className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold shadow-md backdrop-blur-md flex items-center gap-1.5 cursor-pointer transition-transform hover:scale-105 ${
                   topTile.isSpecialHut 
                     ? 'bg-purple-950/85 border-purple-500/80 text-purple-200 ring-1 ring-purple-400/50' 
                     : 'bg-stone-950/85 border-amber-600/70 text-amber-200'
@@ -1086,10 +1071,25 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
                 title={`Pile #${idx + 1} (${pile.length} rest.)\n${topTile.description}\nCliquer pour poser ou construire`}
               >
                 <span className="text-stone-400 font-mono">P{idx + 1}:</span>
-                <span className="font-black">{costLabel}</span>
+                {topTile.fixedCost ? (
+                  <div className="flex items-center gap-1">
+                    {(Object.entries(topTile.fixedCost) as [ResourceType, number][]).map(([r, qty]) => (
+                      <span key={r} className="inline-flex items-center gap-0.5">
+                        <ResourceIcon type={r} size="xs" />
+                        {qty > 1 && <span className="font-bold text-[9px]">x{qty}</span>}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="font-black">
+                    {topTile.costType === 'any_1_to_7' ? '1-7 res.' :
+                     topTile.costType === '4_different' ? '4 diff.' :
+                     `${topTile.resourceCount || 4} res.`}
+                  </span>
+                )}
                 <span className="text-amber-400 font-black">+{vp} PV</span>
                 {topTile.isSpecialHut && (
-                  <span className="text-[9px] bg-purple-900 px-1 rounded text-purple-100 font-black">✨ Pouvoir</span>
+                  <span className="text-[9px] bg-purple-900 px-1 rounded text-purple-100 font-black">★ Pouvoir</span>
                 )}
               </div>
             );
@@ -1108,7 +1108,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
           <span className="text-emerald-400">Pions de score sur la frise externe</span>
         </div>
 
-        {/* HOVER ZONE DETAILS HUD */}
+        {/* HOVER ZONE DETAILS HUD - REPOSITIONED TO TOP-LEFT TO PREVENT OVERLAP WITH TOP-RIGHT TRIBE BANNER */}
         {hoveredZone && (() => {
           const coord = ZONE_COORDINATES[hoveredZone];
           const status = getZoneStatus(hoveredZone);
@@ -1116,7 +1116,8 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
           // Details for building piles
           let buildingDetails: {
             title: string;
-            costText: string;
+            fixedCostEntries?: [ResourceType, number][];
+            costText?: string;
             vpText: string;
             powerText?: string;
             isSpecial?: boolean;
@@ -1128,20 +1129,6 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
             const pile = state.buildingPiles[pIdx] || [];
             const top = pile[pile.length - 1];
             if (top) {
-              const costBadges: string[] = [];
-              if (top.fixedCost) {
-                if (top.fixedCost.wood) costBadges.push(`${top.fixedCost.wood} Bois 🪵`);
-                if (top.fixedCost.clay) costBadges.push(`${top.fixedCost.clay} Glaise 🧱`);
-                if (top.fixedCost.stone) costBadges.push(`${top.fixedCost.stone} Pierre 🪨`);
-                if (top.fixedCost.gold) costBadges.push(`${top.fixedCost.gold} Or ✨`);
-              } else if (top.costType === 'any_1_to_7') {
-                costBadges.push('1 à 7 ressources au choix');
-              } else if (top.costType === '4_different') {
-                costBadges.push('4 types différents (1B+1G+1P+1Or)');
-              } else {
-                costBadges.push(`${top.resourceCount || 4} ressources (${top.differentTypesRequired || 1} type(s))`);
-              }
-
               const fixedVp = top.isSpecialHut && top.victoryPoints !== undefined
                 ? top.victoryPoints
                 : top.costType === 'fixed' && top.fixedCost
@@ -1150,7 +1137,12 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
 
               buildingDetails = {
                 title: top.isSpecialHut ? top.description.split(':')[0] : `Hutte Pile #${pIdx + 1}`,
-                costText: costBadges.join(' + '),
+                fixedCostEntries: top.fixedCost ? (Object.entries(top.fixedCost) as [ResourceType, number][]) : undefined,
+                costText: !top.fixedCost ? (
+                  top.costType === 'any_1_to_7' ? '1 à 7 ressources au choix' :
+                  top.costType === '4_different' ? '4 types différents (1 Bois, 1 Glaise, 1 Pierre, 1 Or)' :
+                  `${top.resourceCount || 4} ressources (${top.differentTypesRequired || 1} type(s))`
+                ) : undefined,
                 vpText: fixedVp !== null ? `+${fixedVp} PV` : '? PV (selon ressources)',
                 powerText: top.isSpecialHut ? top.passiveEffectDescription : undefined,
                 isSpecial: top.isSpecialHut,
@@ -1181,7 +1173,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
           }
 
           return (
-            <div className="absolute top-3 right-3 z-20 bg-stone-950/95 backdrop-blur-md border-2 border-amber-500/80 p-3 rounded-2xl shadow-2xl min-w-[240px] max-w-[320px] text-stone-100 pointer-events-none animate-fadeIn space-y-2">
+            <div className="absolute top-14 left-3 z-40 bg-stone-950/95 backdrop-blur-md border-2 border-amber-500/80 p-3 rounded-2xl shadow-2xl min-w-[240px] max-w-[320px] text-stone-100 pointer-events-none animate-fadeIn space-y-2">
               <div className="flex items-center justify-between border-b border-stone-800 pb-1.5">
                 <span className="font-black text-amber-300 text-sm">
                   {buildingDetails ? buildingDetails.title : cardDetails ? cardDetails.name : coord.label}
@@ -1196,7 +1188,18 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
                 <div className="p-2 bg-stone-900/90 rounded-xl border border-stone-800 space-y-1 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-stone-400">Coût :</span>
-                    <span className="font-black text-amber-200">{buildingDetails.costText}</span>
+                    {buildingDetails.fixedCostEntries ? (
+                      <div className="flex items-center gap-1.5 font-black text-amber-200">
+                        {buildingDetails.fixedCostEntries.map(([r, qty]) => (
+                          <span key={r} className="inline-flex items-center gap-0.5">
+                            <ResourceIcon type={r} size="xs" />
+                            <span>x{qty}</span>
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="font-black text-amber-200">{buildingDetails.costText}</span>
+                    )}
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-stone-400">Gain :</span>
@@ -1204,7 +1207,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
                   </div>
                   {buildingDetails.isSpecial && buildingDetails.powerText && (
                     <div className="pt-1 mt-1 border-t border-purple-500/30 text-[11px] text-purple-200 flex items-center gap-1 font-medium bg-purple-950/40 p-1 rounded">
-                      <span>✨</span>
+                      <span className="text-amber-300">★</span>
                       <span>{buildingDetails.powerText}</span>
                     </div>
                   )}

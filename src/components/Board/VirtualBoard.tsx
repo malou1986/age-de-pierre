@@ -8,6 +8,7 @@ import { canPlaceMeeples, getZoneTotalMeeples } from '../../logic/gameEngine';
 import { MeepleIcon } from '../Meeples';
 import { CivilizationCardView } from '../Cards/CivilizationCardView';
 import { BuildingTileView } from '../Cards/BuildingTileView';
+import { ResourceIcon } from '../Common/ResourceIcon';
 import { Flame } from 'lucide-react';
 
 interface VirtualBoardProps {
@@ -103,8 +104,8 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                 height: '30.13%',
               }}
             >
-              <div className="bg-stone-950/70 border border-amber-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-amber-200 mb-1 flex items-center gap-1 shadow">
-                <span>🍗 Chasse</span>
+              <div className="bg-stone-950/70 border border-amber-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-amber-200 mb-1 flex items-center gap-1.5 shadow">
+                <span className="flex items-center gap-1"><ResourceIcon type="food" size="xs" /> Chasse</span>
                 <span className="text-amber-400 font-mono">÷2</span>
               </div>
               {renderMeeples('hunting')}
@@ -136,8 +137,8 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                 height: '25.42%',
               }}
             >
-              <div className="bg-stone-950/75 border border-emerald-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-emerald-300 mb-1 flex items-center gap-1 shadow">
-                <span>🪵 Forêt</span>
+              <div className="bg-stone-950/75 border border-emerald-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-emerald-300 mb-1 flex items-center gap-1.5 shadow">
+                <span className="flex items-center gap-1"><ResourceIcon type="wood" size="xs" /> Forêt</span>
                 <span className="font-mono text-emerald-400">÷3</span>
                 <span className="text-[9px] text-stone-400 font-mono">({totalMeeples}/7)</span>
               </div>
@@ -170,8 +171,8 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                 height: '24.48%',
               }}
             >
-              <div className="bg-stone-950/75 border border-orange-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-orange-300 mb-1 flex items-center gap-1 shadow">
-                <span>🧱 Glaise</span>
+              <div className="bg-stone-950/75 border border-orange-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-orange-300 mb-1 flex items-center gap-1.5 shadow">
+                <span className="flex items-center gap-1"><ResourceIcon type="clay" size="xs" /> Glaise</span>
                 <span className="font-mono text-orange-400">÷4</span>
                 <span className="text-[9px] text-stone-400 font-mono">({totalMeeples}/7)</span>
               </div>
@@ -204,8 +205,8 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                 height: '24.48%',
               }}
             >
-              <div className="bg-stone-950/75 border border-slate-400/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-200 mb-1 flex items-center gap-1 shadow">
-                <span>🪨 Pierre</span>
+              <div className="bg-stone-950/75 border border-slate-400/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-200 mb-1 flex items-center gap-1.5 shadow">
+                <span className="flex items-center gap-1"><ResourceIcon type="stone" size="xs" /> Pierre</span>
                 <span className="font-mono text-slate-300">÷5</span>
                 <span className="text-[9px] text-stone-400 font-mono">({totalMeeples}/7)</span>
               </div>
@@ -238,8 +239,8 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                 height: '22.60%',
               }}
             >
-              <div className="bg-stone-950/75 border border-yellow-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-yellow-300 mb-1 flex items-center gap-1 shadow">
-                <span>✨ Or</span>
+              <div className="bg-stone-950/75 border border-yellow-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-yellow-300 mb-1 flex items-center gap-1.5 shadow">
+                <span className="flex items-center gap-1"><ResourceIcon type="gold" size="xs" /> Or</span>
                 <span className="font-mono text-yellow-400">÷6</span>
                 <span className="text-[9px] text-stone-400 font-mono">({totalMeeples}/7)</span>
               </div>

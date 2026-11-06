@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { PlayerState, ResourceType } from '../../types/game';
 import { RESOURCE_NAMES } from '../../data/buildings';
 import { sound } from '../../logic/audio';
+import { ResourceIcon } from '../Common/ResourceIcon';
 import { AlertTriangle, Plus, Minus, ArrowRight, Wand2 } from 'lucide-react';
 
 interface FeedingModalProps {
@@ -97,11 +98,17 @@ export const FeedingModal: React.FC<FeedingModalProps> = ({
                 <span className="font-bold text-stone-100">{player.totalMeeples} rations</span>
               </div>
               <div className="flex justify-between text-stone-300 text-[11px]">
-                <span>🌾 Couvert par l'agri :</span>
+                <span className="flex items-center gap-1">
+                  <ResourceIcon type="agriculture" size="xs" />
+                  <span>Couvert par l'agri :</span>
+                </span>
                 <span className="font-bold text-emerald-400">-{player.agriculture}</span>
               </div>
               <div className="flex justify-between text-stone-300 text-[11px]">
-                <span>🍗 Stock nourriture prélevé :</span>
+                <span className="flex items-center gap-1">
+                  <ResourceIcon type="food" size="xs" />
+                  <span>Stock nourriture prélevé :</span>
+                </span>
                 <span className="font-bold text-amber-400">-{foodAvailable}</span>
               </div>
             </div>
@@ -144,7 +151,7 @@ export const FeedingModal: React.FC<FeedingModalProps> = ({
                       className="bg-stone-950 border border-stone-800 rounded-lg p-1.5 flex items-center justify-between"
                     >
                       <div className="flex items-center gap-1.5">
-                        <span className="text-base">{meta.icon}</span>
+                        <ResourceIcon type={r} size="sm" />
                         <div>
                           <div className="text-[11px] font-bold text-stone-200">{meta.name}</div>
                           <div className="text-[9px] text-stone-400">Stock : {available}</div>

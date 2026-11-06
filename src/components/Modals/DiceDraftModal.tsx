@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CivilizationCard, PlayerState, ResourceType } from '../../types/game';
 import { sound } from '../../logic/audio';
+import { ResourceIcon } from '../Common/ResourceIcon';
 import { Dices, Check, Sparkles, User, Bot, ArrowRight } from 'lucide-react';
 
 export interface DiceDraftReward {
@@ -215,7 +216,9 @@ export const DiceDraftModal: React.FC<DiceDraftModalProps> = ({
                   <div className="w-5 h-5 bg-amber-100 text-stone-900 rounded font-black text-xs flex items-center justify-center shadow">
                     {val}
                   </div>
-                  <span className="text-base leading-none mt-1">{r.icon}</span>
+                  <div className="mt-1 flex items-center justify-center">
+                    <ResourceIcon type={r.type === 'resource' ? r.resource! : r.type} size="xs" />
+                  </div>
                   <span className="text-[10px] font-semibold text-stone-300 leading-tight">{r.label}</span>
                 </div>
               );
@@ -309,8 +312,8 @@ export const DiceDraftModal: React.FC<DiceDraftModalProps> = ({
                       </div>
 
                       {/* Reward info */}
-                      <div className="text-center mt-2">
-                        <div className="text-xl leading-none">{reward.icon}</div>
+                      <div className="text-center mt-2 flex flex-col items-center">
+                        <ResourceIcon type={reward.type === 'resource' ? reward.resource! : reward.type} size="md" />
                         <div className="text-xs font-bold text-amber-200 mt-1 leading-tight">
                           {reward.label}
                         </div>
@@ -376,8 +379,9 @@ export const DiceDraftModal: React.FC<DiceDraftModalProps> = ({
                           }}
                         />
                         <span>{sel.playerName} :</span>
-                        <span className="text-amber-300">
-                          {sel.reward.icon} {sel.reward.label}
+                        <span className="text-amber-300 inline-flex items-center gap-1">
+                          <ResourceIcon type={sel.reward.type === 'resource' ? sel.reward.resource! : sel.reward.type} size="xs" />
+                          <span>{sel.reward.label}</span>
                         </span>
                       </span>
                     ))}

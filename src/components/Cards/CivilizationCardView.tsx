@@ -1,5 +1,5 @@
 import React from 'react';
-import { CivilizationCard } from '../../types/game';
+import { CivilizationCard, ResourceType } from '../../types/game';
 import { ResourceIcon } from '../Common/ResourceIcon';
 
 interface CivilizationCardViewProps {
@@ -36,14 +36,12 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
     const tb = card.topBonus;
     switch (tb.type) {
       case 'resource_fixed': {
-        const resEntries = Object.entries(tb.resources || {});
+        const resEntries = Object.entries(tb.resources || {}) as [ResourceType, number][];
         return (
           <div className="flex items-center justify-center gap-1 font-bold">
             {resEntries.map(([res, qty]) => (
-              <span key={res} className="inline-flex items-center gap-0.5 bg-stone-900/90 px-1.5 py-0.5 rounded text-amber-200 border border-stone-700">
-                <span className="text-sm">
-                  {res === 'wood' ? '🪵' : res === 'clay' ? '🧱' : res === 'stone' ? '🪨' : '✨'}
-                </span>
+              <span key={res} className="inline-flex items-center gap-1 bg-stone-900/90 px-1.5 py-0.5 rounded text-amber-200 border border-stone-700">
+                <ResourceIcon type={res} size="xs" />
                 <span className="text-xs">x{qty}</span>
               </span>
             ))}
@@ -53,28 +51,28 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
       case 'food_fixed':
         return (
           <div className="inline-flex items-center gap-1 bg-amber-950/90 px-2 py-0.5 rounded text-amber-300 font-bold border border-amber-800 text-xs">
-            <span>🍗</span>
+            <ResourceIcon type="food" size="xs" />
             <span>+{tb.value} Nourriture</span>
           </div>
         );
       case 'agriculture':
         return (
           <div className="inline-flex items-center gap-1 bg-emerald-950/90 px-2 py-0.5 rounded text-emerald-300 font-bold border border-emerald-800 text-xs">
-            <span>🌾</span>
+            <ResourceIcon type="agriculture" size="xs" />
             <span>+1 Champ (Agriculture)</span>
           </div>
         );
       case 'tool_upgrade':
         return (
           <div className="inline-flex items-center gap-1 bg-blue-950/90 px-2 py-0.5 rounded text-blue-300 font-bold border border-blue-800 text-xs">
-            <span>🔨</span>
+            <ResourceIcon type="tool" size="xs" />
             <span>+1 Outil permanent</span>
           </div>
         );
       case 'temp_tool':
         return (
           <div className="inline-flex items-center gap-1 bg-indigo-950/90 px-2 py-0.5 rounded text-indigo-300 font-bold border border-indigo-800 text-xs">
-            <span>📯</span>
+            <span className="text-xs font-black">📯</span>
             <span>+{tb.value} Outil temporaire</span>
           </div>
         );
@@ -86,12 +84,16 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
           </div>
         );
       case 'dice_roll': {
-        const resIcon = tb.resourceType === 'wood' ? '🪵' : tb.resourceType === 'clay' ? '🧱' : tb.resourceType === 'stone' ? '🪨' : tb.resourceType === 'gold' ? '✨' : '🍗';
-        const resLabel = tb.resourceType === 'wood' ? 'Bois' : tb.resourceType === 'clay' ? 'Glaise' : tb.resourceType === 'stone' ? 'Pierre' : tb.resourceType === 'gold' ? 'Or' : 'Nourriture';
+        const rType = (tb.resourceType || 'wood') as ResourceType;
+        const resLabel = rType === 'wood' ? 'Bois' : rType === 'clay' ? 'Glaise' : rType === 'stone' ? 'Pierre' : rType === 'gold' ? 'Or' : 'Nourriture';
         return (
           <div className="inline-flex items-center gap-1.5 bg-amber-950/90 px-2 py-0.5 rounded text-amber-200 font-bold border border-amber-700/80 text-xs shadow-sm">
             <span>🎲🎲</span>
-            <span>2 Dés {resIcon} {resLabel}</span>
+            <span className="flex items-center gap-0.5">
+              <span>2 Dés</span>
+              <ResourceIcon type={rType} size="xs" />
+              <span>{resLabel}</span>
+            </span>
           </div>
         );
       }
@@ -194,13 +196,16 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
           {/* Top Bonus Icon Badge */}
           <div className="bg-stone-950/90 text-amber-300 border border-amber-500/70 px-1 py-0.5 rounded text-[8px] font-black shadow-md flex items-center gap-0.5">
             {card.topBonus.type === 'resource_fixed' ? (
-              <span>🪵🧱</span>
+              <span className="flex items-center gap-0.5">
+                <ResourceIcon type="wood" size="xs" className="w-2.5 h-2.5" />
+                <ResourceIcon type="clay" size="xs" className="w-2.5 h-2.5" />
+              </span>
             ) : card.topBonus.type === 'food_fixed' ? (
-              <span>🍗</span>
+              <ResourceIcon type="food" size="xs" className="w-2.5 h-2.5" />
             ) : card.topBonus.type === 'agriculture' ? (
-              <span>🌾</span>
+              <ResourceIcon type="agriculture" size="xs" className="w-2.5 h-2.5" />
             ) : card.topBonus.type === 'tool_upgrade' ? (
-              <span>🔨</span>
+              <ResourceIcon type="tool" size="xs" className="w-2.5 h-2.5" />
             ) : card.topBonus.type === 'dice_roll' ? (
               <span>🎲</span>
             ) : card.topBonus.type === 'dice_all_players' ? (

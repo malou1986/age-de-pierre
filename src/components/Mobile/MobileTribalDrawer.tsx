@@ -84,26 +84,32 @@ export const MobileTribalDrawer: React.FC<MobileTribalDrawerProps> = ({
       {/* 1. COMPACT DOCKED MINI-HUD (VISIBLE WHEN DRAWER IS CLOSED) */}
       {!isOpen && (
         <div className="fixed top-16 right-2 sm:right-4 z-40 flex items-center gap-1.5 bg-stone-950/90 backdrop-blur-md border-2 border-amber-500/70 py-1.5 px-3 rounded-2xl shadow-2xl">
-          {/* Quick resource chips */}
+          {/* Quick resource chips with custom vector icons */}
           <div className="flex items-center gap-2 text-xs font-black">
-            <span className="flex items-center gap-0.5 text-amber-200">
-              <span>🪵</span>{p.resources.wood}
+            <span className="flex items-center gap-1 text-amber-200">
+              <ResourceIcon type="wood" size="xs" />
+              <span>{p.resources.wood}</span>
             </span>
-            <span className="flex items-center gap-0.5 text-orange-300">
-              <span>🧱</span>{p.resources.clay}
+            <span className="flex items-center gap-1 text-orange-300">
+              <ResourceIcon type="clay" size="xs" />
+              <span>{p.resources.clay}</span>
             </span>
-            <span className="flex items-center gap-0.5 text-stone-300">
-              <span>🪨</span>{p.resources.stone}
+            <span className="flex items-center gap-1 text-stone-300">
+              <ResourceIcon type="stone" size="xs" />
+              <span>{p.resources.stone}</span>
             </span>
-            <span className="flex items-center gap-0.5 text-yellow-300">
-              <span>✨</span>{p.resources.gold}
+            <span className="flex items-center gap-1 text-yellow-300">
+              <ResourceIcon type="gold" size="xs" />
+              <span>{p.resources.gold}</span>
             </span>
             <span className="text-stone-600">|</span>
-            <span className="flex items-center gap-0.5 text-emerald-400">
-              <span>🍗</span>{p.food}
+            <span className="flex items-center gap-1 text-emerald-400">
+              <ResourceIcon type="food" size="xs" />
+              <span>{p.food}</span>
             </span>
-            <span className="flex items-center gap-0.5 text-purple-300 hidden xs:flex">
-              <span>👥</span>{p.availableMeeples}/{p.totalMeeples}
+            <span className="flex items-center gap-1 text-purple-300 hidden xs:flex">
+              <Users className="w-3.5 h-3.5" />
+              <span>{p.availableMeeples}/{p.totalMeeples}</span>
             </span>
           </div>
 
@@ -225,7 +231,7 @@ export const MobileTribalDrawer: React.FC<MobileTribalDrawerProps> = ({
                       className="bg-stone-900/90 border border-stone-800 rounded-2xl p-3 flex items-center justify-between shadow"
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">{meta.icon}</span>
+                        <ResourceIcon type={r} size="md" />
                         <div>
                           <div className="text-xs font-bold text-stone-200">{meta.name}</div>
                           <div className="text-[10px] text-stone-400">Diviseur: ÷{val}</div>
@@ -241,7 +247,7 @@ export const MobileTribalDrawer: React.FC<MobileTribalDrawerProps> = ({
               <div className="bg-stone-900/90 border border-stone-800 rounded-2xl p-4 space-y-2.5 shadow">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-stone-300 flex items-center gap-1.5">
-                    <span>🍗</span>
+                    <ResourceIcon type="food" size="xs" />
                     <span>Nourriture de la Tribu</span>
                   </span>
                   <span className={`font-black ${isFoodSafe ? 'text-emerald-400' : 'text-red-400'}`}>

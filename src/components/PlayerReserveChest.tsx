@@ -158,8 +158,10 @@ export const PlayerReserveChest: React.FC<PlayerReserveChestProps> = ({
               {isFoodSafe ? <ShieldCheck className="w-4 h-4 text-emerald-400" /> : <AlertTriangle className="w-4 h-4 text-red-400" />}
               <div className="text-left">
                 <span className="text-[10px] opacity-80 font-medium uppercase block leading-none">Nourriture Tribu</span>
-                <span className="text-xs font-bold leading-none">
-                  {displayPlayer.food} 🍗 (Besoin: {netFoodNeeded})
+                <span className="text-xs font-bold leading-none flex items-center gap-1">
+                  <span>{displayPlayer.food}</span>
+                  <ResourceIcon type="food" size="xs" />
+                  <span className="text-[10px] opacity-80 font-normal">(Besoin: {netFoodNeeded})</span>
                 </span>
               </div>
             </div>
@@ -172,7 +174,7 @@ export const PlayerReserveChest: React.FC<PlayerReserveChestProps> = ({
           <div className="group relative rounded-2xl bg-gradient-to-b from-stone-800/90 to-stone-900 border-2 border-amber-800/60 p-3 shadow-md hover:border-amber-600 transition-all">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-bold text-stone-300 flex items-center gap-1.5">
-                <span className="text-lg">🪵</span> Bois
+                <ResourceIcon type="wood" size="sm" /> Bois
               </span>
               <span className="text-[10px] font-mono font-bold bg-amber-900/60 text-amber-200 px-1.5 py-0.2 rounded border border-amber-700/50">
                 ÷3
@@ -198,7 +200,7 @@ export const PlayerReserveChest: React.FC<PlayerReserveChestProps> = ({
           <div className="group relative rounded-2xl bg-gradient-to-b from-stone-800/90 to-stone-900 border-2 border-orange-800/60 p-3 shadow-md hover:border-orange-500 transition-all">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-bold text-stone-300 flex items-center gap-1.5">
-                <span className="text-lg">🧱</span> Glaise
+                <ResourceIcon type="clay" size="sm" /> Glaise
               </span>
               <span className="text-[10px] font-mono font-bold bg-orange-950/80 text-orange-200 px-1.5 py-0.2 rounded border border-orange-700/50">
                 ÷4
@@ -224,7 +226,7 @@ export const PlayerReserveChest: React.FC<PlayerReserveChestProps> = ({
           <div className="group relative rounded-2xl bg-gradient-to-b from-stone-800/90 to-stone-900 border-2 border-slate-700 p-3 shadow-md hover:border-slate-400 transition-all">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-bold text-stone-300 flex items-center gap-1.5">
-                <span className="text-lg">🪨</span> Pierre
+                <ResourceIcon type="stone" size="sm" /> Pierre
               </span>
               <span className="text-[10px] font-mono font-bold bg-slate-800 text-slate-200 px-1.5 py-0.2 rounded border border-slate-600">
                 ÷5
@@ -250,7 +252,7 @@ export const PlayerReserveChest: React.FC<PlayerReserveChestProps> = ({
           <div className="group relative rounded-2xl bg-gradient-to-b from-stone-800/90 to-stone-900 border-2 border-yellow-700/60 p-3 shadow-md hover:border-yellow-400 transition-all">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-bold text-stone-300 flex items-center gap-1.5">
-                <span className="text-lg">✨</span> Or
+                <ResourceIcon type="gold" size="sm" /> Or
               </span>
               <span className="text-[10px] font-mono font-bold bg-yellow-950/80 text-yellow-200 px-1.5 py-0.2 rounded border border-yellow-600/50">
                 ÷6
@@ -276,7 +278,7 @@ export const PlayerReserveChest: React.FC<PlayerReserveChestProps> = ({
           <div className="col-span-2 sm:col-span-1 rounded-2xl bg-gradient-to-b from-amber-950/40 to-stone-900 border-2 border-amber-700/40 p-3 shadow-md">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                <span className="text-lg">🍗</span> Nourriture
+                <ResourceIcon type="food" size="sm" /> Nourriture
               </span>
               <span className="text-[10px] text-stone-400">Rations</span>
             </div>

@@ -38,7 +38,7 @@ export const BuildingTileView: React.FC<BuildingTileViewProps> = ({
               key={r}
               className="inline-flex items-center gap-1 bg-stone-900 px-1.5 py-0.5 rounded-lg text-xs font-bold border border-stone-700 text-stone-200"
             >
-              <span>{RESOURCE_NAMES[r].icon}</span>
+              <ResourceIcon type={r} size="xs" />
               <span>{qty}</span>
             </span>
           ))}
@@ -48,9 +48,14 @@ export const BuildingTileView: React.FC<BuildingTileViewProps> = ({
 
     if (tile.costType === 'any_1_to_7') {
       return (
-        <div className="inline-flex items-center gap-1 bg-amber-950/70 border border-amber-700 px-2 py-0.5 rounded-lg text-amber-300 text-xs font-bold">
+        <div className="inline-flex items-center gap-1.5 bg-amber-950/70 border border-amber-700 px-2 py-0.5 rounded-lg text-amber-300 text-xs font-bold">
           <span>1 à 7 au choix</span>
-          <span className="text-stone-400">🪵🧱🪨✨</span>
+          <div className="flex items-center gap-0.5">
+            <ResourceIcon type="wood" size="xs" />
+            <ResourceIcon type="clay" size="xs" />
+            <ResourceIcon type="stone" size="xs" />
+            <ResourceIcon type="gold" size="xs" />
+          </div>
         </div>
       );
     }
@@ -126,36 +131,37 @@ export const BuildingTileView: React.FC<BuildingTileViewProps> = ({
 
         {/* Special Hut Power Chip */}
         {tile.isSpecialHut && (
-          <div className="absolute top-0.5 left-0.5 bg-purple-950/90 text-purple-200 border border-purple-400 px-1 py-0.2 rounded font-black text-[7px] shadow leading-none flex items-center gap-0.5">
-            <span>✨</span>
-            <span>
-              {tile.passiveHutType === 'wood_quarry' ? '+1🪵' :
-               tile.passiveHutType === 'clay_kiln' ? '+1🧱' :
-               tile.passiveHutType === 'stone_shed' ? '+1🪨' :
-               tile.passiveHutType === 'kindergarten' ? '+1👥' :
-               tile.passiveHutType === 'workshop_forge' ? '+1🔨' :
-               tile.passiveHutType === 'greenhouse' ? '+1🌾' : 'Pouvoir'}
+          <div className="absolute top-0.5 left-0.5 bg-purple-950/95 text-purple-200 border border-purple-400 px-1 py-0.2 rounded font-black text-[7px] shadow-md leading-none flex items-center gap-0.5 z-10">
+            <span className="text-amber-300">★</span>
+            <span className="inline-flex items-center gap-0.5">
+              +1
+              {tile.passiveHutType === 'wood_quarry' && <ResourceIcon type="wood" size="xs" className="w-2.5 h-2.5" />}
+              {tile.passiveHutType === 'clay_kiln' && <ResourceIcon type="clay" size="xs" className="w-2.5 h-2.5" />}
+              {tile.passiveHutType === 'stone_shed' && <ResourceIcon type="stone" size="xs" className="w-2.5 h-2.5" />}
+              {tile.passiveHutType === 'kindergarten' && <span className="text-[6.5px]">Ouvrier</span>}
+              {tile.passiveHutType === 'workshop_forge' && <ResourceIcon type="tool" size="xs" className="w-2.5 h-2.5" />}
+              {tile.passiveHutType === 'greenhouse' && <ResourceIcon type="agriculture" size="xs" className="w-2.5 h-2.5" />}
             </span>
           </div>
         )}
 
         {/* Center/Lower Cost indicator */}
-        <div className="absolute inset-x-0 bottom-3.5 flex items-center justify-center pointer-events-none px-0.5">
+        <div className="absolute inset-x-0 bottom-3.5 flex items-center justify-center pointer-events-none px-0.5 z-10">
           {tile.fixedCost ? (
-            <div className="flex items-center gap-0.5 bg-stone-950/90 px-1 py-0.2 rounded border border-stone-700/80 shadow">
+            <div className="flex items-center gap-0.5 bg-stone-950/95 px-1 py-0.2 rounded border border-stone-700/80 shadow-md">
               {(Object.entries(tile.fixedCost) as [ResourceType, number][]).map(([r, qty]) => (
-                <span key={r} className="text-[7px] text-amber-200 font-bold flex items-center">
-                  {r === 'wood' ? '🪵' : r === 'clay' ? '🧱' : r === 'stone' ? '🪨' : '✨'}
-                  {qty > 1 && <span className="text-[6.5px]">x{qty}</span>}
+                <span key={r} className="text-[7px] text-amber-200 font-bold flex items-center gap-0.5">
+                  <ResourceIcon type={r} size="xs" className="w-2.5 h-2.5" />
+                  {qty > 1 && <span className="text-[6.5px] font-black">x{qty}</span>}
                 </span>
               ))}
             </div>
           ) : tile.costType === 'any_1_to_7' ? (
-            <div className="bg-stone-950/90 px-1 py-0.2 rounded border border-stone-700/80 text-[7px] text-amber-300 font-bold shadow">
+            <div className="bg-stone-950/95 px-1 py-0.2 rounded border border-stone-700/80 text-[7px] text-amber-300 font-bold shadow-md">
               1-7 res.
             </div>
           ) : (
-            <div className="bg-stone-950/90 px-1 py-0.2 rounded border border-stone-700/80 text-[7px] text-amber-300 font-bold shadow">
+            <div className="bg-stone-950/95 px-1 py-0.2 rounded border border-stone-700/80 text-[7px] text-amber-300 font-bold shadow-md">
               {tile.resourceCount || 4} res.
             </div>
           )}

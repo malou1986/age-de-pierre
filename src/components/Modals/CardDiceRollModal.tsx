@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { CivilizationCard, PlayerState, ResourceType } from '../../types/game';
 import { sound } from '../../logic/audio';
+import { ResourceIcon } from '../Common/ResourceIcon';
 import { Dices, Check, Sparkles, Wrench, ArrowRight } from 'lucide-react';
 
 interface CardDiceRollModalProps {
   card: CivilizationCard;
   player: PlayerState;
   onConfirm: (diceValues: number[], usedTools: number[], tempToolsUsed?: number) => void;
+  isModern?: boolean;
 }
 
-const RESOURCE_INFO: Record<ResourceType, { name: string; icon: string; divisor: number; colorText: string; bgBadge: string }> = {
-  wood: { name: 'Bois', icon: '🪵', divisor: 3, colorText: 'text-amber-200', bgBadge: 'bg-amber-950/80 border-amber-800' },
-  clay: { name: 'Glaise', icon: '🧱', divisor: 4, colorText: 'text-amber-300', bgBadge: 'bg-amber-950/80 border-amber-800' },
-  stone: { name: 'Pierre', icon: '🪨', divisor: 5, colorText: 'text-stone-200', bgBadge: 'bg-stone-900 border-stone-700' },
-  gold: { name: 'Or', icon: '✨', divisor: 6, colorText: 'text-yellow-300', bgBadge: 'bg-yellow-950/80 border-yellow-600' },
+const RESOURCE_INFO: Record<ResourceType, { name: string; divisor: number; colorText: string; bgBadge: string }> = {
+  wood: { name: 'Bois', divisor: 3, colorText: 'text-amber-200', bgBadge: 'bg-amber-950/80 border-amber-800' },
+  clay: { name: 'Glaise', divisor: 4, colorText: 'text-amber-300', bgBadge: 'bg-amber-950/80 border-amber-800' },
+  stone: { name: 'Pierre', divisor: 5, colorText: 'text-stone-200', bgBadge: 'bg-stone-900 border-stone-700' },
+  gold: { name: 'Or', divisor: 6, colorText: 'text-yellow-300', bgBadge: 'bg-yellow-950/80 border-yellow-600' },
 };
 
 // 2D Dice dot positions (percentages)
@@ -30,9 +32,13 @@ export const CardDiceRollModal: React.FC<CardDiceRollModalProps> = ({
   card,
   player,
   onConfirm,
+  isModern = false,
 }) => {
   const resType = (card.topBonus.resourceType || 'stone') as ResourceType;
   const resInfo = RESOURCE_INFO[resType] || RESOURCE_INFO.stone;
+  const cardImgSrc = isModern
+    ? (card.imageUrl || card.classicImageUrl)
+    : (card.classicImageUrl || card.imageUrl);
 
   const [hasRolled, setHasRolled] = useState(false);
   const [isRolling, setIsRolling] = useState(false);
@@ -123,9 +129,9 @@ export const CardDiceRollModal: React.FC<CardDiceRollModalProps> = ({
       >
         {/* Header with Card Preview */}
         <div className="flex items-center gap-2 border-b border-stone-800 pb-1.5 shrink-0">
-          {card.imageUrl ? (
+          {cardImgSrc ? (
             <img
-              src={card.imageUrl}
+              src={cardImgSrc}
               alt={card.name}
               className="w-8 h-11 sm:w-11 sm:h-14 object-cover rounded-md border border-amber-500/50 shadow-md shrink-0"
             />
@@ -150,7 +156,7 @@ export const CardDiceRollModal: React.FC<CardDiceRollModalProps> = ({
           </div>
 
           <div className={`px-2 py-0.5 rounded-lg border text-xs font-black flex items-center gap-1 shadow shrink-0 ${resInfo.bgBadge}`}>
-            <span className="text-sm sm:text-base">{resInfo.icon}</span>
+            <ResourceIcon type={resType} size="xs" />
             <span className={resInfo.colorText}>÷{resInfo.divisor}</span>
           </div>
         </div>
@@ -302,8 +308,9 @@ export const CardDiceRollModal: React.FC<CardDiceRollModalProps> = ({
                   <div className="bg-stone-900 border border-stone-800 rounded-lg p-1 text-center">
                     <div className="text-[11px] sm:text-xs font-mono text-stone-300">
                       Score : ({diceSum}{toolBonus > 0 ? ` + ${toolBonus}` : ''}) ÷ {resInfo.divisor} =
-                      <span className="text-sm sm:text-base font-black text-amber-300 ml-1">
+                      <span className="text-sm sm:text-base font-black text-amber-300 ml-1 inline-flex items-center gap-1">
                         +{yieldCount}
+                        <ResourceIcon type={resType} size="xs" />
                       </span>
                       <span className="text-[10px] sm:text-xs text-stone-400 ml-1 font-sans">
                         {resInfo.name}

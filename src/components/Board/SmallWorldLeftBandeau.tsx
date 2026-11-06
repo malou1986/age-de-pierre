@@ -253,12 +253,12 @@ export const SmallWorldLeftBandeau: React.FC<SmallWorldLeftBandeauProps> = ({
                             <span>+{p.agriculture}</span>
                           </span>
                           <span 
-                            className={`flex items-center gap-0.5 font-bold ${
+                            className={`flex items-center gap-1 font-bold ${
                               p.food + p.agriculture >= p.totalMeeples ? 'text-emerald-300' : 'text-red-400'
                             }`}
                             title={`Nourriture disponible : ${p.food} • Besoin fin de manche : ${p.totalMeeples} ouvriers (Agri : +${p.agriculture})`}
                           >
-                            <span>🍗</span>
+                            <ResourceIcon type="food" size="xs" />
                             <span>{p.food}</span>
                             <span className="text-stone-500 font-normal">/</span>
                             <span>{p.totalMeeples}</span>

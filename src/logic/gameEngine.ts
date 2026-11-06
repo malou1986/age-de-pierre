@@ -1140,7 +1140,7 @@ export function resolveBuildingPurchase(
   newBuildingPiles[pileIndex] = newPile;
 
   const specialPowerNotice = building.isSpecialHut && building.passiveEffectDescription 
-    ? ` ✨ Pouvoir activé : ${building.passiveEffectDescription} !`
+    ? ` ★ Pouvoir activé : ${building.passiveEffectDescription} !`
     : '';
 
   const logText = `${player.name} construit ${building.isSpecialHut ? 'la ' + building.description.split(':')[0] : 'un bâtiment'} et gagne +${vpEarned} VP !${specialPowerNotice}`;

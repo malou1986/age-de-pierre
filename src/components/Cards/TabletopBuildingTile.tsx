@@ -12,11 +12,17 @@ interface TabletopBuildingTileProps {
   className?: string;
 }
 
-// Fallback thematic image helper for prehistoric building tiles
+// Fallback thematic image helper for prehistoric building tiles (Contemporary Modern Board)
 const getBuildingArtwork = (tile: BuildingTile): string => {
-  if (tile.imageUrl && (tile.imageUrl.startsWith('/buildings/new_huts/') || tile.imageUrl.startsWith('/buildings/peps/') || tile.imageUrl.startsWith('/buildings/'))) {
+  // 1. If special hut with dedicated contemporary illustration
+  if (tile.isSpecialHut && tile.imageUrl && tile.imageUrl.startsWith('/buildings/new_huts/')) {
     return tile.imageUrl;
   }
+  // 2. If explicit contemporary peps illustration
+  if (tile.imageUrl && tile.imageUrl.startsWith('/buildings/peps/')) {
+    return tile.imageUrl;
+  }
+  // 3. Thematic mapping for modern board (never use classic 2008 b_XX.png scans on the modern board!)
   if (tile.costType === 'any_1_to_7') {
     return '/buildings/peps/tile_stone_megalith.jpg';
   }
@@ -207,15 +213,16 @@ export const TabletopBuildingTile: React.FC<TabletopBuildingTileProps> = ({
 
         {/* Special Hut Power Chip */}
         {tile.isSpecialHut && (
-          <div className="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 border border-purple-400 text-purple-200 px-1.5 py-0.2 rounded-full text-[7px] sm:text-[8px] font-black shadow-md flex items-center gap-0.5 animate-pulse">
-            <span>✨</span>
-            <span>
-              {tile.passiveHutType === 'wood_quarry' ? '+1 🪵/tour' :
-               tile.passiveHutType === 'clay_kiln' ? '+1 🧱/tour' :
-               tile.passiveHutType === 'stone_shed' ? '+1 🪨/tour' :
-               tile.passiveHutType === 'kindergarten' ? '+1 👥' :
-               tile.passiveHutType === 'workshop_forge' ? '+1 🔨' :
-               tile.passiveHutType === 'greenhouse' ? '+1 🌾' : 'Pouvoir'}
+          <div className="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 border border-purple-400 text-purple-200 px-1.5 py-0.5 rounded-full text-[7px] sm:text-[8px] font-black shadow-md flex items-center gap-1 animate-pulse">
+            <span className="text-amber-300">★</span>
+            <span className="inline-flex items-center gap-0.5">
+              +1
+              {tile.passiveHutType === 'wood_quarry' && <span className="flex items-center gap-0.5"><ResourceIcon type="wood" size="xs" className="w-2.5 h-2.5" />/tour</span>}
+              {tile.passiveHutType === 'clay_kiln' && <span className="flex items-center gap-0.5"><ResourceIcon type="clay" size="xs" className="w-2.5 h-2.5" />/tour</span>}
+              {tile.passiveHutType === 'stone_shed' && <span className="flex items-center gap-0.5"><ResourceIcon type="stone" size="xs" className="w-2.5 h-2.5" />/tour</span>}
+              {tile.passiveHutType === 'kindergarten' && <span>Ouvrier</span>}
+              {tile.passiveHutType === 'workshop_forge' && <ResourceIcon type="tool" size="xs" className="w-2.5 h-2.5" />}
+              {tile.passiveHutType === 'greenhouse' && <ResourceIcon type="agriculture" size="xs" className="w-2.5 h-2.5" />}
             </span>
           </div>
         )}

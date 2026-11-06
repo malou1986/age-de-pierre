@@ -167,7 +167,7 @@ export const BuildingPurchaseModal: React.FC<BuildingPurchaseModalProps> = ({
             {/* Special Hut Extension Feature Banner */}
             {tile.isSpecialHut && (
               <div className="w-full bg-gradient-to-r from-purple-950/90 to-indigo-950/90 border border-purple-400/80 p-1.5 rounded-xl flex items-center gap-2 text-xs text-purple-200 shadow-md">
-                <span className="text-lg">✨</span>
+                <span className="text-base text-amber-300 font-black">★</span>
                 <div>
                   <strong className="text-purple-300 font-bold block text-[10px] uppercase tracking-wider">Hutte à Pouvoir Spécial</strong>
                   <span className="text-[11px] text-purple-100 font-medium leading-tight">{tile.passiveEffectDescription}</span>
@@ -209,7 +209,7 @@ export const BuildingPurchaseModal: React.FC<BuildingPurchaseModalProps> = ({
                         className="bg-stone-950 border border-stone-800 rounded-lg p-1.5 flex items-center justify-between"
                       >
                         <div className="flex items-center gap-1.5">
-                          <span className="text-base">{meta.icon}</span>
+                          <ResourceIcon type={r} size="sm" />
                           <div>
                             <div className="text-[11px] font-bold text-stone-200">
                               {meta.name} <span className="text-stone-500 text-[9px]">({val}VP)</span>

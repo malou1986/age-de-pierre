@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlayerState } from '../types/game';
+import { ResourceIcon } from './Common/ResourceIcon';
 import { Utensils, Wheat, AlertTriangle, ShieldCheck, HelpCircle } from 'lucide-react';
 
 interface TribeHungerMeterProps {
@@ -101,8 +102,9 @@ export const TribeHungerMeter: React.FC<TribeHungerMeterProps> = ({
 
         <div className="bg-stone-950/80 p-1.5 rounded-xl border border-stone-800">
           <span className="text-[10px] text-stone-400 block font-medium">4. Vos réserves</span>
-          <span className={`font-black text-sm ${isSecure ? 'text-emerald-400' : 'text-red-400'}`}>
-            🍗 {currentFood}
+          <span className={`font-black text-sm flex items-center gap-1 ${isSecure ? 'text-emerald-400' : 'text-red-400'}`}>
+            <ResourceIcon type="food" size="xs" />
+            <span>{currentFood}</span>
           </span>
         </div>
       </div>
@@ -127,7 +129,13 @@ export const TribeHungerMeter: React.FC<TribeHungerMeterProps> = ({
                     : 'bg-red-950 border-red-500 text-red-200 animate-pulse'
                 }`}
               >
-                {isCoveredByAgri ? '🌾 Blé' : isCoveredByFood ? '🍗 Réserve' : '❌ MANQUE'}
+                {isCoveredByAgri ? (
+                  <span className="flex items-center gap-0.5"><ResourceIcon type="agriculture" size="xs" /> Blé</span>
+                ) : isCoveredByFood ? (
+                  <span className="flex items-center gap-0.5"><ResourceIcon type="food" size="xs" /> Réserve</span>
+                ) : (
+                  '❌ MANQUE'
+                )}
               </span>
             );
           })}

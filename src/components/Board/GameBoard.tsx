@@ -96,8 +96,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               style={{ minHeight: '140px' }}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black tracking-wide text-amber-300 uppercase flex items-center gap-1">
-                  🍗 La Chasse
+                <span className="text-xs font-black tracking-wide text-amber-300 uppercase flex items-center gap-1.5">
+                  <ResourceIcon type="food" size="xs" /> La Chasse
                 </span>
                 <span className="text-[10px] bg-stone-950 px-2 py-0.5 rounded-full border border-stone-800 text-stone-300 font-mono">
                   ÷2
@@ -130,8 +130,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               style={{ minHeight: '140px' }}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black tracking-wide text-emerald-300 uppercase flex items-center gap-1">
-                  🪵 La Forêt
+                <span className="text-xs font-black tracking-wide text-emerald-300 uppercase flex items-center gap-1.5">
+                  <ResourceIcon type="wood" size="xs" /> La Forêt
                 </span>
                 <span className="text-[10px] bg-stone-950 px-2 py-0.5 rounded-full border border-stone-800 text-stone-300 font-mono">
                   ÷3
@@ -164,8 +164,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               style={{ minHeight: '140px' }}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black tracking-wide text-orange-300 uppercase flex items-center gap-1">
-                  🧱 La Glaisière
+                <span className="text-xs font-black tracking-wide text-orange-300 uppercase flex items-center gap-1.5">
+                  <ResourceIcon type="clay" size="xs" /> La Glaisière
                 </span>
                 <span className="text-[10px] bg-stone-950 px-2 py-0.5 rounded-full border border-stone-800 text-stone-300 font-mono">
                   ÷4
@@ -198,8 +198,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               style={{ minHeight: '140px' }}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black tracking-wide text-slate-300 uppercase flex items-center gap-1">
-                  🪨 La Carrière
+                <span className="text-xs font-black tracking-wide text-slate-300 uppercase flex items-center gap-1.5">
+                  <ResourceIcon type="stone" size="xs" /> La Carrière
                 </span>
                 <span className="text-[10px] bg-stone-950 px-2 py-0.5 rounded-full border border-stone-800 text-stone-300 font-mono">
                   ÷5
@@ -232,8 +232,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               style={{ minHeight: '140px' }}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black tracking-wide text-yellow-300 uppercase flex items-center gap-1">
-                  ✨ La Rivière
+                <span className="text-xs font-black tracking-wide text-yellow-300 uppercase flex items-center gap-1.5">
+                  <ResourceIcon type="gold" size="xs" /> La Rivière
                 </span>
                 <span className="text-[10px] bg-stone-950 px-2 py-0.5 rounded-full border border-stone-800 text-stone-300 font-mono">
                   ÷6

@@ -2,6 +2,7 @@ import React from 'react';
 import { GameState, PlayerState, ResourceType } from '../../types/game';
 import { RESOURCE_NAMES } from '../../data/buildings';
 import { MeepleIcon } from '../Meeples';
+import { ResourceIcon } from '../Common/ResourceIcon';
 import { 
   Crown, 
   Sparkles, 
@@ -99,24 +100,45 @@ export const RoundSummaryModal: React.FC<RoundSummaryModalProps> = ({
                   </div>
                   <div className="bg-stone-900/90 p-1 rounded-lg border border-stone-800">
                     <span className="text-stone-400 block text-[9px]">Nourriture</span>
-                    <span className="font-bold text-amber-400">🍗 {player.food}</span>
+                    <span className="font-bold text-amber-400 inline-flex items-center gap-1">
+                      <ResourceIcon type="food" size="xs" />
+                      <span>{player.food}</span>
+                    </span>
                   </div>
                   <div className="bg-stone-900/90 p-1 rounded-lg border border-stone-800">
                     <span className="text-stone-400 block text-[9px]">Champs</span>
-                    <span className="font-bold text-emerald-400">🌾 {player.agriculture}</span>
+                    <span className="font-bold text-emerald-400 inline-flex items-center gap-1">
+                      <ResourceIcon type="agriculture" size="xs" />
+                      <span>{player.agriculture}</span>
+                    </span>
                   </div>
                   <div className="bg-stone-900/90 p-1 rounded-lg border border-stone-800">
                     <span className="text-stone-400 block text-[9px]">Outils</span>
-                    <span className="font-bold text-blue-400">🔨 +{totalTools}</span>
+                    <span className="font-bold text-blue-400 inline-flex items-center gap-1">
+                      <ResourceIcon type="tool" size="xs" />
+                      <span>+{totalTools}</span>
+                    </span>
                   </div>
                 </div>
 
                 {/* Resources Inventory */}
                 <div className="flex items-center justify-around bg-stone-900/50 p-1.5 rounded-xl border border-stone-800/80 text-xs">
-                  <span title="Bois">🪵 {player.resources.wood}</span>
-                  <span title="Glaise">🧱 {player.resources.clay}</span>
-                  <span title="Pierre">🪨 {player.resources.stone}</span>
-                  <span title="Or">✨ {player.resources.gold}</span>
+                  <span title="Bois" className="inline-flex items-center gap-1">
+                    <ResourceIcon type="wood" size="xs" />
+                    <span>{player.resources.wood}</span>
+                  </span>
+                  <span title="Glaise" className="inline-flex items-center gap-1">
+                    <ResourceIcon type="clay" size="xs" />
+                    <span>{player.resources.clay}</span>
+                  </span>
+                  <span title="Pierre" className="inline-flex items-center gap-1">
+                    <ResourceIcon type="stone" size="xs" />
+                    <span>{player.resources.stone}</span>
+                  </span>
+                  <span title="Or" className="inline-flex items-center gap-1">
+                    <ResourceIcon type="gold" size="xs" />
+                    <span>{player.resources.gold}</span>
+                  </span>
                 </div>
 
                 {/* Recent actions in round */}

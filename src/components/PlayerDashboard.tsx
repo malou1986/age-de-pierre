@@ -86,24 +86,27 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({
                 {/* Food */}
                 <div className="bg-stone-900/90 p-1.5 rounded-xl border border-stone-800">
                   <span className="text-[10px] text-stone-400 block font-medium">Nourriture</span>
-                  <span className="font-bold text-amber-400">
-                    🍗 {p.food}
+                  <span className="font-bold text-amber-400 inline-flex items-center gap-1">
+                    <ResourceIcon type="food" size="xs" />
+                    <span>{p.food}</span>
                   </span>
                 </div>
 
                 {/* Agriculture */}
                 <div className="bg-stone-900/90 p-1.5 rounded-xl border border-stone-800">
                   <span className="text-[10px] text-stone-400 block font-medium">Champs</span>
-                  <span className="font-bold text-emerald-400">
-                    🌾 {p.agriculture}
+                  <span className="font-bold text-emerald-400 inline-flex items-center gap-1">
+                    <ResourceIcon type="agriculture" size="xs" />
+                    <span>{p.agriculture}</span>
                   </span>
                 </div>
 
                 {/* Tools */}
                 <div className="bg-stone-900/90 p-1.5 rounded-xl border border-stone-800">
                   <span className="text-[10px] text-stone-400 block font-medium">Outils</span>
-                  <span className="font-bold text-blue-400">
-                    🔨 {totalTools}
+                  <span className="font-bold text-blue-400 inline-flex items-center gap-1">
+                    <ResourceIcon type="tool" size="xs" />
+                    <span>{totalTools}</span>
                   </span>
                 </div>
               </div>
@@ -116,19 +119,19 @@ export const PlayerDashboard: React.FC<PlayerDashboardProps> = ({
               {/* Resources bar */}
               <div className="grid grid-cols-4 gap-1 bg-stone-950 p-1.5 rounded-xl border border-stone-800/80 text-[11px] font-bold">
                 <div className="flex items-center justify-center gap-1 text-[#C88A58]">
-                  <span>🪵</span>
+                  <ResourceIcon type="wood" size="xs" />
                   <span>{p.resources.wood}</span>
                 </div>
                 <div className="flex items-center justify-center gap-1 text-[#E07A5F]">
-                  <span>🧱</span>
+                  <ResourceIcon type="clay" size="xs" />
                   <span>{p.resources.clay}</span>
                 </div>
                 <div className="flex items-center justify-center gap-1 text-[#9CA3AF]">
-                  <span>🪨</span>
+                  <ResourceIcon type="stone" size="xs" />
                   <span>{p.resources.stone}</span>
                 </div>
                 <div className="flex items-center justify-center gap-1 text-[#FBBF24]">
-                  <span>✨</span>
+                  <ResourceIcon type="gold" size="xs" />
                   <span>{p.resources.gold}</span>
                 </div>
               </div>

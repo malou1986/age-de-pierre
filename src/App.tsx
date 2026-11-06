@@ -450,7 +450,8 @@ export const App: React.FC = () => {
             );
 
             const resName = targetLoc === 'hunting' ? 'Nourriture' : targetLoc === 'forest' ? 'Bois' : targetLoc === 'clay_pit' ? 'Glaise' : targetLoc === 'quarry' ? 'Pierre' : 'Or';
-            const resIcon = targetLoc === 'hunting' ? '🍗' : targetLoc === 'forest' ? '🪵' : targetLoc === 'clay_pit' ? '🧱' : targetLoc === 'quarry' ? '🪨' : '✨';
+            const resType: ResourceType | 'food' = targetLoc === 'hunting' ? 'food' : targetLoc === 'forest' ? 'wood' : targetLoc === 'clay_pit' ? 'clay' : targetLoc === 'quarry' ? 'stone' : 'gold';
+            const resIcon = <ResourceIcon type={resType} size="xs" />;
             const toolsBonus = toolsToUse.reduce((s, u, idx) => s + (u ? (activePlayer.toolTiles[idx] || 0) : 0), 0);
             const totalVal = diceSum + toolsBonus;
             const harvestedQty = Math.floor(totalVal / divisor);
@@ -1141,6 +1142,7 @@ export const App: React.FC = () => {
           card={rollingCard.card}
           player={state.players.find(p => p.id === rollingCard.buyerId) || activePlayer}
           onConfirm={handleCompleteCardDiceRoll}
+          isModern={boardView === 'smallworld'}
         />
       )}
 

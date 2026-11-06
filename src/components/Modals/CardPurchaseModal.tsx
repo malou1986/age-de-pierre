@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BoardLocationId, CivilizationCard, PlayerState, ResourceType } from '../../types/game';
 import { RESOURCE_NAMES } from '../../data/buildings';
 import { sound } from '../../logic/audio';
+import { ResourceIcon } from '../Common/ResourceIcon';
 import { CivilizationCardView } from '../Cards/CivilizationCardView';
 import { TabletopCivilizationCard } from '../Cards/TabletopCivilizationCard';
 import { Scroll, Plus, Minus, ArrowRight, X, AlertCircle, Undo2 } from 'lucide-react';
@@ -134,7 +135,7 @@ export const CardPurchaseModal: React.FC<CardPurchaseModalProps> = ({
                         className="bg-stone-950 border border-stone-800 rounded-lg p-1.5 flex items-center justify-between"
                       >
                         <div className="flex items-center gap-1.5">
-                          <span className="text-base">{meta.icon}</span>
+                          <ResourceIcon type={r} size="sm" />
                           <div>
                             <div className="text-[11px] font-bold text-stone-200">{meta.name}</div>
                             <div className="text-[9px] text-stone-400">Stock : {available}</div>

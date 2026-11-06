@@ -54,8 +54,10 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
             pour accumuler le plus de <strong className="text-amber-300">Points de Victoire (VP)</strong> avant la fin du jeu.
           </p>
           <div className="grid grid-cols-3 gap-3 text-center pt-2">
-            <div className="bg-stone-950 p-3 rounded-xl border border-stone-800">
-              <span className="text-2xl block mb-1">🪵</span>
+            <div className="bg-stone-950 p-3 rounded-xl border border-stone-800 flex flex-col items-center">
+              <div className="h-8 flex items-center justify-center mb-1">
+                <ResourceIcon type="wood" size="md" />
+              </div>
               <span className="text-xs font-semibold text-stone-200">Récolter</span>
               <p className="text-[10px] text-stone-400">Bois, glaise, pierre, or</p>
             </div>
@@ -119,24 +121,24 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
             La somme est ensuite divisée par la valeur de la ressource :
           </p>
           <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center gap-2">
-              <span>🍗 Chasse :</span>
+            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5"><ResourceIcon type="food" size="xs" /> Chasse :</span>
               <span className="text-amber-300 font-bold">Total ÷ 2</span>
             </div>
-            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center gap-2">
-              <span>🪵 Bois :</span>
+            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5"><ResourceIcon type="wood" size="xs" /> Bois :</span>
               <span className="text-amber-300 font-bold">Total ÷ 3</span>
             </div>
-            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center gap-2">
-              <span>🧱 Glaise :</span>
+            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5"><ResourceIcon type="clay" size="xs" /> Glaise :</span>
               <span className="text-amber-300 font-bold">Total ÷ 4</span>
             </div>
-            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center gap-2">
-              <span>🪨 Pierre :</span>
+            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5"><ResourceIcon type="stone" size="xs" /> Pierre :</span>
               <span className="text-amber-300 font-bold">Total ÷ 5</span>
             </div>
-            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center gap-2 col-span-2">
-              <span>✨ Or :</span>
+            <div className="bg-stone-950 p-2 rounded border border-stone-800 flex items-center justify-between col-span-2">
+              <span className="flex items-center gap-1.5"><ResourceIcon type="gold" size="xs" /> Or :</span>
               <span className="text-amber-300 font-bold">Total ÷ 6</span>
             </div>
           </div>
@@ -201,7 +203,10 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
       content: (
         <div className="space-y-3 text-sm text-stone-300 leading-relaxed">
           <div className="bg-stone-950 p-3 rounded-xl border border-stone-800 text-xs space-y-1.5">
-            <div className="font-semibold text-amber-300">🍗 Nourrir la tribu :</div>
+            <div className="font-semibold text-amber-300 flex items-center gap-1.5">
+              <ResourceIcon type="food" size="xs" />
+              <span>Nourrir la tribu :</span>
+            </div>
             <p className="text-stone-400">
               À la fin de chaque tour, vous devez fournir <strong>1 nourriture par ouvrier</strong>.
               L'agriculture paye en priorité, puis vos réserves. Si vous ne pouvez pas : payez avec des matières premières, ou perdez <span className="text-red-400 font-bold">-10 Points de Victoire</span> !
@@ -271,17 +276,23 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
           </p>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="bg-stone-950 p-2 rounded-xl border border-purple-500/40 space-y-1">
-              <strong className="text-amber-300 block text-[11px]">🪵 Hutte du Bûcheron (3 bois)</strong>
+              <strong className="text-amber-300 flex items-center gap-1 text-[11px]">
+                <ResourceIcon type="wood" size="xs" /> Hutte du Bûcheron (3 bois)
+              </strong>
               <p className="text-stone-400 text-[10px] leading-tight">+1 Bois gratuit au début de chaque manche !</p>
             </div>
 
             <div className="bg-stone-950 p-2 rounded-xl border border-purple-500/40 space-y-1">
-              <strong className="text-amber-300 block text-[11px]">🧱 Fournil de Glaise (3 glaise)</strong>
+              <strong className="text-amber-300 flex items-center gap-1 text-[11px]">
+                <ResourceIcon type="clay" size="xs" /> Fournil de Glaise (3 glaise)
+              </strong>
               <p className="text-stone-400 text-[10px] leading-tight">+1 Glaise gratuite au début de chaque manche !</p>
             </div>
 
             <div className="bg-stone-950 p-2 rounded-xl border border-purple-500/40 space-y-1">
-              <strong className="text-amber-300 block text-[11px]">🪨 Abri du Carrier (3 pierre)</strong>
+              <strong className="text-amber-300 flex items-center gap-1 text-[11px]">
+                <ResourceIcon type="stone" size="xs" /> Abri du Carrier (3 pierre)
+              </strong>
               <p className="text-stone-400 text-[10px] leading-tight">+1 Pierre gratuite au début de chaque manche !</p>
             </div>
 
@@ -348,7 +359,10 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({
           </p>
           <div className="space-y-2 text-xs">
             <div className="bg-stone-950 p-2.5 rounded-xl border border-emerald-500/40">
-              <strong className="text-emerald-300 block">🍗 Enchère de Nourriture :</strong>
+              <strong className="text-emerald-300 flex items-center gap-1.5">
+                <ResourceIcon type="food" size="xs" />
+                <span>Enchère de Nourriture :</span>
+              </strong>
               <p className="text-stone-400">
                 Placez des ouvriers sur la Harde et consacrez de la nourriture pour les amadouer.
               </p>
