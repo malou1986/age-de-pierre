@@ -43,11 +43,13 @@ export const BuildingPurchaseModal: React.FC<BuildingPurchaseModalProps> = ({
   const totalSelected = Object.values(selected).reduce((s, c) => s + c, 0);
   const canAfford = canPlayerAffordBuilding(player, tile);
 
-  // Calculate live VP
-  const vpEarned = (['wood', 'clay', 'stone', 'gold'] as ResourceType[]).reduce(
-    (sum, r) => sum + selected[r] * RESOURCE_VALUES[r],
-    0
-  );
+  // Calculate live VP (Special huts have fixed VP printed on the tile: 3, 4, 5, 5, 5, 5 VP)
+  const vpEarned = tile.isSpecialHut && tile.victoryPoints !== undefined
+    ? tile.victoryPoints
+    : (['wood', 'clay', 'stone', 'gold'] as ResourceType[]).reduce(
+        (sum, r) => sum + selected[r] * RESOURCE_VALUES[r],
+        0
+      );
 
   // Validate requirement
   const isValid = (): boolean => {

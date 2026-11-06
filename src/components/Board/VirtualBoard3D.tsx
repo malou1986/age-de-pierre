@@ -39,14 +39,14 @@ const ZONE_COORDINATES: Record<BoardLocationId, { xPct: number; yPct: number; ra
   tool_maker: { xPct: 0.576, yPct: 0.615, radius: 5, label: 'Outils', sublabel: '+1 Outil' },
   field: { xPct: 0.557, yPct: 0.455, radius: 6, label: 'Champs', sublabel: '+1 Agriculture' },
   hut: { xPct: 0.391, yPct: 0.517, radius: 6, label: 'Hutte', sublabel: '+1 Ouvrier' },
-  building_0: { xPct: 0.084, yPct: 0.824, radius: 6.0, label: 'Pile Hutte 1', sublabel: 'Bâtiment' },
-  building_1: { xPct: 0.178, yPct: 0.824, radius: 6.0, label: 'Pile Hutte 2', sublabel: 'Bâtiment' },
-  building_2: { xPct: 0.272, yPct: 0.824, radius: 6.0, label: 'Pile Hutte 3', sublabel: 'Bâtiment' },
-  building_3: { xPct: 0.366, yPct: 0.824, radius: 6.0, label: 'Pile Hutte 4', sublabel: 'Bâtiment' },
-  card_3: { xPct: 0.553, yPct: 0.824, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 4 res.' },
-  card_2: { xPct: 0.672, yPct: 0.824, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 3 res.' },
-  card_1: { xPct: 0.791, yPct: 0.824, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 2 res.' },
-  card_0: { xPct: 0.910, yPct: 0.824, radius: 6.5, label: 'Carte Civilisation', sublabel: 'Coût: 1 res.' },
+  building_0: { xPct: 0.147, yPct: 0.824, radius: 5.5, label: 'Pile Bâtiment 1', sublabel: 'Bâtiment' },
+  building_1: { xPct: 0.244, yPct: 0.824, radius: 5.5, label: 'Pile Bâtiment 2', sublabel: 'Bâtiment' },
+  building_2: { xPct: 0.341, yPct: 0.824, radius: 5.5, label: 'Pile Bâtiment 3', sublabel: 'Bâtiment' },
+  building_3: { xPct: 0.438, yPct: 0.824, radius: 5.5, label: 'Pile Bâtiment 4', sublabel: 'Bâtiment' },
+  card_3: { xPct: 0.567, yPct: 0.781, radius: 6.0, label: 'Carte Civilisation #4', sublabel: 'Coût: 4 res.' },
+  card_2: { xPct: 0.676, yPct: 0.781, radius: 6.0, label: 'Carte Civilisation #3', sublabel: 'Coût: 3 res.' },
+  card_1: { xPct: 0.785, yPct: 0.781, radius: 6.0, label: 'Carte Civilisation #2', sublabel: 'Coût: 2 res.' },
+  card_0: { xPct: 0.893, yPct: 0.781, radius: 6.0, label: 'Carte Civilisation #1', sublabel: 'Coût: 1 res.' },
   merchant: { xPct: 0.222, yPct: 0.579, radius: 6.5, label: 'Marchands', sublabel: 'Troc & Parures' },
   mammoth: { xPct: 0.170, yPct: 0.123, radius: 6.5, label: 'Mammouth', sublabel: 'Harde de Mammouths' },
 };
@@ -851,9 +851,16 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
             offsetZ = Math.sin(angle) * rad;
           }
 
-          // If in card or building zone, place meeple slightly above or to the side of the card
-          const isCardOrBuilding = locId.startsWith('card_') || locId.startsWith('building_');
-          const baseY = isCardOrBuilding ? 2.2 : 1.8;
+          // Positioning meeple vertically directly onto the card or building stack
+          let baseY = 1.7;
+          if (locId.startsWith('card_')) {
+            baseY = 2.15; // Directly on top of the card slab
+          } else if (locId.startsWith('building_')) {
+            const pIdx = parseInt(locId.split('_')[1], 10);
+            const pileLen = (state.buildingPiles[pIdx] || []).length;
+            const stackHeight = Math.max(0.4, pileLen * 0.38);
+            baseY = stackHeight + 0.1 + 1.7; // Directly on top of the top building tile
+          }
 
           meepleMesh.position.set(zoneCenterX + offsetX, baseY, zoneCenterZ + offsetZ);
           meepleMesh.rotation.y = Math.PI / 4 + (meepleIdx * 0.3);
@@ -1037,6 +1044,58 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
           </div>
         </div>
 
+        {/* EXPLICIT BUILDING PILES QUICK-VIEW (ANCIEN PLATEAU 3D) */}
+        <div className="absolute bottom-11 left-3 z-20 flex flex-wrap items-center gap-1.5 pointer-events-auto">
+          {state.buildingPiles.map((pile, idx) => {
+            const topTile = pile[pile.length - 1];
+            const locId = `building_${idx}` as BoardLocationId;
+            const status = getZoneStatus(locId);
+            if (!topTile) return null;
+
+            let costLabel = '';
+            if (topTile.fixedCost) {
+              const parts = [];
+              if (topTile.fixedCost.wood) parts.push(`🪵x${topTile.fixedCost.wood}`);
+              if (topTile.fixedCost.clay) parts.push(`🧱x${topTile.fixedCost.clay}`);
+              if (topTile.fixedCost.stone) parts.push(`🪨x${topTile.fixedCost.stone}`);
+              if (topTile.fixedCost.gold) parts.push(`✨x${topTile.fixedCost.gold}`);
+              costLabel = parts.join(' ');
+            } else if (topTile.costType === 'any_1_to_7') {
+              costLabel = '1-7 res.';
+            } else if (topTile.costType === '4_different') {
+              costLabel = '4 diff.';
+            } else {
+              costLabel = `${topTile.resourceCount || 4} res.`;
+            }
+
+            const vp = topTile.isSpecialHut && topTile.victoryPoints !== undefined
+              ? topTile.victoryPoints
+              : topTile.costType === 'fixed' && topTile.fixedCost
+                ? Object.entries(topTile.fixedCost).reduce((s, [r, q]) => s + (q || 0) * (r === 'wood' ? 3 : r === 'clay' ? 4 : r === 'stone' ? 5 : 6), 0)
+                : '?';
+
+            return (
+              <div
+                key={idx}
+                onClick={() => (status.canPlace || status.canResolve) && onZoneClick(locId)}
+                className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold shadow-md backdrop-blur-md flex items-center gap-1 cursor-pointer transition-transform hover:scale-105 ${
+                  topTile.isSpecialHut 
+                    ? 'bg-purple-950/85 border-purple-500/80 text-purple-200 ring-1 ring-purple-400/50' 
+                    : 'bg-stone-950/85 border-amber-600/70 text-amber-200'
+                } ${status.canPlace || status.canResolve ? 'ring-2 ring-amber-400 animate-pulse' : ''}`}
+                title={`Pile #${idx + 1} (${pile.length} rest.)\n${topTile.description}\nCliquer pour poser ou construire`}
+              >
+                <span className="text-stone-400 font-mono">P{idx + 1}:</span>
+                <span className="font-black">{costLabel}</span>
+                <span className="text-amber-400 font-black">+{vp} PV</span>
+                {topTile.isSpecialHut && (
+                  <span className="text-[9px] bg-purple-900 px-1 rounded text-purple-100 font-black">✨ Pouvoir</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
         {/* BOTTOM NAVIGATION TIPS */}
         <div className="absolute bottom-3 left-3 z-20 hidden sm:flex items-center gap-2 bg-stone-950/85 backdrop-blur-md border border-stone-800 px-3 py-1.5 rounded-2xl shadow-xl text-xs text-stone-300 pointer-events-none">
           <span className="text-amber-400 font-bold">Plateau 3D :</span>
@@ -1053,15 +1112,128 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
         {hoveredZone && (() => {
           const coord = ZONE_COORDINATES[hoveredZone];
           const status = getZoneStatus(hoveredZone);
+
+          // Details for building piles
+          let buildingDetails: {
+            title: string;
+            costText: string;
+            vpText: string;
+            powerText?: string;
+            isSpecial?: boolean;
+            remaining: number;
+          } | null = null;
+
+          if (hoveredZone.startsWith('building_')) {
+            const pIdx = parseInt(hoveredZone.split('_')[1], 10);
+            const pile = state.buildingPiles[pIdx] || [];
+            const top = pile[pile.length - 1];
+            if (top) {
+              const costBadges: string[] = [];
+              if (top.fixedCost) {
+                if (top.fixedCost.wood) costBadges.push(`${top.fixedCost.wood} Bois 🪵`);
+                if (top.fixedCost.clay) costBadges.push(`${top.fixedCost.clay} Glaise 🧱`);
+                if (top.fixedCost.stone) costBadges.push(`${top.fixedCost.stone} Pierre 🪨`);
+                if (top.fixedCost.gold) costBadges.push(`${top.fixedCost.gold} Or ✨`);
+              } else if (top.costType === 'any_1_to_7') {
+                costBadges.push('1 à 7 ressources au choix');
+              } else if (top.costType === '4_different') {
+                costBadges.push('4 types différents (1B+1G+1P+1Or)');
+              } else {
+                costBadges.push(`${top.resourceCount || 4} ressources (${top.differentTypesRequired || 1} type(s))`);
+              }
+
+              const fixedVp = top.isSpecialHut && top.victoryPoints !== undefined
+                ? top.victoryPoints
+                : top.costType === 'fixed' && top.fixedCost
+                  ? Object.entries(top.fixedCost).reduce((s, [r, q]) => s + (q || 0) * (r === 'wood' ? 3 : r === 'clay' ? 4 : r === 'stone' ? 5 : 6), 0)
+                  : null;
+
+              buildingDetails = {
+                title: top.isSpecialHut ? top.description.split(':')[0] : `Hutte Pile #${pIdx + 1}`,
+                costText: costBadges.join(' + '),
+                vpText: fixedVp !== null ? `+${fixedVp} PV` : '? PV (selon ressources)',
+                powerText: top.isSpecialHut ? top.passiveEffectDescription : undefined,
+                isSpecial: top.isSpecialHut,
+                remaining: pile.length,
+              };
+            }
+          }
+
+          // Details for civilization cards
+          let cardDetails: {
+            name: string;
+            costText: string;
+            topBonus: string;
+            bottomBonus: string;
+          } | null = null;
+
+          if (hoveredZone.startsWith('card_')) {
+            const slot = parseInt(hoveredZone.split('_')[1], 10);
+            const card = state.activeCards[slot];
+            if (card) {
+              cardDetails = {
+                name: card.name,
+                costText: `${slot + 1} ressource(s) au choix`,
+                topBonus: card.topBonus.description,
+                bottomBonus: card.bottomBonus.description,
+              };
+            }
+          }
+
           return (
-            <div className="absolute top-3 right-3 z-20 bg-stone-950/90 backdrop-blur-md border-2 border-amber-500/80 p-3 rounded-2xl shadow-2xl min-w-[210px] text-stone-100 pointer-events-none animate-fadeIn">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-black text-amber-300 text-sm">{coord.label}</span>
-                <span className="text-[10px] bg-stone-800 text-stone-300 px-1.5 py-0.2 rounded font-mono">
+            <div className="absolute top-3 right-3 z-20 bg-stone-950/95 backdrop-blur-md border-2 border-amber-500/80 p-3 rounded-2xl shadow-2xl min-w-[240px] max-w-[320px] text-stone-100 pointer-events-none animate-fadeIn space-y-2">
+              <div className="flex items-center justify-between border-b border-stone-800 pb-1.5">
+                <span className="font-black text-amber-300 text-sm">
+                  {buildingDetails ? buildingDetails.title : cardDetails ? cardDetails.name : coord.label}
+                </span>
+                <span className="text-[10px] bg-stone-800 text-stone-300 px-1.5 py-0.5 rounded font-mono">
                   {coord.sublabel}
                 </span>
               </div>
-              <div className="text-xs text-stone-300 space-y-1">
+
+              {/* Building specific details */}
+              {buildingDetails && (
+                <div className="p-2 bg-stone-900/90 rounded-xl border border-stone-800 space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">Coût :</span>
+                    <span className="font-black text-amber-200">{buildingDetails.costText}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">Gain :</span>
+                    <span className="font-bold text-amber-300">{buildingDetails.vpText}</span>
+                  </div>
+                  {buildingDetails.isSpecial && buildingDetails.powerText && (
+                    <div className="pt-1 mt-1 border-t border-purple-500/30 text-[11px] text-purple-200 flex items-center gap-1 font-medium bg-purple-950/40 p-1 rounded">
+                      <span>✨</span>
+                      <span>{buildingDetails.powerText}</span>
+                    </div>
+                  )}
+                  <div className="text-[10px] text-stone-500 text-right font-mono">
+                    {buildingDetails.remaining} tuile(s) dans la pile
+                  </div>
+                </div>
+              )}
+
+              {/* Card specific details */}
+              {cardDetails && (
+                <div className="p-2 bg-stone-900/90 rounded-xl border border-stone-800 space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-stone-400">Coût :</span>
+                    <span className="font-black text-emerald-300">{cardDetails.costText}</span>
+                  </div>
+                  <div className="text-[11px] text-amber-200">
+                    <span className="text-stone-400 block text-[10px] uppercase font-bold">Bonus Immédiat :</span>
+                    <span>{cardDetails.topBonus}</span>
+                  </div>
+                  <div className="text-[11px] text-stone-300">
+                    <span className="text-stone-400 block text-[10px] uppercase font-bold">Décompte Final :</span>
+                    <span>{cardDetails.bottomBonus}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Worker status */}
+              <div className="text-xs text-stone-300 space-y-0.5 px-0.5">
                 <div className="flex justify-between">
                   <span className="text-stone-400">Ouvriers totaux :</span>
                   <span className="font-bold">{status.totalMeeples}</span>
@@ -1071,9 +1243,10 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
                   <span className="font-bold text-amber-400">{activePlayer.placements[hoveredZone] || 0}</span>
                 </div>
               </div>
+
               {(status.canPlace || status.canResolve) && (
-                <div className="mt-2 pt-1.5 border-t border-stone-800 text-center">
-                  <span className="inline-block bg-amber-500 text-stone-950 font-black text-xs px-2.5 py-0.5 rounded-full shadow animate-pulse">
+                <div className="pt-1.5 border-t border-stone-800 text-center">
+                  <span className="inline-block bg-amber-500 text-stone-950 font-black text-xs px-3 py-1 rounded-full shadow animate-pulse">
                     {status.canPlace ? '👉 Cliquer pour Poser' : '👉 Cliquer pour Récolter'}
                   </span>
                 </div>

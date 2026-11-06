@@ -8,7 +8,7 @@ export const NEW_HUTS_TILES: BuildingTile[] = [
   // 1. Hutte du Bûcheron : +1 Bois récurrent chaque manche
   {
     id: 'hut_wood_quarry',
-    imageUrl: '/buildings/peps/tile_hut_wood.jpg',
+    imageUrl: '/buildings/new_huts/hut_wood_quarry.jpg',
     costType: 'fixed',
     fixedCost: { wood: 3 },
     victoryPoints: 3,
@@ -21,7 +21,7 @@ export const NEW_HUTS_TILES: BuildingTile[] = [
   // 2. Fournil de Glaise : +1 Glaise récurrente chaque manche
   {
     id: 'hut_clay_kiln',
-    imageUrl: '/buildings/peps/tile_masonry_clay.jpg',
+    imageUrl: '/buildings/new_huts/hut_clay_kiln.jpg',
     costType: 'fixed',
     fixedCost: { clay: 3 },
     victoryPoints: 4,
@@ -34,7 +34,7 @@ export const NEW_HUTS_TILES: BuildingTile[] = [
   // 3. Abri du Carrier : +1 Pierre récurrente chaque manche
   {
     id: 'hut_stone_shed',
-    imageUrl: '/buildings/peps/tile_stone_megalith.jpg',
+    imageUrl: '/buildings/new_huts/hut_stone_shed.jpg',
     costType: 'fixed',
     fixedCost: { stone: 3 },
     victoryPoints: 5,
@@ -47,7 +47,7 @@ export const NEW_HUTS_TILES: BuildingTile[] = [
   // 4. La Crèche : +1 Ouvrier permanent immédiat
   {
     id: 'hut_kindergarten',
-    imageUrl: '/buildings/peps/tile_modular_compound.jpg',
+    imageUrl: '/buildings/new_huts/hut_kindergarten.jpg',
     costType: 'fixed',
     fixedCost: { clay: 1, gold: 1 },
     victoryPoints: 5,
@@ -60,7 +60,7 @@ export const NEW_HUTS_TILES: BuildingTile[] = [
   // 5. Atelier de Forge : +1 Outil permanent immédiat
   {
     id: 'hut_workshop_forge',
-    imageUrl: '/buildings/peps/tile_hut_wood.jpg',
+    imageUrl: '/buildings/new_huts/hut_workshop_forge.jpg',
     costType: 'fixed',
     fixedCost: { wood: 1, stone: 1 },
     victoryPoints: 5,
@@ -73,7 +73,7 @@ export const NEW_HUTS_TILES: BuildingTile[] = [
   // 6. La Serre : +1 Niveau d’Agriculture immédiat
   {
     id: 'hut_greenhouse',
-    imageUrl: '/buildings/peps/tile_modular_compound.jpg',
+    imageUrl: '/buildings/new_huts/hut_greenhouse.jpg',
     costType: 'variable',
     resourceCount: 3,
     differentTypesRequired: 1,

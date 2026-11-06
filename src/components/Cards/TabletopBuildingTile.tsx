@@ -14,7 +14,7 @@ interface TabletopBuildingTileProps {
 
 // Fallback thematic image helper for prehistoric building tiles
 const getBuildingArtwork = (tile: BuildingTile): string => {
-  if (tile.imageUrl && tile.imageUrl.startsWith('/buildings/peps/')) {
+  if (tile.imageUrl && (tile.imageUrl.startsWith('/buildings/new_huts/') || tile.imageUrl.startsWith('/buildings/peps/') || tile.imageUrl.startsWith('/buildings/'))) {
     return tile.imageUrl;
   }
   if (tile.costType === 'any_1_to_7') {
@@ -45,13 +45,15 @@ export const TabletopBuildingTile: React.FC<TabletopBuildingTileProps> = ({
   const artSrc = getBuildingArtwork(tile);
   const isLarge = size === 'large';
 
-  // Calculate fixed VP if fixed cost
-  const fixedVp = tile.costType === 'fixed' && tile.fixedCost
-    ? (Object.entries(tile.fixedCost) as [ResourceType, number][]).reduce(
-        (sum, [r, qty]) => sum + qty * RESOURCE_VALUES[r],
-        0
-      )
-    : null;
+  // Calculate fixed VP: For Special Huts, use tile.victoryPoints; for normal fixed buildings, use sum of resource values
+  const fixedVp = tile.isSpecialHut && tile.victoryPoints !== undefined
+    ? tile.victoryPoints
+    : tile.costType === 'fixed' && tile.fixedCost
+      ? (Object.entries(tile.fixedCost) as [ResourceType, number][]).reduce(
+          (sum, [r, qty]) => sum + qty * RESOURCE_VALUES[r],
+          0
+        )
+      : null;
 
   // --------------------------------------------------------------------------
   // VISUAL BLUEPRINT: Renders the explicit cost schema (fixed or variable)

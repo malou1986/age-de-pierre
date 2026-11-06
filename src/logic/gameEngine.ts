@@ -1087,9 +1087,18 @@ export function resolveBuildingPurchase(
   // Deduct resources paid and calculate victory points
   const newResources = { ...player.resources };
   let vpEarned = 0;
-  for (const [res, count] of Object.entries(resourcesPaid) as [ResourceType, number][]) {
-    newResources[res] = Math.max(0, newResources[res] - count);
-    vpEarned += count * RESOURCE_VALUES[res];
+  if (building.isSpecialHut && building.victoryPoints !== undefined) {
+    // Règle officielle des Nouvelles Huttes : les points de victoire sont fixes (3, 4, 5, 5, 5, 5 PV)
+    // et ne cumulent pas la valeur des ressources car le pouvoir récurrent ou immédiat compense.
+    vpEarned = building.victoryPoints;
+    for (const [res, count] of Object.entries(resourcesPaid) as [ResourceType, number][]) {
+      newResources[res] = Math.max(0, newResources[res] - count);
+    }
+  } else {
+    for (const [res, count] of Object.entries(resourcesPaid) as [ResourceType, number][]) {
+      newResources[res] = Math.max(0, newResources[res] - count);
+      vpEarned += count * RESOURCE_VALUES[res];
+    }
   }
 
   const updatedPlayers = state.players.map(p => {

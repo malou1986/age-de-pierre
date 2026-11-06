@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Undo2 } from 'lucide-react';
 import { 
   BoardLocationId, 
   CivilizationCard,
@@ -94,6 +95,28 @@ const SAVE_KEY_SETTINGS = 'age_de_pierre_saved_game_settings';
 export const App: React.FC = () => {
   const [currentSettings, setCurrentSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
   const [state, setState] = useState<GameState>(() => createInitialGameState(DEFAULT_SETTINGS));
+
+  // 1-Step Undo state (allows players to revert accidental moves)
+  const [undoState, setUndoState] = useState<GameState | null>(null);
+
+  const handleUndo = useCallback(() => {
+    if (!undoState) return;
+    sound.playClick();
+    setState(undoState);
+    setUndoState(null);
+  }, [undoState]);
+
+  // Keyboard shortcut: Ctrl+Z / Cmd+Z for undo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        handleUndo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo]);
 
   // Sound toggle
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -597,6 +620,7 @@ export const App: React.FC = () => {
       // Village Spots
       if (locationId === 'hut') {
         if (canPlaceMeeples(state, activePlayer.id, 'hut', 2).allowed) {
+          setUndoState(state);
           sound.playMeeplePlace();
           setState(prev => placeMeeples(prev, activePlayer.id, 'hut', 2));
         }
@@ -604,6 +628,7 @@ export const App: React.FC = () => {
       }
       if (locationId === 'tool_maker' || locationId === 'field') {
         if (canPlaceMeeples(state, activePlayer.id, locationId, 1).allowed) {
+          setUndoState(state);
           sound.playMeeplePlace();
           setState(prev => placeMeeples(prev, activePlayer.id, locationId, 1));
         }
@@ -613,6 +638,7 @@ export const App: React.FC = () => {
       // Card / Building Slots (1 meeple fixed)
       if (locationId.startsWith('card_') || locationId.startsWith('building_')) {
         if (canPlaceMeeples(state, activePlayer.id, locationId, 1).allowed) {
+          setUndoState(state);
           sound.playMeeplePlace();
           setState(prev => placeMeeples(prev, activePlayer.id, locationId, 1));
         }
@@ -635,6 +661,7 @@ export const App: React.FC = () => {
 
       // Village Actions resolve immediately!
       if (locationId === 'tool_maker' || locationId === 'hut' || locationId === 'field') {
+        setUndoState(state);
         sound.playHarvest();
         setState(prev => resolveVillageAction(prev, activePlayer.id, locationId));
         return;
@@ -652,6 +679,7 @@ export const App: React.FC = () => {
         const card = state.activeCards[slot];
         if (!card) {
           // Empty slot: auto-forfeit to refund meeple and prevent getting stuck
+          setUndoState(state);
           setState(prev => forfeitResolution(prev, activePlayer.id, locationId));
           return;
         }
@@ -666,6 +694,7 @@ export const App: React.FC = () => {
         const tile = pile && pile.length > 0 ? pile[pile.length - 1] : null;
         if (!tile) {
           // Empty pile: auto-forfeit to refund meeple and prevent getting stuck
+          setUndoState(state);
           setState(prev => forfeitResolution(prev, activePlayer.id, locationId));
           return;
         }
@@ -689,11 +718,13 @@ export const App: React.FC = () => {
 
   // Human passes placement phase
   const handlePassPlacement = () => {
+    setUndoState(state);
     setState(prev => passPlayerPlacement(prev, activePlayer.id));
   };
 
   // Human forfeits a reserved card or building
   const handleForfeitPlacement = (locationId: BoardLocationId) => {
+    setUndoState(state);
     setState(prev => forfeitResolution(prev, activePlayer.id, locationId));
     setCardModalLoc(null);
     setBuildingModalLoc(null);
@@ -714,6 +745,7 @@ export const App: React.FC = () => {
   // Confirm meeple count placement
   const handleConfirmMeepleCount = (count: number) => {
     if (countModalLoc) {
+      setUndoState(state);
       sound.playMeeplePlace();
       setState(prev => placeMeeples(prev, activePlayer.id, countModalLoc, count));
       setCountModalLoc(null);
@@ -723,6 +755,7 @@ export const App: React.FC = () => {
   // Confirm dice roll harvest
   const handleConfirmDiceHarvest = (diceValues: number[], toolsUsed: number[], tempToolsUsed: number = 0) => {
     if (diceModalLoc) {
+      setUndoState(state);
       setState(prev => resolveDiceHarvest(prev, activePlayer.id, diceModalLoc, diceValues, toolsUsed, tempToolsUsed));
       setDiceModalLoc(null);
     }
@@ -757,6 +790,7 @@ export const App: React.FC = () => {
       const willDrawCard = card && card.topBonus.type === 'draw_card' && state.cardsDeck.length > 0;
       const extraCard = willDrawCard ? state.cardsDeck[0] : null;
 
+      setUndoState(state);
       setState(prev => resolveCardPurchase(prev, activePlayer.id, cardModalLoc, resourcesPaid));
       setCardModalLoc(null);
 
@@ -776,6 +810,7 @@ export const App: React.FC = () => {
     const { card, locationId, resourcesPaid, buyerId } = rollingCard;
     const buyer = state.players.find(p => p.id === buyerId) || activePlayer;
 
+    setUndoState(state);
     setState(prev => resolveCardPurchase(prev, buyerId, locationId, resourcesPaid, { diceValues, toolsUsed: usedTools, tempToolsUsed }));
     setRollingCard(null);
 
@@ -802,6 +837,7 @@ export const App: React.FC = () => {
     const { card, locationId, resourcesPaid, buyerId } = draftingCard;
     const buyer = state.players.find(p => p.id === buyerId);
 
+    setUndoState(state);
     setState(prev => resolveCardDiceDraft(prev, buyerId, locationId, resourcesPaid, selections));
     setDraftingCard(null);
 
@@ -819,6 +855,7 @@ export const App: React.FC = () => {
   // Confirm building purchase
   const handleConfirmBuildingPurchase = (resourcesPaid: Record<ResourceType, number>) => {
     if (buildingModalLoc) {
+      setUndoState(state);
       setState(prev => resolveBuildingPurchase(prev, activePlayer.id, buildingModalLoc, resourcesPaid));
       setBuildingModalLoc(null);
     }
@@ -826,6 +863,7 @@ export const App: React.FC = () => {
 
   // Extension 2 : Confirm Merchant Visit & Barter
   const handleConfirmMerchantVisit = (tradeDetails?: any) => {
+    setUndoState(state);
     sound.playPurchase();
     setState(prev => resolveMerchantVisit(prev, activePlayer.id, tradeDetails));
     setShowMerchantModal(false);
@@ -833,6 +871,7 @@ export const App: React.FC = () => {
 
   // Extension 3 : Confirm Mammoth Contest
   const handleConfirmMammothContest = (wagers: Record<string, number>, rolls: Record<string, number[]>) => {
+    setUndoState(state);
     sound.playHarvest();
     setState(prev => resolveMammothContest(prev, wagers, rolls));
     setShowMammothModal(false);
@@ -890,7 +929,13 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-stone-950 text-stone-100 select-none p-0 relative">
+    <div className={`h-[100dvh] w-full overflow-hidden flex flex-col bg-stone-950 text-stone-100 select-none p-0 relative transition-all duration-300 ${
+      !activePlayer.isAi ? (
+        activePlayer.color === 'red' ? 'ring-2 ring-inset ring-red-500/50' :
+        activePlayer.color === 'blue' ? 'ring-2 ring-inset ring-blue-500/50' :
+        activePlayer.color === 'yellow' ? 'ring-2 ring-inset ring-amber-500/50' : 'ring-2 ring-inset ring-emerald-500/50'
+      ) : ''
+    }`}>
       {/* 1. ULTRA-COMPACT NATIVE MINI-HUD (36-40px) */}
       <CompactNativeHUD
         state={state}
@@ -901,9 +946,64 @@ export const App: React.FC = () => {
         onPassPlacement={handlePassPlacement}
         onResolveNextZone={() => handleResolveNextZone()}
         onPauseGame={handlePauseGame}
+        onUndo={handleUndo}
         canPassPlacement={!activePlayer.isAi && state.phase === 'placement'}
         canResolveNextZone={!activePlayer.isAi && state.phase === 'resolution' && getPlayerUnresolvedLocations(activePlayer).length > 0}
+        canUndo={!!undoState && !activePlayer.isAi}
       />
+
+      {/* 2. PROMINENT ACTIVE PLAYER TURN BANNER & UNDO ACTION */}
+      <div className="absolute top-11 inset-x-0 z-30 pointer-events-none flex items-center justify-center px-2">
+        <div className="pointer-events-auto flex items-center gap-2 max-w-full">
+          <div className={`px-3 sm:px-4 py-1 rounded-full border-2 shadow-[0_4px_20px_rgba(0,0,0,0.85)] backdrop-blur-md flex items-center gap-2 text-xs sm:text-sm font-black transition-all ${
+            activePlayer.isAi
+              ? 'bg-stone-950/90 border-stone-700 text-stone-300'
+              : activePlayer.color === 'red' ? 'bg-red-950/95 border-red-500 text-red-100 ring-2 ring-red-400/50 shadow-[0_0_25px_rgba(239,68,68,0.5)]'
+              : activePlayer.color === 'blue' ? 'bg-blue-950/95 border-blue-500 text-blue-100 ring-2 ring-blue-400/50 shadow-[0_0_25px_rgba(59,130,246,0.5)]'
+              : activePlayer.color === 'yellow' ? 'bg-amber-950/95 border-amber-500 text-amber-100 ring-2 ring-amber-400/50 shadow-[0_0_25px_rgba(245,158,11,0.5)]'
+              : 'bg-emerald-950/95 border-emerald-500 text-emerald-100 ring-2 ring-emerald-400/50 shadow-[0_0_25px_rgba(16,185,129,0.5)]'
+          }`}>
+            {/* Pulsing Avatar Disc */}
+            <div 
+              className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] sm:text-xs text-white shadow font-black border border-white shrink-0 ${
+                !activePlayer.isAi ? 'animate-bounce' : ''
+              }`} 
+              style={{ 
+                backgroundColor: activePlayer.color === 'red' ? '#dc2626' : 
+                                 activePlayer.color === 'blue' ? '#2563eb' : 
+                                 activePlayer.color === 'yellow' ? '#d97706' : '#16a34a' 
+              }}
+            >
+              {activePlayer.isAi ? '🤖' : '👉'}
+            </div>
+
+            {/* Turn Announcement text */}
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="uppercase tracking-wide font-black">
+                {!activePlayer.isAi ? `À votre tour, ${activePlayer.name} !` : `${activePlayer.name} (IA)`}
+              </span>
+              <span className="opacity-50 text-[10px] hidden xs:inline">•</span>
+              <span className="text-[11px] sm:text-xs font-bold text-amber-300 hidden xs:inline truncate">
+                {state.phase === 'placement' ? `Posez vos ouvriers (${activePlayer.availableMeeples} dispo)` :
+                 state.phase === 'resolution' ? `Résolvez une action sur le plateau` :
+                 state.phase === 'feeding' ? `Nourrissez votre tribu` : 'Fin de partie'}
+              </span>
+            </div>
+          </div>
+
+          {/* UNDO BUTTON RIGHT NEXT TO THE ACTIVE PLAYER BANNER */}
+          {undoState && !activePlayer.isAi && (
+            <button
+              onClick={handleUndo}
+              className="px-2.5 sm:px-3 py-1 rounded-full bg-stone-900/95 hover:bg-stone-800 text-amber-300 hover:text-white border-2 border-amber-500 shadow-xl transition-all cursor-pointer flex items-center gap-1.5 text-xs font-black hover:scale-105 active:scale-95 animate-pulse"
+              title="Annuler le dernier coup et revenir 1 action en arrière (Ctrl+Z)"
+            >
+              <Undo2 className="w-3.5 h-3.5 text-amber-400" />
+              <span>Annuler</span>
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* AI Real-time Action Notification Toast */}
       <AiActionToast action={aiActionNotice} />

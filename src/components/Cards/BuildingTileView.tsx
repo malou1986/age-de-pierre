@@ -18,13 +18,15 @@ export const BuildingTileView: React.FC<BuildingTileViewProps> = ({
 }) => {
   const isMini = size === 'mini';
 
-  // Calculate fixed VP if fixed cost
-  const fixedVp = tile.costType === 'fixed' && tile.fixedCost
-    ? (Object.entries(tile.fixedCost) as [ResourceType, number][]).reduce(
-        (sum, [r, qty]) => sum + qty * RESOURCE_VALUES[r],
-        0
-      )
-    : null;
+  // Calculate fixed VP: For Special Huts, use tile.victoryPoints; for normal fixed buildings, use sum of resource values
+  const fixedVp = tile.isSpecialHut && tile.victoryPoints !== undefined
+    ? tile.victoryPoints
+    : tile.costType === 'fixed' && tile.fixedCost
+      ? (Object.entries(tile.fixedCost) as [ResourceType, number][]).reduce(
+          (sum, [r, qty]) => sum + qty * RESOURCE_VALUES[r],
+          0
+        )
+      : null;
 
   // Render cost requirement badges
   const renderCostBadges = () => {
@@ -92,17 +94,20 @@ export const BuildingTileView: React.FC<BuildingTileViewProps> = ({
     return null;
   };
 
-  // Mini board version (shows authentic tile image + pile counter)
+  // Mini board version (shows authentic tile image + pile counter + explicit cost)
   if (isMini) {
     return (
       <div 
-        className={`relative w-full h-full rounded-md overflow-hidden select-none border border-amber-600/60 shadow-lg group hover:border-amber-400 transition-all ${className}`}
+        className={`relative w-full h-full rounded-md overflow-hidden select-none border shadow-lg group hover:border-amber-400 transition-all ${
+          tile.isSpecialHut ? 'border-purple-500 ring-1 ring-purple-400/60' : 'border-amber-600/60'
+        } ${className}`}
         style={{
           backgroundImage: tile.imageUrl ? `url(${tile.imageUrl})` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundColor: '#1c1917',
         }}
+        title={tile.description}
       >
         {/* If no image fallback */}
         {!tile.imageUrl && (
@@ -118,6 +123,43 @@ export const BuildingTileView: React.FC<BuildingTileViewProps> = ({
             {pileCount}
           </div>
         )}
+
+        {/* Special Hut Power Chip */}
+        {tile.isSpecialHut && (
+          <div className="absolute top-0.5 left-0.5 bg-purple-950/90 text-purple-200 border border-purple-400 px-1 py-0.2 rounded font-black text-[7px] shadow leading-none flex items-center gap-0.5">
+            <span>✨</span>
+            <span>
+              {tile.passiveHutType === 'wood_quarry' ? '+1🪵' :
+               tile.passiveHutType === 'clay_kiln' ? '+1🧱' :
+               tile.passiveHutType === 'stone_shed' ? '+1🪨' :
+               tile.passiveHutType === 'kindergarten' ? '+1👥' :
+               tile.passiveHutType === 'workshop_forge' ? '+1🔨' :
+               tile.passiveHutType === 'greenhouse' ? '+1🌾' : 'Pouvoir'}
+            </span>
+          </div>
+        )}
+
+        {/* Center/Lower Cost indicator */}
+        <div className="absolute inset-x-0 bottom-3.5 flex items-center justify-center pointer-events-none px-0.5">
+          {tile.fixedCost ? (
+            <div className="flex items-center gap-0.5 bg-stone-950/90 px-1 py-0.2 rounded border border-stone-700/80 shadow">
+              {(Object.entries(tile.fixedCost) as [ResourceType, number][]).map(([r, qty]) => (
+                <span key={r} className="text-[7px] text-amber-200 font-bold flex items-center">
+                  {r === 'wood' ? '🪵' : r === 'clay' ? '🧱' : r === 'stone' ? '🪨' : '✨'}
+                  {qty > 1 && <span className="text-[6.5px]">x{qty}</span>}
+                </span>
+              ))}
+            </div>
+          ) : tile.costType === 'any_1_to_7' ? (
+            <div className="bg-stone-950/90 px-1 py-0.2 rounded border border-stone-700/80 text-[7px] text-amber-300 font-bold shadow">
+              1-7 res.
+            </div>
+          ) : (
+            <div className="bg-stone-950/90 px-1 py-0.2 rounded border border-stone-700/80 text-[7px] text-amber-300 font-bold shadow">
+              {tile.resourceCount || 4} res.
+            </div>
+          )}
+        </div>
 
         {/* Bottom VP banner */}
         <div className="absolute bottom-0 inset-x-0 bg-stone-950/85 backdrop-blur-[1px] px-1 py-0.2 text-[8px] font-black text-center truncate border-t border-stone-800 text-amber-300">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameState, PlayerState, ResourceType } from '../types/game';
-import { Users, Wheat, Hammer, Trophy, Sliders, ArrowRight, Bot, Crown, Sparkles, Check, Dices, Pause } from 'lucide-react';
+import { Users, Wheat, Hammer, Trophy, Sliders, ArrowRight, Bot, Crown, Sparkles, Check, Dices, Pause, Undo2 } from 'lucide-react';
 import { ResourceIcon } from './Common/ResourceIcon';
 
 interface CompactNativeHUDProps {
@@ -12,8 +12,10 @@ interface CompactNativeHUDProps {
   onPassPlacement?: () => void;
   onResolveNextZone?: () => void;
   onPauseGame?: () => void;
+  onUndo?: () => void;
   canPassPlacement?: boolean;
   canResolveNextZone?: boolean;
+  canUndo?: boolean;
 }
 
 const PLAYER_COLORS: Record<string, { bg: string; border: string; text: string; disc: string }> = {
@@ -32,8 +34,10 @@ export const CompactNativeHUD: React.FC<CompactNativeHUDProps> = ({
   onPassPlacement,
   onResolveNextZone,
   onPauseGame,
+  onUndo,
   canPassPlacement = false,
   canResolveNextZone = false,
+  canUndo = false,
 }) => {
   const pColor = PLAYER_COLORS[activePlayer.color] || PLAYER_COLORS.red;
   const isHuman = !activePlayer.isAi;
@@ -160,6 +164,18 @@ export const CompactNativeHUD: React.FC<CompactNativeHUDProps> = ({
           <span className="text-stone-600">•</span>
           <span className="font-semibold text-stone-300">{phaseLabel}</span>
         </div>
+
+        {/* Undo button (1 step back) */}
+        {isHuman && canUndo && onUndo && (
+          <button
+            onClick={onUndo}
+            className="px-2 sm:px-2.5 py-1 rounded-full bg-stone-900 hover:bg-stone-800 border border-amber-500/80 text-amber-300 font-bold text-[10px] sm:text-xs shadow transition-transform active:scale-95 cursor-pointer flex items-center gap-1 hover:border-amber-400"
+            title="Revenir 1 coup en arrière (Ctrl+Z)"
+          >
+            <Undo2 className="w-3 h-3 text-amber-400" />
+            <span className="hidden xs:inline">Annuler</span>
+          </button>
+        )}
 
         {/* Contextual Action Button (Passer ou Résoudre) */}
         {isHuman && state.phase === 'placement' && canPassPlacement && onPassPlacement && (
