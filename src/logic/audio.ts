@@ -161,7 +161,7 @@ class AmbientMusicManager {
   private audioNodeGains: GainNode[] = [];
   private melodyInterval: any = null;
   private audioTag: HTMLAudioElement | null = null;
-  private volume: number = 0.35;
+  private volume: number = 0.55;
 
   constructor() {
     if (typeof window !== 'undefined') {

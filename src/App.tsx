@@ -9,6 +9,7 @@ import {
 } from './types/game';
 import { 
   canPlaceMeeples, 
+  checkAdvanceResolution,
   createInitialGameState, 
   forfeitResolution, 
   getLocationInfo, 
@@ -231,6 +232,16 @@ export const App: React.FC = () => {
     }
     prevRoundRef.current = state.round;
   }, [state.round, state.phase]);
+
+  // Safeguard: Auto-advance resolution phase if active player has nothing to resolve or if all players are done
+  useEffect(() => {
+    if (state.phase === 'resolution') {
+      const activeP = state.players[state.activePlayerIndex];
+      if (!activeP || getPlayerUnresolvedLocations(activeP).length === 0) {
+        setState(prev => checkAdvanceResolution(prev));
+      }
+    }
+  }, [state.phase, state.activePlayerIndex, state.players]);
 
   const triggerAiNotice = (data: AiActionData) => {
     setAiActionNotice(data);
@@ -637,12 +648,27 @@ export const App: React.FC = () => {
 
       // Card Purchase
       if (locationId.startsWith('card_')) {
+        const slot = parseInt(locationId.split('_')[1], 10);
+        const card = state.activeCards[slot];
+        if (!card) {
+          // Empty slot: auto-forfeit to refund meeple and prevent getting stuck
+          setState(prev => forfeitResolution(prev, activePlayer.id, locationId));
+          return;
+        }
         setCardModalLoc(locationId);
         return;
       }
 
       // Building Construction
       if (locationId.startsWith('building_')) {
+        const pileIndex = parseInt(locationId.split('_')[1], 10);
+        const pile = state.buildingPiles[pileIndex];
+        const tile = pile && pile.length > 0 ? pile[pile.length - 1] : null;
+        if (!tile) {
+          // Empty pile: auto-forfeit to refund meeple and prevent getting stuck
+          setState(prev => forfeitResolution(prev, activePlayer.id, locationId));
+          return;
+        }
         setBuildingModalLoc(locationId);
         return;
       }

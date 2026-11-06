@@ -468,6 +468,8 @@ export function placeMeeples(
       type: 'info',
       timestamp: Date.now(),
     });
+    // Check if active player has placements or advance immediately to next player / feeding
+    return checkAdvanceResolution(newState);
   } else {
     newState.activePlayerIndex = nextIndex;
   }
@@ -522,6 +524,8 @@ export function passPlayerPlacement(state: GameState, playerId: string): GameSta
       type: 'info',
       timestamp: Date.now(),
     });
+    // Check if active player has placements or advance immediately to next player / feeding
+    return checkAdvanceResolution(newState);
   } else {
     newState.activePlayerIndex = nextIndex;
   }
@@ -1470,7 +1474,9 @@ export function finishRound(state: GameState): GameState {
   if (endTriggered) {
     if (state.variants.completeCycleEnd) {
       // Strict equality of turns: cycle completes when next first player is back to the initial first player
-      const cycleComplete = nextFirstPlayer === state.initialFirstPlayerIndex;
+      // or if all cards AND all buildings are completely exhausted
+      const allDepleted = emptyPilesCount === state.buildingPiles.length && newActiveCards.every(c => c === null);
+      const cycleComplete = nextFirstPlayer === state.initialFirstPlayerIndex || allDepleted;
       if (cycleComplete) {
         return {
           ...state,
@@ -1479,7 +1485,9 @@ export function finishRound(state: GameState): GameState {
           cardsDeck: newDeck,
           phase: 'game_over',
           endGameTriggered: true,
-          endGameReason: `${endReason} Cycle complet terminé : chaque joueur a été 1er joueur un nombre égal de fois !`,
+          endGameReason: allDepleted 
+            ? `Toutes les cartes civilisations et tous les bâtiments sont épuisés !` 
+            : `${endReason} Cycle complet terminé : chaque joueur a été 1er joueur un nombre égal de fois !`,
           log: [
             ...state.log,
             {

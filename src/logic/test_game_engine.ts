@@ -2,6 +2,7 @@ import {
   createInitialGameState, 
   canPlaceMeeples, 
   placeMeeples, 
+  passPlayerPlacement,
   resolveVillageAction, 
   resolveDiceHarvest, 
   resolveCardPurchase, 
@@ -10,7 +11,7 @@ import {
   finishRound,
   getZoneTotalMeeples
 } from './gameEngine';
-import { rankPlayers } from './scoring';
+import { rankPlayers, calculatePlayerScore } from './scoring';
 import { GameSettings, BoardLocationId, FinalPlayerScore } from '../types/game';
 
 console.log("=== L'ÂGE DE PIERRE : SUITE DE TESTS DU GAME ENGINE ===");
@@ -311,4 +312,45 @@ if ((topScorer.mammothHunterBonus || 0) !== 10) {
   throw new Error("Le bonus de +10 VP Grand Chasseur devrait être attribué au chasseur n°1 !");
 }
 
-console.log("\n>>> TOUTES LES EXTENSIONS SONT 100% OPÉRATIONNELLES ET TESTÉES <<<");
+// Test 4 : Décompte des ressources restantes (1 point par ressource)
+console.log("\n--- Test 4 : Décompte des ressources restantes (1 VP / ressource) ---");
+const testPlayerRes = {
+  ...winningHunter,
+  resources: { wood: 3, clay: 2, stone: 1, gold: 4 } // 10 ressources au total
+};
+const scoreWithRes = calculatePlayerScore(testPlayerRes);
+console.log(`[PASS] Ressources : 3 bois + 2 argiles + 1 pierre + 4 or = 10 ressources`);
+console.log(`       Points de ressources calculés : ${scoreWithRes.remainingResourcePoints} VP (Attendu: 10)`);
+if (scoreWithRes.remainingResourcePoints !== 10) {
+  throw new Error(`Erreur : attendu 10 VP pour les ressources restantes, obtenu ${scoreWithRes.remainingResourcePoints}`);
+}
+
+// Test 5 : Non-blocage en fin de partie (pass placement sans ouvriers et épuisement)
+console.log("\n--- Test 5 : Fin de partie et passage automatique sans blocage en résolution ---");
+let emptyEndState = createInitialGameState({ ...settings, firstPlayerIndex: 0 });
+// Vider tous les bâtiments et cartes pour simuler une fin de partie
+emptyEndState.buildingPiles = [[], [], [], []];
+emptyEndState.activeCards = [null, null, null, null];
+emptyEndState.cardsDeck = [];
+// Tout le monde n'a plus d'ouvriers disponibles ni placés et a assez de nourriture
+emptyEndState.players.forEach(p => {
+  p.food = 20;
+  p.availableMeeples = 0;
+  p.placements = {};
+});
+
+// Le joueur actif passe son placement
+const activeP = emptyEndState.players[emptyEndState.activePlayerIndex];
+emptyEndState = passPlayerPlacement(emptyEndState, activeP.id);
+
+console.log(`[PASS] Après passage du joueur actif : phase = ${emptyEndState.phase}`);
+// La phase doit avoir sauté la résolution (car 0 ouvriers posés) et abouti directement à 'game_over'
+if (emptyEndState.phase === 'resolution') {
+  throw new Error("Le moteur s'est bloqué en phase resolution alors qu'aucun ouvrier n'est placé !");
+}
+if (emptyEndState.phase !== 'game_over') {
+  throw new Error(`Attendu phase 'game_over' car toutes les cartes et bâtiments sont épuisés, obtenu: ${emptyEndState.phase}`);
+}
+console.log(`[PASS] Fin de partie déclenchée avec succès : « ${emptyEndState.endGameReason} »`);
+
+console.log("\n>>> TOUTES LES EXTENSIONS ET CORRECTIONS SONT 100% OPÉRATIONNELLES ET TESTÉES <<<");

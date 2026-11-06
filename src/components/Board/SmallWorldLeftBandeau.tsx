@@ -703,6 +703,27 @@ export const SmallWorldLeftBandeau: React.FC<SmallWorldLeftBandeauProps> = ({
                       </div>
                     </div>
                   </div>
+
+                  {/* Ressources restantes (1 PV par ressource) */}
+                  {(() => {
+                    const totalRes = activePlayer.resources.wood + activePlayer.resources.clay + activePlayer.resources.stone + activePlayer.resources.gold;
+                    return (
+                      <div className="bg-amber-950/30 border border-amber-900/40 rounded-lg p-1.5 flex items-center justify-between col-span-2">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <span className="text-xs">💎</span>
+                          <div className="min-w-0">
+                            <div className="text-[10px] font-bold text-amber-200 truncate">Ressources en stock</div>
+                            <div className="text-[8px] text-stone-400 truncate">1 point par ressource en fin de partie</div>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-[11px] font-mono font-black text-amber-300">
+                            +{totalRes} VP
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

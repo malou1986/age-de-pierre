@@ -291,7 +291,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[4.8%] top-[4.2%] w-[11.2%] h-[13.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
+                className={`absolute left-[6.4%] top-[5.9%] w-[21.2%] h-[12.7%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
                   isInteractive
                     ? 'cursor-pointer border-2 border-dashed border-amber-400/80 hover:border-solid hover:border-amber-300 hover:bg-amber-950/60 hover:shadow-[0_0_18px_rgba(245,158,11,0.4)]'
                     : 'border-2 border-dashed border-amber-500/40 bg-amber-950/30'
@@ -330,7 +330,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
             );
           })()}
 
-          {/* ---------------- 1. HUNTING GROUND (Zone de Chasse & Campement, Savane près de la Rivière) ---------------- */}
+          {/* ---------------- 1. HUNTING GROUND (Zone de Chasse & Campement, Savane) ---------------- */}
           {(() => {
             const locId: BoardLocationId = 'hunting';
             const { isInteractive, canPlace } = getZoneStatus(locId);
@@ -339,7 +339,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[20.5%] top-[18.5%] w-[13.5%] h-[18.5%] rounded-2xl p-1.5 flex flex-col justify-between transition-all duration-200 group z-20 ${
+                className={`absolute left-[11.2%] top-[19.2%] w-[22.6%] h-[25.9%] rounded-2xl p-1.5 flex flex-col justify-between transition-all duration-200 group z-20 ${
                   isInteractive
                     ? 'cursor-pointer border border-dashed border-white/20 hover:border-solid hover:border-amber-400 hover:bg-amber-400/[0.06] hover:shadow-[0_0_15px_rgba(245,158,11,0.2)]'
                     : 'hover:bg-white/[0.02]'
@@ -377,7 +377,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[33%] top-[6%] w-[23%] h-[32%] rounded-3xl p-2 flex flex-col justify-between transition-all duration-200 group ${
+                className={`absolute left-[32.3%] top-[9.6%] w-[22.6%] h-[25.9%] rounded-3xl p-2 flex flex-col justify-between transition-all duration-200 group ${
                   isInteractive
                     ? 'cursor-pointer border border-dashed border-white/10 hover:border-solid hover:border-emerald-400 hover:bg-emerald-400/[0.04] hover:shadow-[0_0_15px_rgba(52,211,153,0.15)]'
                     : 'hover:bg-white/[0.02]'
@@ -414,7 +414,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[57.5%] top-[6%] w-[19.5%] h-[32%] rounded-3xl p-2 flex flex-col justify-between transition-all duration-200 group ${
+                className={`absolute left-[57.0%] top-[7.9%] w-[20.5%] h-[25.9%] rounded-3xl p-2 flex flex-col justify-between transition-all duration-200 group ${
                   isInteractive
                     ? 'cursor-pointer border border-dashed border-white/10 hover:border-solid hover:border-orange-400 hover:bg-orange-400/[0.04] hover:shadow-[0_0_15px_rgba(251,146,60,0.15)]'
                     : 'hover:bg-white/[0.02]'
@@ -441,7 +441,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
             );
           })()}
 
-          {/* ---------------- 4. MOUNTAIN QUARRY (Tailler Pierre - Terrasse près de la Cascade) ---------------- */}
+          {/* ---------------- 4. MOUNTAIN QUARRY (Tailler Pierre - Montagne & Cascade) ---------------- */}
           {(() => {
             const locId: BoardLocationId = 'quarry';
             const { isInteractive, canPlace } = getZoneStatus(locId);
@@ -450,7 +450,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[80.0%] top-[44.0%] w-[15.5%] h-[17.5%] rounded-2xl p-1.5 flex flex-col justify-between transition-all duration-200 group z-20 ${
+                className={`absolute left-[78.7%] top-[14.2%] w-[13.2%] h-[30.1%] rounded-2xl p-1.5 flex flex-col justify-between transition-all duration-200 group z-20 ${
                   isInteractive
                     ? 'cursor-pointer border border-dashed border-white/20 hover:border-solid hover:border-slate-300 hover:bg-slate-300/[0.06] hover:shadow-[0_0_15px_rgba(203,213,225,0.2)]'
                     : 'hover:bg-white/[0.02]'
@@ -477,7 +477,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
             );
           })()}
 
-          {/* ---------------- 5. RIVER & GOLD PANNING (Orpailler - Rive Dorée au Bord de l'Eau) ---------------- */}
+          {/* ---------------- 5. RIVER & GOLD PANNING (Orpailler - Rive Dorée au-dessus des cartes) ---------------- */}
           {(() => {
             const locId: BoardLocationId = 'river';
             const { isInteractive, canPlace } = getZoneStatus(locId);
@@ -486,7 +486,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[69.0%] top-[60.5%] w-[11.5%] h-[8.5%] rounded-xl p-1 flex flex-col justify-between transition-all duration-200 group z-20 ${
+                className={`absolute left-[70.4%] top-[58.5%] w-[20.2%] h-[11.0%] rounded-xl p-1 flex flex-col justify-between transition-all duration-200 group z-20 ${
                   isInteractive
                     ? 'cursor-pointer border border-dashed border-white/20 hover:border-solid hover:border-cyan-400 hover:bg-cyan-400/[0.06] hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]'
                     : 'hover:bg-white/[0.02]'
@@ -515,7 +515,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
 
           {/* ---------------- 6. AGRICULTURE LADDER (Sur le Côté Gauche du Plateau - 100% DÉGAGÉE) ---------------- */}
           <div 
-            className="absolute left-[5%] top-[19%] w-[5.2%] h-[49%] bg-stone-950/90 backdrop-blur-sm rounded-xl border-2 border-amber-500/80 p-1 flex flex-col justify-between shadow-2xl z-20"
+            className="absolute left-[4.1%] top-[18.0%] w-[5.1%] h-[49.6%] bg-stone-950/90 backdrop-blur-sm rounded-xl border-2 border-amber-500/80 p-1 flex flex-col justify-between shadow-2xl z-20"
             title="Piste d'Agriculture (0 à 10): Fournit du blé gratuit pour nourrir vos ouvriers à chaque manche"
           >
             <div className="text-center border-b border-amber-600/60 pb-0.5">
@@ -567,7 +567,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[39.5%] top-[38.0%] w-[6.5%] h-[8.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-20 ${
+                className={`absolute left-[34.1%] top-[44.0%] w-[10.0%] h-[15.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-20 ${
                   isInteractive
                     ? 'cursor-pointer border border-dashed border-rose-400/60 hover:border-solid hover:border-rose-400 hover:bg-rose-400/[0.08] hover:shadow-[0_0_15px_rgba(244,63,94,0.3)]'
                     : 'hover:bg-white/[0.02]'
@@ -600,56 +600,44 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
             );
           })()}
 
-          {/* B. LES CHAMPS (+1 Agriculture, Hutte Bas-Gauche du Village & Champs de Blé) */}
+          {/* B. LES CHAMPS (+1 Agriculture, Champs de Blé et Hutte d'Agriculture) */}
           {(() => {
             const locId: BoardLocationId = 'field';
             const { isInteractive, totalMeeples } = getZoneStatus(locId);
             return (
-              <>
-                {/* Hutte d'Agriculture principale (Bas-Gauche) */}
-                <div
-                  onClick={() => isInteractive && onZoneClick(locId)}
-                  onMouseEnter={() => setHoveredZone(locId)}
-                  onMouseLeave={() => setHoveredZone(null)}
-                  className={`absolute left-[34.5%] top-[53.0%] w-[7.0%] h-[8.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-20 ${
-                    isInteractive
-                      ? 'cursor-pointer border border-dashed border-amber-400/60 hover:border-solid hover:border-amber-400 hover:bg-amber-400/[0.08] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]'
-                      : 'hover:bg-white/[0.02]'
-                  }`}
-                  title="Champs d'Agriculture : +1 sur la piste d'Agriculture (1 ouvrier max)"
-                >
-                  <div className="transition-opacity duration-200 pointer-events-none">
-                    <span className="text-[6.5px] sm:text-[7.5px] font-black uppercase text-amber-200 bg-stone-950/90 px-1 py-0.2 rounded-full border border-amber-500/70 shadow-xs">
-                      Champs
-                    </span>
-                  </div>
-
-                  <div className="flex-1 w-full flex items-center justify-center">
-                    {totalMeeples > 0 ? (
-                      <div className="bg-stone-950/95 p-0.5 rounded-full border border-amber-400 shadow-md">
-                        {renderZoneMeeples(locId, 'sm')}
-                      </div>
-                    ) : (
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-dashed border-amber-300/50 bg-amber-950/40 flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
-                        <Wheat className="w-3 h-3 text-amber-300/90" />
-                      </div>
-                    )}
-                  </div>
+              <div
+                onClick={() => isInteractive && onZoneClick(locId)}
+                onMouseEnter={() => setHoveredZone(locId)}
+                onMouseLeave={() => setHoveredZone(null)}
+                className={`absolute left-[45.8%] top-[37.8%] w-[19.8%] h-[15.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-200 group z-20 ${
+                  isInteractive
+                    ? 'cursor-pointer border border-dashed border-amber-400/60 hover:border-solid hover:border-amber-400 hover:bg-amber-400/[0.08] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                    : 'hover:bg-white/[0.02]'
+                }`}
+                title="Champs d'Agriculture : +1 sur la piste d'Agriculture (1 ouvrier max)"
+              >
+                <div className="transition-opacity duration-200 pointer-events-none">
+                  <span className="text-[6.5px] sm:text-[7.5px] font-black uppercase text-amber-200 bg-stone-950/90 px-1 py-0.2 rounded-full border border-amber-500/70 shadow-xs">
+                    Champs (+1 Agri)
+                  </span>
                 </div>
 
-                {/* Zone étendue sur le grand champ de blé doré pour un confort tactile optimal sur smartphone */}
-                <div
-                  onClick={() => isInteractive && onZoneClick(locId)}
-                  className={`absolute left-[54.0%] top-[42.0%] w-[18.0%] h-[14.0%] rounded-2xl transition-all cursor-pointer pointer-events-auto ${
-                    isInteractive ? 'hover:bg-amber-400/[0.06] hover:ring-1 hover:ring-amber-400/30' : ''
-                  }`}
-                  title="Champs de blé : Cliquez pour envoyer un ouvrier cultiver (+1 Agri)"
-                />
-              </>
+                <div className="flex-1 w-full flex items-center justify-center">
+                  {totalMeeples > 0 ? (
+                    <div className="bg-stone-950/95 p-0.5 rounded-full border border-amber-400 shadow-md">
+                      {renderZoneMeeples(locId, 'sm')}
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-dashed border-amber-300/50 bg-amber-950/40 flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+                      <Wheat className="w-3 h-3 text-amber-300/90" />
+                    </div>
+                  )}
+                </div>
+              </div>
             );
           })()}
 
-          {/* C. L'ATELIER DU FABRIQUANT D'OUTILS (+1 Outil permanent, Hutte en Pierre Haut-Droit) */}
+          {/* C. L'ATELIER DU FABRIQUANT D'OUTILS (+1 Outil permanent) */}
           {(() => {
             const locId: BoardLocationId = 'tool_maker';
             const { isInteractive, totalMeeples } = getZoneStatus(locId);
@@ -660,7 +648,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                   onClick={() => isInteractive && onZoneClick(locId)}
                   onMouseEnter={() => setHoveredZone(locId)}
                   onMouseLeave={() => setHoveredZone(null)}
-                  className={`absolute left-[50.5%] top-[41.0%] w-[5.5%] h-[8.0%] rounded-2xl p-0.5 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
+                  className={`absolute left-[50.3%] top-[53.7%] w-[14.5%] h-[15.5%] rounded-2xl p-0.5 flex flex-col items-center justify-between transition-all duration-200 group z-30 ${
                     isInteractive
                       ? 'cursor-pointer border-2 border-dashed border-amber-400/70 hover:border-solid hover:border-amber-400 hover:bg-stone-900/50 hover:shadow-[0_0_15px_rgba(245,158,11,0.4)]'
                       : 'hover:bg-white/[0.02]'
@@ -699,10 +687,10 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                   </div>
                 </div>
 
-                {/* Réserve physique des tuiles Outils sous le champ de blé, le long de la murette en pierre */}
+                {/* Réserve physique des tuiles Outils */}
                 <div 
                   onClick={() => isInteractive && onZoneClick(locId)}
-                  className={`absolute left-[52.5%] top-[56.5%] flex items-center gap-1.5 z-30 transition-all select-none ${
+                  className={`absolute left-[43.0%] top-[58.5%] w-[9.0%] h-[7.7%] flex items-center justify-center gap-1 z-30 transition-all select-none ${
                     isInteractive ? 'cursor-pointer hover:scale-105' : ''
                   }`}
                   title="Réserve d'Outils du village (1-2 / 3-4) : Cliquez pour envoyer un ouvrier à l'atelier"
@@ -735,7 +723,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 onClick={() => isInteractive && onZoneClick(locId)}
                 onMouseEnter={() => setHoveredZone(locId)}
                 onMouseLeave={() => setHoveredZone(null)}
-                className={`absolute left-[12.5%] top-[47.0%] w-[19.0%] h-[21.5%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-300 group z-30 select-none ${
+                className={`absolute left-[12.8%] top-[48.0%] w-[18.8%] h-[19.8%] rounded-2xl p-1 flex flex-col items-center justify-between transition-all duration-300 group z-30 select-none ${
                   isInteractive
                     ? 'cursor-pointer border-2 border-purple-400/90 shadow-[0_12px_28px_rgba(0,0,0,0.85),0_0_20px_rgba(168,85,247,0.45)] hover:scale-[1.02] hover:border-purple-300'
                     : 'border-2 border-stone-800/90 shadow-[0_8px_20px_rgba(0,0,0,0.8)]'
@@ -795,7 +783,7 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
 
           {/* ---------------- 8. LES 4 CHANTIERS DE BÂTIMENTS (Bas Gauche - Équilibré & Distinct) ---------------- */}
           <div 
-            className="absolute left-[5.5%] top-[71.5%] w-[36%] h-[22.5%] grid grid-cols-4 gap-1.5 sm:gap-2 z-20"
+            className="absolute left-[3.7%] top-[71.0%] w-[37.7%] h-[23.8%] grid grid-cols-4 gap-1.5 sm:gap-2 z-20"
             title="Chantiers de Bâtiments : Déposez 1 ouvrier pour construire la hutte visible en payant ses ressources"
           >
             {[0, 1, 2, 3].map(pileIdx => {
@@ -846,9 +834,9 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
           </div>
 
           {/* ---------------- 9. LE MARCHÉ DES CARTES CIVILISATION (Bas Droit - MAXIMUM LARGEUR & VISIBILITÉ) ---------------- */}
-          {/* Spanning X: 50.5% to 94.5% (44.0% width, 32.0% height), maximum card area without external bars */}
+          {/* Spanning X: 49.4% to 97.0% (47.6% width, 26.5% height), perfectly positioned below Orpailler */}
           <div 
-            className="absolute left-[50.5%] top-[64.5%] w-[44.0%] h-[32.0%] grid grid-cols-4 gap-1 sm:gap-1.5 z-20"
+            className="absolute left-[49.4%] top-[70.1%] w-[47.6%] h-[26.5%] grid grid-cols-4 gap-1 sm:gap-1.5 z-20"
             title="Marché des Civilisations : Déposez 1 ouvrier pour acquérir la carte correspondante"
           >
             {[

@@ -122,6 +122,14 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
                     <strong className="text-amber-300">{score.builderPoints} pts</strong>
                   </div>
 
+                  {/* Ressources restantes : 1 PV par ressource (bois, glaise, pierre, or) */}
+                  <div className="bg-amber-950/30 px-1.5 py-1 rounded-lg border border-amber-800/40">
+                    <span className="text-amber-300 text-[10px] block font-semibold flex items-center gap-1">
+                      <span>💎 Ressources restantes :</span>
+                    </span>
+                    <strong className="text-amber-200">+{score.remainingResourcePoints} pts (1 pt/res)</strong>
+                  </div>
+
                   {/* Extensions : Style & Mammouths */}
                   {(score.jewelryPoints || 0) > 0 && (
                     <div>
