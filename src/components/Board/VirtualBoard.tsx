@@ -98,10 +98,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '7.89%',
-                top: '8.47%',
-                width: '21.05%',
-                height: '30.13%',
+                left: '5.92%',
+                top: '17.89%',
+                width: '21.71%',
+                height: '25.42%',
               }}
             >
               <div className="bg-stone-950/70 border border-amber-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-amber-200 mb-1 flex items-center gap-1.5 shadow">
@@ -132,9 +132,9 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
               }`}
               style={{
                 left: '30.26%',
-                top: '10.36%',
-                width: '16.45%',
-                height: '25.42%',
+                top: '11.30%',
+                width: '17.11%',
+                height: '29.19%',
               }}
             >
               <div className="bg-stone-950/75 border border-emerald-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-emerald-300 mb-1 flex items-center gap-1.5 shadow">
@@ -165,10 +165,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '48.68%',
-                top: '10.36%',
-                width: '18.42%',
-                height: '24.48%',
+                left: '48.03%',
+                top: '9.42%',
+                width: '17.76%',
+                height: '28.25%',
               }}
             >
               <div className="bg-stone-950/75 border border-orange-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-orange-300 mb-1 flex items-center gap-1.5 shadow">
@@ -199,10 +199,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '77.63%',
-                top: '10.36%',
-                width: '15.79%',
-                height: '24.48%',
+                left: '76.97%',
+                top: '9.42%',
+                width: '17.11%',
+                height: '31.07%',
               }}
             >
               <div className="bg-stone-950/75 border border-slate-400/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-200 mb-1 flex items-center gap-1.5 shadow">
@@ -233,10 +233,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '71.05%',
-                top: '39.55%',
+                left: '71.71%',
+                top: '45.20%',
                 width: '22.37%',
-                height: '22.60%',
+                height: '20.72%',
               }}
             >
               <div className="bg-stone-950/75 border border-yellow-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-yellow-300 mb-1 flex items-center gap-1.5 shadow">
@@ -267,9 +267,9 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '49.34%',
-                top: '40.49%',
-                width: '12.5%',
+                left: '50.00%',
+                top: '41.43%',
+                width: '13.16%',
                 height: '16.01%',
               }}
             >
@@ -299,9 +299,9 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '26.32%',
+                left: '26.97%',
                 top: '46.14%',
-                width: '16.45%',
+                width: '12.50%',
                 height: '17.89%',
               }}
             >
@@ -331,10 +331,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '34.87%',
-                top: '59.32%',
-                width: '11.84%',
-                height: '16.01%',
+                left: '36.84%',
+                top: '58.38%',
+                width: '12.50%',
+                height: '14.12%',
               }}
             >
               <div className="bg-stone-950/80 border border-red-500/50 rounded px-1.5 py-0.2 text-[9px] font-bold text-red-300 mb-0.5 shadow">
@@ -354,10 +354,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
         <div
           className="absolute flex items-center justify-between gap-1 p-0.5"
           style={{
-            left: '9.87%',
-            top: '73.45%',
-            width: '38.82%',
-            height: '17.89%',
+            left: '5.79%',
+            top: '72.32%',
+            width: '42.24%',
+            height: '19.21%',
           }}
         >
           {state.buildingPiles.map((pile, idx) => {
@@ -404,10 +404,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
         <div
           className="absolute flex items-center justify-between gap-1 p-0.5"
           style={{
-            left: '51.32%',
-            top: '64.97%',
-            width: '43.42%',
-            height: '26.37%',
+            left: '51.45%',
+            top: '66.85%',
+            width: '42.63%',
+            height: '24.67%',
           }}
         >
           {/* Card slots in official order: slot 3 (4 res), slot 2 (3 res), slot 1 (2 res), slot 0 (1 res) */}
@@ -456,10 +456,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
         <div
           className="absolute pointer-events-none"
           style={{
-            left: '4.5%',
-            top: '38%',
-            width: '4%',
-            height: '54%',
+            left: '1.84%',
+            top: '33.90%',
+            width: '3.95%',
+            height: '54.61%',
           }}
         >
           {state.players.map(p => {

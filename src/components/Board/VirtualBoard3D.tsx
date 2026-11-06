@@ -34,24 +34,24 @@ const BOARD_DEPTH = 100;
 
 // Zone definitions with board percentage coordinates (X: 0..1, Y: 0..1)
 const ZONE_COORDINATES: Record<BoardLocationId, { xPct: number; yPct: number; radius: number; label: string; sublabel: string }> = {
-  hunting: { xPct: 0.225, yPct: 0.321, radius: 9, label: 'Chasse', sublabel: 'Nourriture ÷2' },
-  forest: { xPct: 0.436, yPct: 0.225, radius: 8, label: 'Forêt', sublabel: 'Bois ÷3' },
-  clay_pit: { xPct: 0.672, yPct: 0.208, radius: 8, label: 'Glaisière', sublabel: 'Glaise ÷4' },
-  quarry: { xPct: 0.853, yPct: 0.293, radius: 8, label: 'Carrière', sublabel: 'Pierre ÷5' },
-  river: { xPct: 0.805, yPct: 0.640, radius: 7, label: 'Rivière', sublabel: 'Or ÷6' },
-  tool_maker: { xPct: 0.576, yPct: 0.615, radius: 5, label: 'Outils', sublabel: '+1 Outil' },
-  field: { xPct: 0.557, yPct: 0.455, radius: 6, label: 'Champs', sublabel: '+1 Agriculture' },
-  hut: { xPct: 0.391, yPct: 0.517, radius: 6, label: 'Hutte', sublabel: '+1 Ouvrier' },
-  building_0: { xPct: 0.147, yPct: 0.824, radius: 5.5, label: 'Pile Bâtiment 1', sublabel: 'Bâtiment' },
-  building_1: { xPct: 0.244, yPct: 0.824, radius: 5.5, label: 'Pile Bâtiment 2', sublabel: 'Bâtiment' },
-  building_2: { xPct: 0.341, yPct: 0.824, radius: 5.5, label: 'Pile Bâtiment 3', sublabel: 'Bâtiment' },
-  building_3: { xPct: 0.438, yPct: 0.824, radius: 5.5, label: 'Pile Bâtiment 4', sublabel: 'Bâtiment' },
-  card_3: { xPct: 0.567, yPct: 0.781, radius: 6.0, label: 'Carte Civilisation #4', sublabel: 'Coût: 4 res.' },
-  card_2: { xPct: 0.676, yPct: 0.781, radius: 6.0, label: 'Carte Civilisation #3', sublabel: 'Coût: 3 res.' },
-  card_1: { xPct: 0.785, yPct: 0.781, radius: 6.0, label: 'Carte Civilisation #2', sublabel: 'Coût: 2 res.' },
-  card_0: { xPct: 0.893, yPct: 0.781, radius: 6.0, label: 'Carte Civilisation #1', sublabel: 'Coût: 1 res.' },
-  merchant: { xPct: 0.222, yPct: 0.579, radius: 6.5, label: 'Marchands', sublabel: 'Troc & Parures' },
-  mammoth: { xPct: 0.170, yPct: 0.123, radius: 6.5, label: 'Mammouth', sublabel: 'Harde de Mammouths' },
+  hunting: { xPct: 0.167, yPct: 0.305, radius: 8.5, label: 'Chasse', sublabel: 'Nourriture ÷2' },
+  forest: { xPct: 0.388, yPct: 0.258, radius: 8.0, label: 'Forêt', sublabel: 'Bois ÷3' },
+  clay_pit: { xPct: 0.568, yPct: 0.235, radius: 8.0, label: 'Glaisière', sublabel: 'Glaise ÷4' },
+  quarry: { xPct: 0.855, yPct: 0.249, radius: 8.0, label: 'Carrière', sublabel: 'Pierre ÷5' },
+  river: { xPct: 0.829, yPct: 0.556, radius: 7.5, label: 'Rivière', sublabel: 'Or ÷6' },
+  tool_maker: { xPct: 0.566, yPct: 0.493, radius: 5.5, label: 'Outils', sublabel: '+1 Outil' },
+  field: { xPct: 0.332, yPct: 0.550, radius: 5.5, label: 'Champs', sublabel: '+1 Agriculture' },
+  hut: { xPct: 0.430, yPct: 0.654, radius: 6.0, label: 'Hutte', sublabel: '+1 Ouvrier' },
+  building_0: { xPct: 0.111, yPct: 0.819, radius: 5.5, label: 'Pile Bâtiment 1', sublabel: 'Bâtiment' },
+  building_1: { xPct: 0.216, yPct: 0.819, radius: 5.5, label: 'Pile Bâtiment 2', sublabel: 'Bâtiment' },
+  building_2: { xPct: 0.321, yPct: 0.819, radius: 5.5, label: 'Pile Bâtiment 3', sublabel: 'Bâtiment' },
+  building_3: { xPct: 0.427, yPct: 0.819, radius: 5.5, label: 'Pile Bâtiment 4', sublabel: 'Bâtiment' },
+  card_3: { xPct: 0.568, yPct: 0.792, radius: 6.0, label: 'Carte Civilisation #4', sublabel: 'Coût: 4 res.' },
+  card_2: { xPct: 0.674, yPct: 0.792, radius: 6.0, label: 'Carte Civilisation #3', sublabel: 'Coût: 3 res.' },
+  card_1: { xPct: 0.781, yPct: 0.792, radius: 6.0, label: 'Carte Civilisation #2', sublabel: 'Coût: 2 res.' },
+  card_0: { xPct: 0.888, yPct: 0.792, radius: 6.0, label: 'Carte Civilisation #1', sublabel: 'Coût: 1 res.' },
+  merchant: { xPct: 0.226, yPct: 0.546, radius: 6.0, label: 'Marchands', sublabel: 'Troc & Parures' },
+  mammoth: { xPct: 0.178, yPct: 0.126, radius: 6.5, label: 'Mammouth', sublabel: 'Harde de Mammouths' },
 };
 
 // Player 3D colors
@@ -464,10 +464,10 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
 
     // --- A. Render 4 Civilization Cards in slots 3, 2, 1, 0 ---
     const cardSlots = [
-      { slot: 3, locId: 'card_3' as BoardLocationId, xPct: 0.567, yPct: 0.781, cost: 4 },
-      { slot: 2, locId: 'card_2' as BoardLocationId, xPct: 0.676, yPct: 0.781, cost: 3 },
-      { slot: 1, locId: 'card_1' as BoardLocationId, xPct: 0.785, yPct: 0.781, cost: 2 },
-      { slot: 0, locId: 'card_0' as BoardLocationId, xPct: 0.893, yPct: 0.781, cost: 1 },
+      { slot: 3, locId: 'card_3' as BoardLocationId, xPct: 0.568, yPct: 0.792, cost: 4 },
+      { slot: 2, locId: 'card_2' as BoardLocationId, xPct: 0.674, yPct: 0.792, cost: 3 },
+      { slot: 1, locId: 'card_1' as BoardLocationId, xPct: 0.781, yPct: 0.792, cost: 2 },
+      { slot: 0, locId: 'card_0' as BoardLocationId, xPct: 0.888, yPct: 0.792, cost: 1 },
     ];
 
     const cardWidth = 11.5;
@@ -518,10 +518,10 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
 
     // --- B. Render 4 Building Piles in slots 0, 1, 2, 3 ---
     const buildingSlots = [
-      { pileIdx: 0, locId: 'building_0' as BoardLocationId, xPct: 0.147, yPct: 0.824 },
-      { pileIdx: 1, locId: 'building_1' as BoardLocationId, xPct: 0.244, yPct: 0.824 },
-      { pileIdx: 2, locId: 'building_2' as BoardLocationId, xPct: 0.341, yPct: 0.824 },
-      { pileIdx: 3, locId: 'building_3' as BoardLocationId, xPct: 0.438, yPct: 0.824 },
+      { pileIdx: 0, locId: 'building_0' as BoardLocationId, xPct: 0.111, yPct: 0.819 },
+      { pileIdx: 1, locId: 'building_1' as BoardLocationId, xPct: 0.216, yPct: 0.819 },
+      { pileIdx: 2, locId: 'building_2' as BoardLocationId, xPct: 0.321, yPct: 0.819 },
+      { pileIdx: 3, locId: 'building_3' as BoardLocationId, xPct: 0.427, yPct: 0.819 },
     ];
 
     const tileWidth = 10.8;
