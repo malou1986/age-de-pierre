@@ -391,7 +391,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {[0, 1, 2, 3].map(slot => {
+            {[3, 2, 1, 0].map(slot => {
               const locId = `card_${slot}` as BoardLocationId;
               const card = state.activeCards[slot];
               const { canPlace, canResolve } = getZoneStatus(locId);

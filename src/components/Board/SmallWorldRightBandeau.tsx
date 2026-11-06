@@ -154,7 +154,7 @@ export const SmallWorldRightBandeau: React.FC<SmallWorldRightBandeauProps> = ({
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-stone-950 text-amber-300 font-black text-[9px] border border-amber-900/60 shadow-xs">
                       <Coins className="w-2.5 h-2.5 text-amber-400" />
-                      <span>Emplacement #{4 - slot} • Coût : {cost} ress.</span>
+                      <span>Emplacement #{cost} • Coût : {cost} ress.</span>
                     </span>
 
                     {/* Placed Meeple Badge */}

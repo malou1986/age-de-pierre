@@ -10,6 +10,24 @@ interface CivilizationCardViewProps {
   className?: string;
 }
 
+const GREEN_SYMBOLS: Record<string, { label: string; icon: string }> = {
+  writing: { label: 'Écriture', icon: '📜' },
+  pottery: { label: 'Poterie', icon: '🏺' },
+  transport: { label: 'Roue', icon: '🪵' },
+  weaving: { label: 'Tissage', icon: '🧶' },
+  art: { label: 'Art', icon: '🎨' },
+  music: { label: 'Musique', icon: '🎵' },
+  medicine: { label: 'Médecine', icon: '🌿' },
+  sundial: { label: 'Cadran', icon: '☀️' },
+};
+
+const SAND_FIGURES: Record<string, { label: string; pluralLabel: string; icon: string; target: string }> = {
+  shaman: { label: 'Chaman', pluralLabel: 'Chamans', icon: '🧙', target: '× Ouvriers' },
+  farmer: { label: 'Fermier', pluralLabel: 'Fermiers', icon: '🌾', target: '× Agri' },
+  tool_maker: { label: 'Fabricant d’outils', pluralLabel: 'Fabricants d’outils', icon: '🔨', target: '× Outils' },
+  builder: { label: 'Bâtisseur', pluralLabel: 'Bâtisseurs', icon: '🏛️', target: '× Bâtiments' },
+};
+
 // Fallback high-res thematic artwork matching exact card
 const getCardArtFallback = (card: CivilizationCard): string => {
   if (card.imageUrl) return card.imageUrl;
@@ -80,7 +98,7 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
         return (
           <div className="inline-flex items-center gap-1 bg-amber-500/30 px-2 py-0.5 rounded text-amber-300 font-black border border-amber-500/50 text-xs">
             <span>⭐</span>
-            <span>+{tb.value} VP directs</span>
+            <span>+{tb.value} PV directs</span>
           </div>
         );
       case 'dice_roll': {
@@ -101,7 +119,14 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
         return (
           <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-purple-950/90 to-indigo-950/90 px-2 py-0.5 rounded text-purple-200 font-bold border border-purple-600/80 text-xs shadow-sm">
             <span className="text-sm">🎲</span>
-            <span>Dés pour tous !</span>
+            <span>Dés pour tous (Draft) !</span>
+          </div>
+        );
+      case 'draw_card':
+        return (
+          <div className="inline-flex items-center gap-1.5 bg-stone-900/90 px-2 py-0.5 rounded text-amber-300 font-bold border border-amber-600/60 text-xs shadow-sm">
+            <span className="text-sm">🎴</span>
+            <span>+1 Carte supplémentaire</span>
           </div>
         );
       default:
@@ -113,17 +138,7 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
   const renderBottomVisual = () => {
     const bb = card.bottomBonus;
     if (bb.type === 'green') {
-      const symbolMap: Record<string, { label: string; icon: string }> = {
-        writing: { label: 'Écriture', icon: '📜' },
-        pottery: { label: 'Poterie', icon: '🏺' },
-        transport: { label: 'Roue & Chariot', icon: '🪵' },
-        weaving: { label: 'Tissage', icon: '🧶' },
-        art: { label: 'Art Rupestre', icon: '🎨' },
-        music: { label: 'Flûte & Musique', icon: '🎵' },
-        medicine: { label: 'Herbes & Soins', icon: '🌿' },
-        sundial: { label: 'Astronomie & Soleil', icon: '☀️' },
-      };
-      const info = symbolMap[bb.greenSymbol || ''] || { label: 'Culture', icon: '🌿' };
+      const info = GREEN_SYMBOLS[bb.greenSymbol || ''] || { label: 'Culture', icon: '🌿' };
 
       return (
         <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-950 px-3 py-1.5 rounded-xl border border-emerald-500/70 shadow-inner">
@@ -137,13 +152,7 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
         </div>
       );
     } else {
-      const sandMap: Record<string, { label: string; target: string; icon: string }> = {
-        shaman: { label: 'Chaman', target: '× Population (Ouvriers)', icon: '🧙' },
-        farmer: { label: 'Fermier', target: '× Niveau Agriculture', icon: '🌾' },
-        tool_maker: { label: 'Artisan', target: '× Total des Outils', icon: '🔨' },
-        builder: { label: 'Bâtisseur', target: '× Bâtiments Construits', icon: '🏛️' },
-      };
-      const info = sandMap[bb.sandType || ''] || { label: 'Multiplicateur', target: '', icon: '⏳' };
+      const info = SAND_FIGURES[bb.sandType || ''] || { label: 'Multiplicateur', target: '', icon: '⏳', pluralLabel: 'Personnages' };
       const mult = bb.sandMultiplier || 1;
 
       return (
@@ -162,7 +171,9 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
               <span className="text-xs bg-amber-500 text-stone-950 font-black px-1.5 py-0.2 rounded">
                 x{mult}
               </span>
-              <span className="text-sm font-black text-amber-200">{info.label}</span>
+              <span className="text-sm font-black text-amber-200">
+                {mult > 1 ? info.pluralLabel : info.label}
+              </span>
             </div>
             <div className="text-[10px] text-stone-300 flex items-center gap-1 mt-0.5">
               {bb.sandType === 'builder' && <ResourceIcon type="building" size="xs" className="w-3 h-3 shrink-0" />}
@@ -176,6 +187,86 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
 
   // Mini board version: Card artwork + cost pill + clear badges
   if (isMini) {
+    const renderMiniBadge = () => {
+      const tb = card.topBonus;
+      switch (tb.type) {
+        case 'resource_fixed': {
+          const resEntries = Object.entries(tb.resources || {}) as [ResourceType, number][];
+          return (
+            <span className="flex items-center gap-0.5">
+              {resEntries.map(([r, q]) => (
+                <span key={r} className="inline-flex items-center gap-0.5">
+                  <ResourceIcon type={r} size="xs" className="w-2.5 h-2.5" />
+                  <span className="text-[9px] font-black text-amber-200">+{q}</span>
+                </span>
+              ))}
+            </span>
+          );
+        }
+        case 'food_fixed':
+          return (
+            <span className="inline-flex items-center gap-0.5">
+              <ResourceIcon type="food" size="xs" className="w-2.5 h-2.5" />
+              <span className="text-[9px] font-black text-amber-200">+{tb.value}</span>
+            </span>
+          );
+        case 'agriculture':
+          return (
+            <span className="inline-flex items-center gap-0.5">
+              <ResourceIcon type="agriculture" size="xs" className="w-2.5 h-2.5" />
+              <span className="text-[9px] font-black text-emerald-200">+1</span>
+            </span>
+          );
+        case 'tool_upgrade':
+          return (
+            <span className="inline-flex items-center gap-0.5">
+              <ResourceIcon type="tool" size="xs" className="w-2.5 h-2.5" />
+              <span className="text-[9px] font-black text-cyan-200">+1</span>
+            </span>
+          );
+        case 'temp_tool':
+          return (
+            <span className="inline-flex items-center gap-0.5">
+              <span className="text-[9px]">📯</span>
+              <span className="text-[9px] font-black text-indigo-200">+{tb.value}</span>
+            </span>
+          );
+        case 'victory_points':
+          return (
+            <span className="inline-flex items-center gap-0.5">
+              <span className="text-[9px]">⭐</span>
+              <span className="text-[9px] font-black text-amber-200">+{tb.value}</span>
+            </span>
+          );
+        case 'dice_roll': {
+          const res = tb.resourceType || 'wood';
+          return (
+            <span className="inline-flex items-center gap-0.5">
+              <span className="text-[8px]">🎲</span>
+              <span className="text-[7px] font-black text-amber-300 uppercase">JET</span>
+              <ResourceIcon type={res} size="xs" className="w-2.5 h-2.5" />
+            </span>
+          );
+        }
+        case 'dice_all_players':
+          return (
+            <span className="inline-flex items-center gap-0.5">
+              <span className="text-[8px]">🎲</span>
+              <span className="text-[7px] font-black text-purple-200 uppercase">DRAFT</span>
+            </span>
+          );
+        case 'draw_card':
+          return (
+            <span className="inline-flex items-center gap-0.5">
+              <span className="text-[8px]">🎴</span>
+              <span className="text-[7px] font-black text-amber-200 uppercase">+1 CARTE</span>
+            </span>
+          );
+        default:
+          return <span className="text-[8px]">⭐</span>;
+      }
+    };
+
     return (
       <div 
         className={`relative w-full h-full rounded-lg overflow-hidden select-none border-2 shadow-xl group transition-all duration-200 ${
@@ -195,26 +286,7 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
         <div className="absolute top-1 inset-x-1 flex items-center justify-between z-10 pointer-events-none">
           {/* Top Bonus Icon Badge */}
           <div className="bg-stone-950/90 text-amber-300 border border-amber-500/70 px-1 py-0.5 rounded text-[8px] font-black shadow-md flex items-center gap-0.5">
-            {card.topBonus.type === 'resource_fixed' ? (
-              <span className="flex items-center gap-0.5">
-                <ResourceIcon type="wood" size="xs" className="w-2.5 h-2.5" />
-                <ResourceIcon type="clay" size="xs" className="w-2.5 h-2.5" />
-              </span>
-            ) : card.topBonus.type === 'food_fixed' ? (
-              <ResourceIcon type="food" size="xs" className="w-2.5 h-2.5" />
-            ) : card.topBonus.type === 'agriculture' ? (
-              <ResourceIcon type="agriculture" size="xs" className="w-2.5 h-2.5" />
-            ) : card.topBonus.type === 'tool_upgrade' ? (
-              <ResourceIcon type="tool" size="xs" className="w-2.5 h-2.5" />
-            ) : card.topBonus.type === 'dice_roll' ? (
-              <span>🎲</span>
-            ) : card.topBonus.type === 'dice_all_players' ? (
-              <span>🎲👥</span>
-            ) : card.topBonus.type === 'draw_card' ? (
-              <span>🎴</span>
-            ) : (
-              <span>⭐</span>
-            )}
+            {renderMiniBadge()}
           </div>
 
           {/* Cost Tag */}
@@ -226,20 +298,25 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
         </div>
 
         {/* Bottom pill showing culture type / multiplier */}
-        <div className="absolute bottom-0 inset-x-0 bg-stone-950/90 backdrop-blur-sm px-1 py-0.5 text-[8px] font-black text-center truncate border-t border-stone-700 z-10">
+        <div className="absolute bottom-0 inset-x-0 bg-stone-950/92 backdrop-blur-sm px-1 py-0.5 text-[8px] font-black text-center truncate border-t border-stone-700 z-10">
           {card.bottomBonus.type === 'green' ? (
             <span className="text-emerald-300 flex items-center justify-center gap-0.5">
-              <span>🌿</span>
-              <span>{card.bottomBonus.greenSymbol}</span>
+              <span>{GREEN_SYMBOLS[card.bottomBonus.greenSymbol || '']?.icon || '🌿'}</span>
+              <span>{GREEN_SYMBOLS[card.bottomBonus.greenSymbol || '']?.label || 'Culture'}</span>
             </span>
           ) : (
             <span className="text-amber-300 flex items-center justify-center gap-0.5">
+              <span>{card.bottomBonus.sandMultiplier || 1}×</span>
               {card.bottomBonus.sandType === 'builder' ? (
                 <ResourceIcon type="building" size="xs" className="w-2.5 h-2.5 shrink-0 drop-shadow" />
+              ) : card.bottomBonus.sandType === 'farmer' ? (
+                <ResourceIcon type="agriculture" size="xs" className="w-2.5 h-2.5 shrink-0 drop-shadow" />
+              ) : card.bottomBonus.sandType === 'tool_maker' ? (
+                <ResourceIcon type="tool" size="xs" className="w-2.5 h-2.5 shrink-0 drop-shadow" />
               ) : (
-                <span>⏳</span>
+                <span>🧙</span>
               )}
-              <span>x{card.bottomBonus.sandMultiplier} {card.bottomBonus.sandType === 'builder' ? 'Bâtisseur' : card.bottomBonus.sandType}</span>
+              <span>{SAND_FIGURES[card.bottomBonus.sandType || '']?.target || ''}</span>
             </span>
           )}
         </div>

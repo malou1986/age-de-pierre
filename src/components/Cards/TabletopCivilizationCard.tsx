@@ -37,7 +37,7 @@ const GREEN_SYMBOLS: Record<string, { label: string; icon: string }> = {
 const SAND_FIGURES: Record<string, { label: string; pluralLabel: string; icon: string; target: string }> = {
   shaman: { label: 'Chaman', pluralLabel: 'Chamans', icon: '🧙', target: '× Ouvriers' },
   farmer: { label: 'Fermier', pluralLabel: 'Fermiers', icon: '🌾', target: '× Agri' },
-  tool_maker: { label: 'Artisan', pluralLabel: 'Artisans', icon: '🔨', target: '× Outils' },
+  tool_maker: { label: 'Fabricant d’outils', pluralLabel: 'Fabricants d’outils', icon: '🔨', target: '× Outils' },
   builder: { label: 'Bâtisseur', pluralLabel: 'Bâtisseurs', icon: '🏛️', target: '× Bâtiments' },
 };
 

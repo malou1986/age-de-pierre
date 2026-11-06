@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { BoardLocationId, GameState, PlayerState, CivilizationCard, BuildingTile, ResourceType } from '../../types/game';
 import { canPlaceMeeples, getZoneTotalMeeples } from '../../logic/gameEngine';
 import { ResourceIcon } from '../Common/ResourceIcon';
+import { CivilizationCardView } from '../Cards/CivilizationCardView';
 import { 
   RotateCcw, 
   ZoomIn, 
@@ -14,7 +15,8 @@ import {
   Info,
   Trees,
   Home,
-  Scroll
+  Scroll,
+  X
 } from 'lucide-react';
 
 interface VirtualBoard3DProps {
@@ -196,6 +198,9 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
 
   const isPlacement = state.phase === 'placement';
   const isResolution = state.phase === 'resolution';
+
+  // Card full inspection state
+  const [inspectedCard, setInspectedCard] = useState<CivilizationCard | null>(null);
 
   // Helper to determine if active player can click a zone
   const getZoneStatus = useCallback((locId: BoardLocationId) => {
@@ -916,6 +921,12 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
         const status = getZoneStatus(locId);
         if (status.canPlace || status.canResolve) {
           onZoneClick(locId);
+        } else if (locId.startsWith('card_')) {
+          const slot = parseInt(locId.split('_')[1], 10);
+          const card = state.activeCards[slot];
+          if (card) {
+            setInspectedCard(card);
+          }
         }
       }
     }
@@ -1219,18 +1230,21 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
 
               {/* Card specific details */}
               {cardDetails && (
-                <div className="p-2 bg-stone-900/90 rounded-xl border border-stone-800 space-y-1 text-xs">
-                  <div className="flex items-center justify-between">
+                <div className="p-2 bg-stone-900/90 rounded-xl border border-stone-800 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between border-b border-stone-800/80 pb-1">
                     <span className="text-stone-400">Coût :</span>
                     <span className="font-black text-emerald-300">{cardDetails.costText}</span>
                   </div>
                   <div className="text-[11px] text-amber-200">
-                    <span className="text-stone-400 block text-[10px] uppercase font-bold">Bonus Immédiat :</span>
+                    <span className="text-stone-400 block text-[10px] uppercase font-bold">Gain Immédiat :</span>
                     <span>{cardDetails.topBonus}</span>
                   </div>
                   <div className="text-[11px] text-stone-300">
                     <span className="text-stone-400 block text-[10px] uppercase font-bold">Décompte Final :</span>
                     <span>{cardDetails.bottomBonus}</span>
+                  </div>
+                  <div className="pt-0.5 text-[10px] text-amber-400/80 italic text-center">
+                    💡 Cliquer pour inspecter la carte
                   </div>
                 </div>
               )}
@@ -1257,6 +1271,27 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
             </div>
           );
         })()}
+        {/* Full Card Inspection Modal */}
+        {inspectedCard && (
+          <div 
+            className="absolute inset-0 z-50 bg-stone-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-fade-in pointer-events-auto"
+            onClick={() => setInspectedCard(null)}
+          >
+            <div 
+              className="relative w-full max-w-lg bg-stone-900 border-2 border-emerald-500/80 rounded-2xl p-4 shadow-2xl flex flex-col gap-3 max-h-[92vh] overflow-y-auto"
+              onClick={e => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setInspectedCard(null)}
+                className="absolute top-2.5 right-2.5 z-30 p-1.5 rounded-full bg-stone-800 text-stone-300 hover:text-white border border-stone-600 cursor-pointer shadow transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <CivilizationCardView card={inspectedCard} size="normal" showCost={false} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
