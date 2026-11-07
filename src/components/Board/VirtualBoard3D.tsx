@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { BoardLocationId, GameState, PlayerState, CivilizationCard, BuildingTile, ResourceType } from '../../types/game';
@@ -16,8 +16,22 @@ import {
   Trees,
   Home,
   Scroll,
-  X
+  X,
+  Sliders
 } from 'lucide-react';
+import { 
+  getClassicZones, 
+  CLASSIC_ZONES_UPDATED_EVENT, 
+  ClassicZoneData 
+} from '../../data/classicBoardZones';
+
+interface ZoneCoord3D {
+  xPct: number;
+  yPct: number;
+  radius: number;
+  label: string;
+  sublabel: string;
+}
 
 interface VirtualBoard3DProps {
   state: GameState;
@@ -26,6 +40,7 @@ interface VirtualBoard3DProps {
   className?: string;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  onOpenZoneEditor?: () => void;
 }
 
 // Board plane dimensions
@@ -138,12 +153,38 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
   className = '',
   isFullscreen: propFullscreen,
   onToggleFullscreen,
+  onOpenZoneEditor,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [internalFullscreen, setInternalFullscreen] = useState(false);
   const isFullscreen = propFullscreen !== undefined ? propFullscreen : internalFullscreen;
   const handleToggleFullscreen = onToggleFullscreen || (() => setInternalFullscreen(prev => !prev));
   const [hoveredZone, setHoveredZone] = useState<BoardLocationId | null>(null);
+
+  // Dynamic classic zones from persistent storage / editor
+  const [classicZones, setClassicZones] = useState<Record<string, ClassicZoneData>>(() => getClassicZones());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setClassicZones(getClassicZones());
+    };
+    window.addEventListener(CLASSIC_ZONES_UPDATED_EVENT, handleUpdate);
+    return () => window.removeEventListener(CLASSIC_ZONES_UPDATED_EVENT, handleUpdate);
+  }, []);
+
+  const zoneCoordinates = useMemo<Record<BoardLocationId, { xPct: number; yPct: number; radius: number; label: string; sublabel: string }>>(() => {
+    const map: Partial<Record<BoardLocationId, { xPct: number; yPct: number; radius: number; label: string; sublabel: string }>> = {};
+    Object.values(classicZones).forEach(z => {
+      map[z.id as BoardLocationId] = {
+        xPct: (z.left + z.width / 2) / 100,
+        yPct: (z.top + z.height / 2) / 100,
+        radius: z.radius || 6.0,
+        label: z.name,
+        sublabel: z.sublabel,
+      };
+    });
+    return map as Record<BoardLocationId, { xPct: number; yPct: number; radius: number; label: string; sublabel: string }>;
+  }, [classicZones]);
 
   // Three.js instances
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -463,11 +504,16 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
     const loader = textureLoaderRef.current;
 
     // --- A. Render 4 Civilization Cards in slots 3, 2, 1, 0 ---
+    const c3 = classicZones.card_3;
+    const c2 = classicZones.card_2;
+    const c1 = classicZones.card_1;
+    const c0 = classicZones.card_0;
+
     const cardSlots = [
-      { slot: 3, locId: 'card_3' as BoardLocationId, xPct: 0.568, yPct: 0.792, cost: 4 },
-      { slot: 2, locId: 'card_2' as BoardLocationId, xPct: 0.674, yPct: 0.792, cost: 3 },
-      { slot: 1, locId: 'card_1' as BoardLocationId, xPct: 0.781, yPct: 0.792, cost: 2 },
-      { slot: 0, locId: 'card_0' as BoardLocationId, xPct: 0.888, yPct: 0.792, cost: 1 },
+      { slot: 3, locId: 'card_3' as BoardLocationId, xPct: c3 ? (c3.left + c3.width / 2) / 100 : 0.568, yPct: c3 ? (c3.top + c3.height / 2) / 100 : 0.792, cost: 4 },
+      { slot: 2, locId: 'card_2' as BoardLocationId, xPct: c2 ? (c2.left + c2.width / 2) / 100 : 0.674, yPct: c2 ? (c2.top + c2.height / 2) / 100 : 0.792, cost: 3 },
+      { slot: 1, locId: 'card_1' as BoardLocationId, xPct: c1 ? (c1.left + c1.width / 2) / 100 : 0.781, yPct: c1 ? (c1.top + c1.height / 2) / 100 : 0.792, cost: 2 },
+      { slot: 0, locId: 'card_0' as BoardLocationId, xPct: c0 ? (c0.left + c0.width / 2) / 100 : 0.888, yPct: c0 ? (c0.top + c0.height / 2) / 100 : 0.792, cost: 1 },
     ];
 
     const cardWidth = 11.5;
@@ -517,11 +563,16 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
     });
 
     // --- B. Render 4 Building Piles in slots 0, 1, 2, 3 ---
+    const b0 = classicZones.building_0;
+    const b1 = classicZones.building_1;
+    const b2 = classicZones.building_2;
+    const b3 = classicZones.building_3;
+
     const buildingSlots = [
-      { pileIdx: 0, locId: 'building_0' as BoardLocationId, xPct: 0.111, yPct: 0.819 },
-      { pileIdx: 1, locId: 'building_1' as BoardLocationId, xPct: 0.216, yPct: 0.819 },
-      { pileIdx: 2, locId: 'building_2' as BoardLocationId, xPct: 0.321, yPct: 0.819 },
-      { pileIdx: 3, locId: 'building_3' as BoardLocationId, xPct: 0.427, yPct: 0.819 },
+      { pileIdx: 0, locId: 'building_0' as BoardLocationId, xPct: b0 ? (b0.left + b0.width / 2) / 100 : 0.111, yPct: b0 ? (b0.top + b0.height / 2) / 100 : 0.819 },
+      { pileIdx: 1, locId: 'building_1' as BoardLocationId, xPct: b1 ? (b1.left + b1.width / 2) / 100 : 0.216, yPct: b1 ? (b1.top + b1.height / 2) / 100 : 0.819 },
+      { pileIdx: 2, locId: 'building_2' as BoardLocationId, xPct: b2 ? (b2.left + b2.width / 2) / 100 : 0.321, yPct: b2 ? (b2.top + b2.height / 2) / 100 : 0.819 },
+      { pileIdx: 3, locId: 'building_3' as BoardLocationId, xPct: b3 ? (b3.left + b3.width / 2) / 100 : 0.427, yPct: b3 ? (b3.top + b3.height / 2) / 100 : 0.819 },
     ];
 
     const tileWidth = 10.8;
@@ -655,7 +706,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
       }
     });
 
-  }, [state.activeCards, state.buildingPiles]);
+  }, [state.activeCards, state.buildingPiles, classicZones]);
 
   // 3. Render Victory Points Markers on Perimeter Track & Agriculture Markers on Left Strip
   useEffect(() => {
@@ -733,8 +784,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
     }
     zoneMeshesRef.current.clear();
 
-    Object.entries(ZONE_COORDINATES).forEach(([locIdKey, coord]) => {
-      const locId = locIdKey as BoardLocationId;
+    (Object.entries(zoneCoordinates) as [BoardLocationId, ZoneCoord3D][]).forEach(([locId, coord]) => {
       const status = getZoneStatus(locId);
       const isInteractive = status.canPlace || status.canResolve;
       const isHovered = hoveredZone === locId;
@@ -790,7 +840,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
         beaconsGroup.add(ringMesh);
       }
     });
-  }, [getZoneStatus, hoveredZone]);
+  }, [getZoneStatus, hoveredZone, zoneCoordinates]);
 
   // 5. Update 3D Meeples on the board
   useEffect(() => {
@@ -803,8 +853,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
 
     const meepleGeom = createMeepleGeometry();
 
-    Object.entries(ZONE_COORDINATES).forEach(([locIdKey, coord]) => {
-      const locId = locIdKey as BoardLocationId;
+    (Object.entries(zoneCoordinates) as [BoardLocationId, ZoneCoord3D][]).forEach(([locId, coord]) => {
       const zoneCenterX = (coord.xPct - 0.5) * BOARD_WIDTH;
       const zoneCenterZ = (coord.yPct - 0.5) * BOARD_DEPTH;
 
@@ -881,7 +930,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
         }
       });
     });
-  }, [state.players, activePlayer.id, isResolution]);
+  }, [state.players, activePlayer.id, isResolution, zoneCoordinates]);
 
   // Raycasting for touch and mouse pointer interactions
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -1053,6 +1102,16 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
+            {onOpenZoneEditor && (
+              <button
+                onClick={onOpenZoneEditor}
+                title="Déplacer et modifier directement les zones sur le plateau original"
+                className="px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-white border border-amber-500/50 cursor-pointer transition-colors flex items-center gap-1 shadow-sm"
+              >
+                <Sliders className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Éditeur Zones</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -1121,7 +1180,8 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
 
         {/* HOVER ZONE DETAILS HUD - REPOSITIONED TO TOP-LEFT TO PREVENT OVERLAP WITH TOP-RIGHT TRIBE BANNER */}
         {hoveredZone && (() => {
-          const coord = ZONE_COORDINATES[hoveredZone];
+          const coord = zoneCoordinates[hoveredZone];
+          if (!coord) return null;
           const status = getZoneStatus(hoveredZone);
 
           // Details for building piles

@@ -64,6 +64,7 @@ import { MeepleCountModal } from './components/Modals/MeepleCountModal';
 import { DrawnCardRevealModal } from './components/Modals/DrawnCardRevealModal';
 import { MerchantBarterModal } from './components/Modals/MerchantBarterModal';
 import { MammothContestModal } from './components/Modals/MammothContestModal';
+import { ClassicBoardZoneEditor } from './components/Board/ClassicBoardZoneEditor';
 import { ResourceIcon } from './components/Common/ResourceIcon';
 import { Eye, LayoutGrid, Sparkles, Compass, Smartphone, X } from 'lucide-react';
 
@@ -169,6 +170,7 @@ export const App: React.FC = () => {
   // Mobile / Smartphone UI states
   const [isTribalDrawerOpen, setIsTribalDrawerOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isZoneEditorOpen, setIsZoneEditorOpen] = useState(false);
   const [showLandscapeNotice, setShowLandscapeNotice] = useState(true);
   const [isNativeFs, setIsNativeFs] = useState(false);
   const [immersiveMode, setImmersiveMode] = useState(false);
@@ -898,6 +900,7 @@ export const App: React.FC = () => {
           onStartNewGame={() => setShowNewGameModal(true)}
           onResumeGame={handleResumeGame}
           onOpenTutorial={() => setShowTutorialModal(true)}
+          onOpenZoneEditor={() => setIsZoneEditorOpen(true)}
           hasActiveGame={hasSavedGame || state.round > 1 || state.phase !== 'placement'}
           savedRound={savedRound || state.round}
           soundEnabled={soundEnabled}
@@ -906,6 +909,12 @@ export const App: React.FC = () => {
           onToggleAmbientMusic={toggleAmbientMusic}
           isFullscreen={isFullscreen}
           onToggleFullscreen={handleToggleFullscreen}
+        />
+
+        {/* Classic Board Interactive Zone Calibration Editor */}
+        <ClassicBoardZoneEditor
+          isOpen={isZoneEditorOpen}
+          onClose={() => setIsZoneEditorOpen(false)}
         />
 
         {/* Modal Configuration / Nouvelle Partie */}
@@ -1034,6 +1043,7 @@ export const App: React.FC = () => {
               className="w-full h-full"
               isFullscreen={isFullscreen}
               onToggleFullscreen={handleToggleFullscreen}
+              onOpenZoneEditor={() => setIsZoneEditorOpen(true)}
             />
           </div>
         ) : (
@@ -1078,6 +1088,13 @@ export const App: React.FC = () => {
         onOpenFirstPlayerDraw={() => setShowFirstPlayerDrawModal(true)}
         onPauseGame={handlePauseGame}
         onGoHome={handlePauseGame}
+        onOpenZoneEditor={() => setIsZoneEditorOpen(true)}
+      />
+
+      {/* Classic Board Interactive Zone Calibration Editor */}
+      <ClassicBoardZoneEditor
+        isOpen={isZoneEditorOpen}
+        onClose={() => setIsZoneEditorOpen(false)}
       />
 
       {/* First Player Draw Lottery Modal */}

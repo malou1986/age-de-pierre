@@ -37,6 +37,7 @@ interface GameSettingsModalProps {
   onOpenFirstPlayerDraw?: () => void;
   onPauseGame?: () => void;
   onGoHome?: () => void;
+  onOpenZoneEditor?: () => void;
 }
 
 export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
@@ -57,6 +58,7 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
   onOpenFirstPlayerDraw,
   onPauseGame,
   onGoHome,
+  onOpenZoneEditor,
 }) => {
   if (!isOpen) return null;
 
@@ -227,6 +229,34 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
             )}
           </div>
         </div>
+
+        {/* CALIBRAGE DU PLATEAU ORIGINAL */}
+        {onOpenZoneEditor && (
+          <div className="space-y-1.5 pt-1 border-t border-stone-800/80">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+              <Sliders className="w-3.5 h-3.5 text-amber-400" />
+              <span>Calibrage du Plateau Original</span>
+            </span>
+            <button
+              onClick={() => {
+                onClose();
+                onOpenZoneEditor();
+              }}
+              className="w-full p-2.5 rounded-xl border border-amber-600/60 bg-amber-950/40 hover:bg-amber-950/70 text-amber-200 text-xs font-bold transition-all flex items-center justify-between cursor-pointer shadow-md hover:scale-[1.01]"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 shrink-0">
+                  <Sliders className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <div className="font-black text-amber-300 text-xs">🛠️ Déplacer les zones (Éditeur Interactif)</div>
+                  <div className="text-[10px] text-stone-400">Glisser-déposer pour ajuster la position et la taille sur le plateau 2008</div>
+                </div>
+              </div>
+              <span className="text-amber-400 font-black text-xs">Ouvrir ➔</span>
+            </button>
+          </div>
+        )}
 
         {/* 3. ACTIONS DE PARTIE & SAUVEGARDE */}
         <div className="space-y-1.5 pt-1 border-t border-stone-800/80">

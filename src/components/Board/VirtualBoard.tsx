@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BoardLocationId, 
   GameState, 
@@ -9,19 +9,36 @@ import { MeepleIcon } from '../Meeples';
 import { CivilizationCardView } from '../Cards/CivilizationCardView';
 import { BuildingTileView } from '../Cards/BuildingTileView';
 import { ResourceIcon } from '../Common/ResourceIcon';
-import { Flame } from 'lucide-react';
+import { Flame, Sliders } from 'lucide-react';
+import { 
+  getClassicZones, 
+  CLASSIC_ZONES_UPDATED_EVENT, 
+  ClassicZoneData 
+} from '../../data/classicBoardZones';
 
 interface VirtualBoardProps {
   state: GameState;
   activePlayer: PlayerState;
   onZoneClick: (locationId: BoardLocationId) => void;
+  onOpenZoneEditor?: () => void;
 }
 
 export const VirtualBoard: React.FC<VirtualBoardProps> = ({
   state,
   activePlayer,
   onZoneClick,
+  onOpenZoneEditor,
 }) => {
+  const [classicZones, setClassicZones] = useState<Record<string, ClassicZoneData>>(() => getClassicZones());
+
+  useEffect(() => {
+    const handler = () => {
+      setClassicZones(getClassicZones());
+    };
+    window.addEventListener(CLASSIC_ZONES_UPDATED_EVENT, handler);
+    return () => window.removeEventListener(CLASSIC_ZONES_UPDATED_EVENT, handler);
+  }, []);
+
   const isPlacement = state.phase === 'placement';
   const isResolution = state.phase === 'resolution';
 
@@ -98,10 +115,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '5.92%',
-                top: '17.89%',
-                width: '21.71%',
-                height: '25.42%',
+                left: `${classicZones.hunting?.left ?? 5.92}%`,
+                top: `${classicZones.hunting?.top ?? 17.89}%`,
+                width: `${classicZones.hunting?.width ?? 21.71}%`,
+                height: `${classicZones.hunting?.height ?? 25.42}%`,
               }}
             >
               <div className="bg-stone-950/70 border border-amber-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-amber-200 mb-1 flex items-center gap-1.5 shadow">
@@ -131,10 +148,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '30.26%',
-                top: '11.30%',
-                width: '17.11%',
-                height: '29.19%',
+                left: `${classicZones.forest?.left ?? 30.26}%`,
+                top: `${classicZones.forest?.top ?? 11.30}%`,
+                width: `${classicZones.forest?.width ?? 17.11}%`,
+                height: `${classicZones.forest?.height ?? 29.19}%`,
               }}
             >
               <div className="bg-stone-950/75 border border-emerald-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-emerald-300 mb-1 flex items-center gap-1.5 shadow">
@@ -165,10 +182,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '48.03%',
-                top: '9.42%',
-                width: '17.76%',
-                height: '28.25%',
+                left: `${classicZones.clay_pit?.left ?? 48.03}%`,
+                top: `${classicZones.clay_pit?.top ?? 9.42}%`,
+                width: `${classicZones.clay_pit?.width ?? 17.76}%`,
+                height: `${classicZones.clay_pit?.height ?? 28.25}%`,
               }}
             >
               <div className="bg-stone-950/75 border border-orange-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-orange-300 mb-1 flex items-center gap-1.5 shadow">
@@ -199,10 +216,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '76.97%',
-                top: '9.42%',
-                width: '17.11%',
-                height: '31.07%',
+                left: `${classicZones.quarry?.left ?? 76.97}%`,
+                top: `${classicZones.quarry?.top ?? 9.42}%`,
+                width: `${classicZones.quarry?.width ?? 17.11}%`,
+                height: `${classicZones.quarry?.height ?? 31.07}%`,
               }}
             >
               <div className="bg-stone-950/75 border border-slate-400/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-slate-200 mb-1 flex items-center gap-1.5 shadow">
@@ -233,10 +250,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '71.71%',
-                top: '45.20%',
-                width: '22.37%',
-                height: '20.72%',
+                left: `${classicZones.river?.left ?? 71.71}%`,
+                top: `${classicZones.river?.top ?? 45.20}%`,
+                width: `${classicZones.river?.width ?? 22.37}%`,
+                height: `${classicZones.river?.height ?? 20.72}%`,
               }}
             >
               <div className="bg-stone-950/75 border border-yellow-500/50 rounded-lg px-2 py-0.5 text-[10px] font-black text-yellow-300 mb-1 flex items-center gap-1.5 shadow">
@@ -267,10 +284,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '50.00%',
-                top: '41.43%',
-                width: '13.16%',
-                height: '16.01%',
+                left: `${classicZones.tool_maker?.left ?? 50.00}%`,
+                top: `${classicZones.tool_maker?.top ?? 41.43}%`,
+                width: `${classicZones.tool_maker?.width ?? 13.16}%`,
+                height: `${classicZones.tool_maker?.height ?? 16.01}%`,
               }}
             >
               <div className="bg-stone-950/80 border border-blue-500/50 rounded px-1.5 py-0.2 text-[9px] font-bold text-blue-300 mb-0.5 shadow">
@@ -299,10 +316,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '26.97%',
-                top: '46.14%',
-                width: '12.50%',
-                height: '17.89%',
+                left: `${classicZones.field?.left ?? 26.97}%`,
+                top: `${classicZones.field?.top ?? 46.14}%`,
+                width: `${classicZones.field?.width ?? 12.50}%`,
+                height: `${classicZones.field?.height ?? 17.89}%`,
               }}
             >
               <div className="bg-stone-950/80 border border-amber-500/50 rounded px-1.5 py-0.2 text-[9px] font-bold text-amber-300 mb-0.5 shadow">
@@ -331,10 +348,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
                   : 'hover:bg-black/10'
               }`}
               style={{
-                left: '36.84%',
-                top: '58.38%',
-                width: '12.50%',
-                height: '14.12%',
+                left: `${classicZones.hut?.left ?? 36.84}%`,
+                top: `${classicZones.hut?.top ?? 58.38}%`,
+                width: `${classicZones.hut?.width ?? 12.50}%`,
+                height: `${classicZones.hut?.height ?? 14.12}%`,
               }}
             >
               <div className="bg-stone-950/80 border border-red-500/50 rounded px-1.5 py-0.2 text-[9px] font-bold text-red-300 mb-0.5 shadow">
@@ -354,10 +371,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
         <div
           className="absolute flex items-center justify-between gap-1 p-0.5"
           style={{
-            left: '5.79%',
-            top: '72.32%',
-            width: '42.24%',
-            height: '19.21%',
+            left: `${classicZones.building_0?.left ?? 5.79}%`,
+            top: `${classicZones.building_0?.top ?? 72.32}%`,
+            width: `${((classicZones.building_3?.left ?? 37.37) + (classicZones.building_3?.width ?? 10.66)) - (classicZones.building_0?.left ?? 5.79)}%`,
+            height: `${classicZones.building_0?.height ?? 19.21}%`,
           }}
         >
           {state.buildingPiles.map((pile, idx) => {
@@ -404,10 +421,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
         <div
           className="absolute flex items-center justify-between gap-1 p-0.5"
           style={{
-            left: '51.45%',
-            top: '66.85%',
-            width: '42.63%',
-            height: '24.67%',
+            left: `${classicZones.card_3?.left ?? 51.45}%`,
+            top: `${classicZones.card_3?.top ?? 66.85}%`,
+            width: `${((classicZones.card_0?.left ?? 83.42) + (classicZones.card_0?.width ?? 10.66)) - (classicZones.card_3?.left ?? 51.45)}%`,
+            height: `${classicZones.card_3?.height ?? 24.67}%`,
           }}
         >
           {/* Card slots in official order: slot 3 (4 res), slot 2 (3 res), slot 1 (2 res), slot 0 (1 res) */}
@@ -456,10 +473,10 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
         <div
           className="absolute pointer-events-none"
           style={{
-            left: '1.84%',
-            top: '33.90%',
-            width: '3.95%',
-            height: '54.61%',
+            left: `${classicZones.agri_track?.left ?? 1.84}%`,
+            top: `${classicZones.agri_track?.top ?? 33.90}%`,
+            width: `${classicZones.agri_track?.width ?? 3.95}%`,
+            height: `${classicZones.agri_track?.height ?? 54.61}%`,
           }}
         >
           {state.players.map(p => {
@@ -479,6 +496,18 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
             );
           })}
         </div>
+
+        {/* Quick Button for Zone Editor */}
+        {onOpenZoneEditor && (
+          <button
+            onClick={onOpenZoneEditor}
+            className="absolute top-2 right-2 z-40 px-2.5 py-1 rounded-xl bg-stone-900/90 hover:bg-stone-800 text-amber-300 hover:text-white border border-amber-500/50 shadow-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+            title="Ouvrir l'éditeur interactif pour déplacer les zones"
+          >
+            <Sliders className="w-3.5 h-3.5 text-amber-400" />
+            <span>Éditeur Zones</span>
+          </button>
+        )}
       </div>
     </div>
   );
