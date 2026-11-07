@@ -142,17 +142,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <BookOpen className="w-4 h-4 text-amber-400/80" />
             <span>Règles & Aide de Jeu</span>
           </button>
-
-          {/* Calibrage des zones du plateau original */}
-          {onOpenZoneEditor && (
-            <button
-              onClick={onOpenZoneEditor}
-              className="w-full py-2.5 sm:py-3 px-6 rounded-2xl bg-stone-950/80 hover:bg-stone-900 text-stone-300 hover:text-amber-300 font-semibold text-xs sm:text-sm tracking-wide transition-all border border-stone-800 hover:border-amber-500/50 backdrop-blur-md cursor-pointer flex items-center justify-center gap-2.5 shadow-md active:scale-95"
-            >
-              <Sliders className="w-4 h-4 text-amber-400" />
-              <span>🛠️ Calibrer les zones du plateau</span>
-            </button>
-          )}
         </div>
       </main>
 

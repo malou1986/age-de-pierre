@@ -496,18 +496,6 @@ export const VirtualBoard: React.FC<VirtualBoardProps> = ({
             );
           })}
         </div>
-
-        {/* Quick Button for Zone Editor */}
-        {onOpenZoneEditor && (
-          <button
-            onClick={onOpenZoneEditor}
-            className="absolute top-2 right-2 z-40 px-2.5 py-1 rounded-xl bg-stone-900/90 hover:bg-stone-800 text-amber-300 hover:text-white border border-amber-500/50 shadow-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
-            title="Ouvrir l'éditeur interactif pour déplacer les zones"
-          >
-            <Sliders className="w-3.5 h-3.5 text-amber-400" />
-            <span>Éditeur Zones</span>
-          </button>
-        )}
       </div>
     </div>
   );
