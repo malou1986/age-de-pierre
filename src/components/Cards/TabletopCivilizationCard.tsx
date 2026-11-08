@@ -1,6 +1,7 @@
 import React from 'react';
 import { CivilizationCard, ResourceType } from '../../types/game';
 import { ResourceIcon } from '../Common/ResourceIcon';
+import { haptic } from '../../logic/haptics';
 
 interface TabletopCivilizationCardProps {
   card: CivilizationCard;
@@ -136,11 +137,13 @@ export const TabletopCivilizationCard: React.FC<TabletopCivilizationCardProps> =
 
       case 'dice_roll': {
         const res = tb.resourceType || 'wood';
+        const div = res === 'wood' ? '3' : res === 'clay' ? '4' : res === 'stone' ? '5' : res === 'gold' ? '6' : '2';
         return (
           <div className="flex items-center gap-0.5 bg-stone-950/92 backdrop-blur-xs border border-amber-400/90 rounded-b-lg px-1.5 py-0.5 shadow-[0_4px_10px_rgba(0,0,0,0.95)] text-amber-200 font-black shrink-0">
             <span className="text-[10px] leading-none">🎲</span>
-            <span className="text-[8px] sm:text-[9px] font-black text-amber-300 uppercase">JET</span>
+            <span className="text-[8px] sm:text-[9px] font-black text-amber-300 uppercase">2D</span>
             <ResourceIcon type={res} size={isLarge ? 'md' : 'xs'} />
+            <span className="text-[8px] font-mono text-amber-300">÷{div}</span>
           </div>
         );
       }
@@ -168,7 +171,12 @@ export const TabletopCivilizationCard: React.FC<TabletopCivilizationCardProps> =
 
   return (
     <div
-      onClick={onClick}
+      onClick={() => {
+        if (onClick) {
+          haptic.tap();
+          onClick();
+        }
+      }}
       className={`group relative w-full h-full min-w-0 flex flex-col justify-between rounded-xl overflow-hidden select-none transition-all duration-200 ${
         isInteractive 
           ? 'cursor-pointer hover:-translate-y-2 hover:scale-[1.04] shadow-[0_16px_32px_rgba(245,158,11,0.7)] ring-2 ring-amber-400' 
@@ -217,17 +225,20 @@ export const TabletopCivilizationCard: React.FC<TabletopCivilizationCardProps> =
       {/* 5. BOTTOM ROW: High-contrast culture symbol or sand figure plinth */}
       <div className="relative z-10 w-full min-w-0 p-0.5 sm:p-1 flex items-center justify-between pointer-events-none">
         {isGreen && greenInfo ? (
-          <div className="flex items-center justify-between w-full min-w-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] bg-stone-950/85 backdrop-blur-xs px-1 py-0.5 rounded border border-emerald-500/60 overflow-hidden">
+          <div className="flex items-center justify-between w-full min-w-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] bg-emerald-950/90 backdrop-blur-xs px-1.5 py-0.5 rounded border border-emerald-400/70 overflow-hidden shadow-inner">
             <span className={`${isLarge ? 'text-xl' : 'text-xs sm:text-sm'} shrink-0 leading-none filter drop-shadow`}>
               {greenInfo.icon}
             </span>
-            <span className={`${isLarge ? 'text-[11px]' : 'text-[7px] sm:text-[9px]'} font-black uppercase text-emerald-300 tracking-wider truncate ml-0.5`}>
+            <span className={`${isLarge ? 'text-xs' : 'text-[8px] sm:text-[9px]'} font-black uppercase text-emerald-200 tracking-wider truncate mx-0.5`}>
               {greenInfo.label}
+            </span>
+            <span className="text-[7px] font-mono bg-emerald-800/80 text-emerald-200 px-1 rounded font-black shrink-0">
+              K²
             </span>
           </div>
         ) : sandInfo ? (
-          <div className="flex items-center justify-between w-full min-w-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] bg-stone-950/85 backdrop-blur-xs px-1 py-0.5 rounded border border-amber-500/60 overflow-hidden">
-            <div className="flex items-center gap-0.5 shrink-0">
+          <div className="flex items-center justify-between w-full min-w-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] bg-amber-950/90 backdrop-blur-xs px-1.5 py-0.5 rounded border border-amber-400/70 overflow-hidden shadow-inner">
+            <div className="flex items-center gap-1 shrink-0">
               <span 
                 className={`${isLarge ? 'text-lg' : 'text-xs sm:text-sm'} leading-none filter drop-shadow flex items-center justify-center`}
                 title={mult > 1 ? `${mult} ${sandInfo.pluralLabel}` : sandInfo.label}
@@ -242,19 +253,16 @@ export const TabletopCivilizationCard: React.FC<TabletopCivilizationCardProps> =
                   sandInfo.icon
                 )}
               </span>
-              <span className={`font-black rounded px-0.5 py-0.2 shrink-0 ${
+              <span className={`font-black rounded px-1 py-0.2 shrink-0 ${
                 mult >= 2 
                   ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-stone-950 border border-yellow-200 shadow text-[8px]' 
-                  : 'text-amber-300 text-[7px] sm:text-[8px]'
+                  : 'bg-amber-800/80 text-amber-200 text-[8px]'
               }`}>
                 {mult}×
               </span>
             </div>
             <div className="flex items-center gap-0.5 min-w-0 overflow-hidden">
-              {card.bottomBonus.sandType === 'builder' && (
-                <ResourceIcon type="building" size="xs" className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" />
-              )}
-              <span className={`${isLarge ? 'text-xs' : 'text-[7px] sm:text-[8px]'} font-black text-amber-200/90 tracking-tight truncate ml-0.5`}>
+              <span className={`${isLarge ? 'text-xs' : 'text-[8px] sm:text-[9px]'} font-black text-amber-200 tracking-tight truncate ml-0.5`}>
                 {sandInfo.target}
               </span>
             </div>

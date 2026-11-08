@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   X, 
   Volume2, 
@@ -16,8 +16,11 @@ import {
   Crown,
   Music,
   Pause,
-  Save
+  Save,
+  BarChart3,
+  Vibrate
 } from 'lucide-react';
+import { isHapticsEnabled, setHapticsEnabled, haptic } from '../../logic/haptics';
 
 interface GameSettingsModalProps {
   isOpen: boolean;
@@ -32,6 +35,7 @@ interface GameSettingsModalProps {
   onToggleFullscreen: () => void;
   onNewGame: () => void;
   onOpenTutorial: () => void;
+  onOpenStats?: () => void;
   onOpenQR: () => void;
   onOpenSummary: () => void;
   onOpenFirstPlayerDraw?: () => void;
@@ -53,6 +57,7 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
   onToggleFullscreen,
   onNewGame,
   onOpenTutorial,
+  onOpenStats,
   onOpenQR,
   onOpenSummary,
   onOpenFirstPlayerDraw,
@@ -60,6 +65,16 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
   onGoHome,
   onOpenZoneEditor,
 }) => {
+  const [haptics, setHaptics] = useState(() => isHapticsEnabled());
+
+  const handleToggleHaptics = () => {
+    const next = !haptics;
+    setHaptics(next);
+    setHapticsEnabled(next);
+    if (next) {
+      haptic.medium();
+    }
+  };
   if (!isOpen) return null;
 
   return (
@@ -183,10 +198,10 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
         {/* 2. CONTRÔLES RAPIDES AUDIO & AFFICHAGE */}
         <div className="space-y-1.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
-            Confort de Jeu & Son
+            Confort de Jeu, Son & Vibrations
           </span>
           <div className="grid grid-cols-2 gap-2">
-            {/* Bruitages & Sons tactiles */}
+            {/* Bruitages & Sons */}
             <button
               onClick={onToggleSound}
               className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs cursor-pointer transition-colors ${
@@ -199,13 +214,26 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
               <span>{soundEnabled ? 'Sons : Activés' : 'Sons : Coupés'}</span>
             </button>
 
+            {/* Vibrations Tactiles (Haptique Mobile) */}
+            <button
+              onClick={handleToggleHaptics}
+              className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 font-bold text-xs cursor-pointer transition-colors ${
+                haptics
+                  ? 'bg-stone-900 border-amber-500/60 text-amber-300'
+                  : 'bg-stone-900/60 border-stone-800 text-stone-500 line-through'
+              }`}
+            >
+              <Vibrate className={`w-4 h-4 ${haptics ? 'text-amber-400' : 'text-stone-500'}`} />
+              <span>{haptics ? 'Vibrations : Oui' : 'Vibrations : Non'}</span>
+            </button>
+
             {/* Plein écran */}
             <button
               onClick={() => {
                 onToggleFullscreen();
                 onClose();
               }}
-              className="p-2.5 rounded-xl border border-stone-800 bg-stone-900 hover:border-amber-500/60 hover:text-amber-300 flex items-center justify-center gap-2 font-bold text-xs cursor-pointer transition-colors text-stone-300"
+              className="col-span-2 p-2.5 rounded-xl border border-stone-800 bg-stone-900 hover:border-amber-500/60 hover:text-amber-300 flex items-center justify-center gap-2 font-bold text-xs cursor-pointer transition-colors text-stone-300"
             >
               {isFullscreen ? <Minimize className="w-4 h-4 text-amber-400" /> : <Maximize className="w-4 h-4 text-amber-400" />}
               <span>{isFullscreen ? 'Fenêtré' : 'Plein écran'}</span>
@@ -301,6 +329,20 @@ export const GameSettingsModal: React.FC<GameSettingsModalProps> = ({
               <BookOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span>Règles du jeu</span>
             </button>
+
+            {/* Statistiques & Records */}
+            {onOpenStats && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenStats();
+                }}
+                className="p-2 rounded-xl bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-300 hover:text-white flex items-center gap-2 text-xs font-bold cursor-pointer transition-colors"
+              >
+                <BarChart3 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>Statistiques</span>
+              </button>
+            )}
 
             {/* QR Code Smartphone */}
             <button

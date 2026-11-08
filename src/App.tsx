@@ -66,8 +66,10 @@ import { MeepleCountModal } from './components/Modals/MeepleCountModal';
 import { DrawnCardRevealModal } from './components/Modals/DrawnCardRevealModal';
 import { MerchantBarterModal } from './components/Modals/MerchantBarterModal';
 import { MammothContestModal } from './components/Modals/MammothContestModal';
+import { StatsModal } from './components/Modals/StatsModal';
 import { ClassicBoardZoneEditor } from './components/Board/ClassicBoardZoneEditor';
 import { ResourceIcon } from './components/Common/ResourceIcon';
+import { haptic } from './logic/haptics';
 import { Eye, LayoutGrid, Sparkles, Compass, Smartphone, X } from 'lucide-react';
 
 const DEFAULT_SETTINGS: GameSettings = {
@@ -96,6 +98,7 @@ export const App: React.FC = () => {
   const handleUndo = useCallback(() => {
     if (!undoState) return;
     sound.playClick();
+    haptic.medium();
     setState(undoState);
     setUndoState(null);
   }, [undoState]);
@@ -208,6 +211,7 @@ export const App: React.FC = () => {
   // Modals state
   const [showNewGameModal, setShowNewGameModal] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showFirstPlayerDrawModal, setShowFirstPlayerDrawModal] = useState(false);
 
@@ -618,6 +622,7 @@ export const App: React.FC = () => {
         if (canPlaceMeeples(state, activePlayer.id, 'hut', 2).allowed) {
           setUndoState(state);
           sound.playMeeplePlace();
+          haptic.tap();
           setState(prev => placeMeeples(prev, activePlayer.id, 'hut', 2));
         }
         return;
@@ -626,6 +631,7 @@ export const App: React.FC = () => {
         if (canPlaceMeeples(state, activePlayer.id, locationId, 1).allowed) {
           setUndoState(state);
           sound.playMeeplePlace();
+          haptic.tap();
           setState(prev => placeMeeples(prev, activePlayer.id, locationId, 1));
         }
         return;
@@ -636,6 +642,7 @@ export const App: React.FC = () => {
         if (canPlaceMeeples(state, activePlayer.id, locationId, 1).allowed) {
           setUndoState(state);
           sound.playMeeplePlace();
+          haptic.tap();
           setState(prev => placeMeeples(prev, activePlayer.id, locationId, 1));
         }
         return;
@@ -644,6 +651,7 @@ export const App: React.FC = () => {
       // Resource zones & Hunting (open meeple count modal)
       if (['hunting', 'forest', 'clay_pit', 'quarry', 'river'].includes(locationId)) {
         if (canPlaceMeeples(state, activePlayer.id, locationId, 1).allowed) {
+          haptic.tap();
           setCountModalLoc(locationId);
         }
         return;
@@ -743,6 +751,7 @@ export const App: React.FC = () => {
     if (countModalLoc) {
       setUndoState(state);
       sound.playMeeplePlace();
+      haptic.tap();
       setState(prev => placeMeeples(prev, activePlayer.id, countModalLoc, count));
       setCountModalLoc(null);
     }
@@ -752,6 +761,7 @@ export const App: React.FC = () => {
   const handleConfirmDiceHarvest = (diceValues: number[], toolsUsed: number[], tempToolsUsed: number = 0) => {
     if (diceModalLoc) {
       setUndoState(state);
+      haptic.success();
       setState(prev => resolveDiceHarvest(prev, activePlayer.id, diceModalLoc, diceValues, toolsUsed, tempToolsUsed));
       setDiceModalLoc(null);
     }
@@ -760,6 +770,7 @@ export const App: React.FC = () => {
   // Confirm card purchase
   const handleConfirmCardPurchase = (resourcesPaid: Record<ResourceType, number>) => {
     if (cardModalLoc) {
+      haptic.success();
       const slot = parseInt(cardModalLoc.split('_')[1], 10);
       const card = state.activeCards[slot];
       if (card && card.topBonus.type === 'dice_all_players') {
@@ -852,6 +863,7 @@ export const App: React.FC = () => {
   const handleConfirmBuildingPurchase = (resourcesPaid: Record<ResourceType, number>) => {
     if (buildingModalLoc) {
       setUndoState(state);
+      haptic.success();
       setState(prev => resolveBuildingPurchase(prev, activePlayer.id, buildingModalLoc, resourcesPaid));
       setBuildingModalLoc(null);
     }
@@ -861,6 +873,7 @@ export const App: React.FC = () => {
   const handleConfirmMerchantVisit = (tradeDetails?: any) => {
     setUndoState(state);
     sound.playPurchase();
+    haptic.success();
     setState(prev => resolveMerchantVisit(prev, activePlayer.id, tradeDetails));
     setShowMerchantModal(false);
   };
@@ -869,6 +882,7 @@ export const App: React.FC = () => {
   const handleConfirmMammothContest = (wagers: Record<string, number>, rolls: Record<string, number[]>) => {
     setUndoState(state);
     sound.playHarvest();
+    haptic.success();
     setState(prev => resolveMammothContest(prev, wagers, rolls));
     setShowMammothModal(false);
   };
@@ -893,6 +907,7 @@ export const App: React.FC = () => {
           onStartNewGame={() => setShowNewGameModal(true)}
           onResumeGame={handleResumeGame}
           onOpenTutorial={() => setShowTutorialModal(true)}
+          onOpenStats={() => setShowStatsModal(true)}
           onOpenZoneEditor={() => setIsZoneEditorOpen(true)}
           hasActiveGame={hasSavedGame || state.round > 1 || state.phase !== 'placement'}
           savedRound={savedRound || state.round}
@@ -909,6 +924,14 @@ export const App: React.FC = () => {
           isOpen={isZoneEditorOpen}
           onClose={() => setIsZoneEditorOpen(false)}
         />
+
+        {/* Modal Statistiques & Records */}
+        {showStatsModal && (
+          <StatsModal
+            isOpen={showStatsModal}
+            onClose={() => setShowStatsModal(false)}
+          />
+        )}
 
         {/* Modal Configuration / Nouvelle Partie */}
         {showNewGameModal && (
@@ -1076,6 +1099,7 @@ export const App: React.FC = () => {
         onToggleFullscreen={handleToggleFullscreen}
         onNewGame={() => setShowNewGameModal(true)}
         onOpenTutorial={() => setShowTutorialModal(true)}
+        onOpenStats={() => setShowStatsModal(true)}
         onOpenQR={() => setShowQRModal(true)}
         onOpenSummary={() => setShowRoundSummaryModal(true)}
         onOpenFirstPlayerDraw={() => setShowFirstPlayerDrawModal(true)}
@@ -1236,6 +1260,14 @@ export const App: React.FC = () => {
       {showTutorialModal && (
         <TutorialModal
           onClose={() => setShowTutorialModal(false)}
+        />
+      )}
+
+      {/* Tribe Stats Modal */}
+      {showStatsModal && (
+        <StatsModal
+          isOpen={showStatsModal}
+          onClose={() => setShowStatsModal(false)}
         />
       )}
 

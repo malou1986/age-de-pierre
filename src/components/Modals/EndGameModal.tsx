@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GameState } from '../../types/game';
 import { rankPlayers } from '../../logic/scoring';
 import confetti from 'canvas-confetti';
-import { Trophy, Award, RefreshCw, Sparkles } from 'lucide-react';
+import { Trophy, Award, RefreshCw, Sparkles, BarChart3, Crown } from 'lucide-react';
 import { MeepleIcon } from '../Meeples';
 import { ResourceIcon } from '../Common/ResourceIcon';
+import { recordGameFinished } from '../../logic/stats';
+import { haptic } from '../../logic/haptics';
+import { StatsModal } from './StatsModal';
 
 interface EndGameModalProps {
   state: GameState;
@@ -19,8 +22,30 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
 }) => {
   const rankedScores = rankPlayers(state.players);
   const winner = rankedScores[0];
+  const [isHighScore, setIsHighScore] = useState(false);
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const hasRecordedRef = useRef(false);
 
   useEffect(() => {
+    // Haptic victory sequence
+    haptic.victory();
+
+    // Record game in persistent stats
+    if (!hasRecordedRef.current && winner) {
+      hasRecordedRef.current = true;
+      const res = recordGameFinished({
+        winnerName: winner.name,
+        winnerColor: winner.color,
+        winningScore: winner.totalScore,
+        isAi: winner.isAi,
+        playerCount: state.players.length,
+        roundsCount: state.round,
+      });
+      if (res.isNewHighScore) {
+        setIsHighScore(true);
+      }
+    }
+
     // Launch celebratory confetti!
     try {
       confetti({
@@ -52,6 +77,14 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
             <span>Victoire de {winner.name} avec {winner.totalScore} Points !</span>
             <Sparkles className="w-5 h-5 text-amber-400" />
           </div>
+
+          {isHighScore && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/50 rounded-full text-amber-300 text-xs font-black animate-pulse">
+              <Crown className="w-4 h-4 text-amber-400" />
+              <span>Nouveau Record Historique de la Tribu !</span>
+              <Crown className="w-4 h-4 text-amber-400" />
+            </div>
+          )}
         </div>
 
         {/* Podium / Score Breakdown Table */}
@@ -158,23 +191,38 @@ export const EndGameModal: React.FC<EndGameModalProps> = ({
         </div>
 
         {/* Bottom Actions */}
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
+          <button
+            type="button"
+            onClick={() => setShowStatsModal(true)}
+            className="py-3 px-4 bg-stone-900 hover:bg-stone-800 text-amber-300 border border-amber-600/40 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+          >
+            <BarChart3 className="w-4 h-4 text-amber-400" />
+            <span>Statistiques & Records</span>
+          </button>
           <button
             onClick={onRestart}
-            className="flex-1 py-3.5 bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            className="flex-1 py-3 bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm"
           >
             <RefreshCw className="w-4 h-4" />
-            <span>Rejouer (Mêmes règles)</span>
+            <span>Rejouer</span>
           </button>
           <button
             onClick={onNewGame}
-            className="flex-1 py-3.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-bold rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            className="flex-1 py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-bold rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer text-sm"
           >
             <Award className="w-5 h-5" />
             <span>Nouvelle Partie</span>
           </button>
         </div>
       </div>
+
+      {showStatsModal && (
+        <StatsModal
+          isOpen={showStatsModal}
+          onClose={() => setShowStatsModal(false)}
+        />
+      )}
     </div>
   );
 };

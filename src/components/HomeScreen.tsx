@@ -1,10 +1,11 @@
 import React from 'react';
-import { Play, RotateCcw, BookOpen, Volume2, VolumeX, Maximize2, Minimize2, Sparkles, Users, Award, Music, Pause, Sliders } from 'lucide-react';
+import { Play, RotateCcw, BookOpen, Volume2, VolumeX, Maximize2, Minimize2, Sparkles, Users, Award, Music, Pause, Sliders, BarChart3 } from 'lucide-react';
 
 interface HomeScreenProps {
   onStartNewGame: () => void;
   onResumeGame?: () => void;
   onOpenTutorial: () => void;
+  onOpenStats?: () => void;
   onOpenZoneEditor?: () => void;
   hasActiveGame: boolean;
   savedRound?: number;
@@ -20,6 +21,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onStartNewGame,
   onResumeGame,
   onOpenTutorial,
+  onOpenStats,
   onOpenZoneEditor,
   hasActiveGame,
   savedRound,
@@ -134,14 +136,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </button>
           )}
 
-          {/* Rules / Tutorial Button */}
-          <button
-            onClick={onOpenTutorial}
-            className="w-full py-2.5 sm:py-3 px-6 rounded-2xl bg-stone-950/80 hover:bg-stone-900 text-stone-300 hover:text-white font-semibold text-xs sm:text-sm tracking-wide transition-all border border-stone-800 hover:border-stone-700 backdrop-blur-md cursor-pointer flex items-center justify-center gap-2.5 shadow-md active:scale-95"
-          >
-            <BookOpen className="w-4 h-4 text-amber-400/80" />
-            <span>Règles & Aide de Jeu</span>
-          </button>
+          {/* Rules & Stats Buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={onOpenTutorial}
+              className="py-2.5 px-3 rounded-2xl bg-stone-950/80 hover:bg-stone-900 text-stone-300 hover:text-white font-semibold text-xs tracking-wide transition-all border border-stone-800 hover:border-stone-700 backdrop-blur-md cursor-pointer flex items-center justify-center gap-1.5 shadow-md active:scale-95"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-amber-400/80" />
+              <span>Règles & Aide</span>
+            </button>
+
+            {onOpenStats && (
+              <button
+                onClick={onOpenStats}
+                className="py-2.5 px-3 rounded-2xl bg-stone-950/80 hover:bg-stone-900 text-stone-300 hover:text-white font-semibold text-xs tracking-wide transition-all border border-stone-800 hover:border-amber-500/50 backdrop-blur-md cursor-pointer flex items-center justify-center gap-1.5 shadow-md active:scale-95"
+              >
+                <BarChart3 className="w-3.5 h-3.5 text-amber-400" />
+                <span>Statistiques</span>
+              </button>
+            )}
+          </div>
         </div>
       </main>
 
