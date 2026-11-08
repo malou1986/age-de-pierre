@@ -6,7 +6,9 @@ import {
   GameSettings, 
   GameState, 
   ResourceType,
-  PlayerState
+  PlayerState,
+  DEFAULT_EXPANSIONS,
+  DEFAULT_VARIANTS
 } from './types/game';
 import { 
   canPlaceMeeples, 
@@ -77,17 +79,8 @@ const DEFAULT_SETTINGS: GameSettings = {
     { name: 'Naoh', color: 'yellow', isAi: true, aiDifficulty: 'hard' },
     { name: 'Crao', color: 'green', isAi: true, aiDifficulty: 'easy' },
   ],
-  variants: {
-    firstTurnCourtesy: true,
-    startingCompensation: true,
-    twoPilesEnd: true,
-    completeCycleEnd: true,
-  },
-  expansions: {
-    newHuts: true,
-    styleIsTheGoal: false,
-    mammothHerd: false,
-  },
+  variants: DEFAULT_VARIANTS,
+  expansions: DEFAULT_EXPANSIONS,
 };
 
 const SAVE_KEY_STATE = 'age_de_pierre_saved_game_state';

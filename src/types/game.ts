@@ -179,6 +179,14 @@ export interface GameVariants {
   openResources2P?: boolean;     // À 2 joueurs : permet de partager les zones de ressources au lieu de la restriction stricte officielle (1 seul joueur)
 }
 
+export const DEFAULT_VARIANTS: GameVariants = {
+  firstTurnCourtesy: false,
+  startingCompensation: false,
+  twoPilesEnd: false,
+  completeCycleEnd: false,
+  openResources2P: false,
+};
+
 export type GraphicEdition = 'modern' | 'classic';
 
 export interface GameExpansionsConfig {

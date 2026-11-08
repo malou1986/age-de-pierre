@@ -9,6 +9,7 @@ import {
   GameExpansionsConfig,
   GraphicEdition,
   DEFAULT_EXPANSIONS,
+  DEFAULT_VARIANTS,
   MammothTile,
   PlayerState, 
   ResourceType 
@@ -61,12 +62,13 @@ export function createInitialGameState(params: {
     isAi: boolean;
     aiDifficulty: 'easy' | 'normal' | 'hard';
   }[];
-  variants: GameVariants;
+  variants?: GameVariants;
   expansions?: GameExpansionsConfig;
   edition?: GraphicEdition;
   firstPlayerIndex?: number;
 }): GameState {
-  const { players: playerConfigs, variants } = params;
+  const { players: playerConfigs } = params;
+  const variants = params.variants || DEFAULT_VARIANTS;
   const expansions = params.expansions || DEFAULT_EXPANSIONS;
   const edition = params.edition || 'modern';
   const numPlayers = playerConfigs.length;
@@ -161,6 +163,14 @@ export function createInitialGameState(params: {
     expansions.mammothHerd ? 'Harde de Mammouths' : null,
   ].filter(Boolean);
 
+  const activeVariantsList = [
+    variants.firstTurnCourtesy ? 'Courtoisie T1' : null,
+    variants.startingCompensation ? 'Compensation de départ' : null,
+    variants.twoPilesEnd ? 'Fin à 2 Piles' : null,
+    variants.completeCycleEnd ? 'Égalité des tours' : null,
+    variants.openResources2P ? 'Partage ressources 2J' : null,
+  ].filter(Boolean);
+
   const initialLog: GameLogEntry[] = [
     {
       id: uid(),
@@ -172,7 +182,11 @@ export function createInitialGameState(params: {
     {
       id: uid(),
       round: 1,
-      text: `Partie lancée (${edition === 'modern' ? 'Nouvelle Édition' : 'Édition Classique'}) avec ${numPlayers} joueurs ! ${activeExpansionsList.length > 0 ? `Extensions : ${activeExpansionsList.join(', ')} • ` : ''}Variantes : ${variants.firstTurnCourtesy ? 'Courtoisie T1' : ''} ${variants.twoPilesEnd ? '• Fin à 2 Piles' : ''} ${variants.completeCycleEnd ? '• Égalité des tours' : ''}`,
+      text: `Partie lancée (${edition === 'modern' ? 'Nouvelle Édition' : 'Édition Classique'}) avec ${numPlayers} joueurs ! ${
+        activeExpansionsList.length > 0 ? `Extensions : ${activeExpansionsList.join(', ')} • ` : 'Jeu de base (sans extension) • '
+      }${
+        activeVariantsList.length > 0 ? `Variantes : ${activeVariantsList.join(', ')}` : 'Règles officielles pures'
+      }`,
       type: 'info',
       timestamp: Date.now() + 1,
     }

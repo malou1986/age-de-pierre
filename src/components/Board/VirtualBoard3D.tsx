@@ -175,6 +175,8 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
   const zoneCoordinates = useMemo<Record<BoardLocationId, { xPct: number; yPct: number; radius: number; label: string; sublabel: string }>>(() => {
     const map: Partial<Record<BoardLocationId, { xPct: number; yPct: number; radius: number; label: string; sublabel: string }>> = {};
     Object.values(classicZones).forEach(z => {
+      if (z.id === 'merchant' && !state.expansions?.styleIsTheGoal) return;
+      if (z.id === 'mammoth' && !state.expansions?.mammothHerd) return;
       map[z.id as BoardLocationId] = {
         xPct: (z.left + z.width / 2) / 100,
         yPct: (z.top + z.height / 2) / 100,
@@ -184,7 +186,7 @@ export const VirtualBoard3D: React.FC<VirtualBoard3DProps> = ({
       };
     });
     return map as Record<BoardLocationId, { xPct: number; yPct: number; radius: number; label: string; sublabel: string }>;
-  }, [classicZones]);
+  }, [classicZones, state.expansions?.styleIsTheGoal, state.expansions?.mammothHerd]);
 
   // Three.js instances
   const sceneRef = useRef<THREE.Scene | null>(null);

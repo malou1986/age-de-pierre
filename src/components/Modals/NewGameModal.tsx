@@ -4,7 +4,9 @@ import {
   GameVariants, 
   GameExpansionsConfig, 
   GraphicEdition, 
-  PlayerColor 
+  PlayerColor,
+  DEFAULT_EXPANSIONS,
+  DEFAULT_VARIANTS
 } from '../../types/game';
 import { MeepleIcon } from '../Meeples';
 import { 
@@ -63,11 +65,7 @@ export const NewGameModal: React.FC<NewGameModalProps> = ({
   const [selectedPlayerIdx, setSelectedPlayerIdx] = useState<number>(0);
   const [edition, setEdition] = useState<GraphicEdition>(initialSettings?.edition || 'modern');
 
-  const [expansions, setExpansions] = useState<GameExpansionsConfig>(initialSettings?.expansions || {
-    newHuts: true,         // Recommandé & activé par défaut
-    styleIsTheGoal: false,
-    mammothHerd: false,
-  });
+  const [expansions, setExpansions] = useState<GameExpansionsConfig>(initialSettings?.expansions || DEFAULT_EXPANSIONS);
 
   const [players, setPlayers] = useState(() => {
     const defaultRoster = [
@@ -93,12 +91,7 @@ export const NewGameModal: React.FC<NewGameModalProps> = ({
     return defaultRoster;
   });
 
-  const [variants, setVariants] = useState<GameVariants>(initialSettings?.variants || {
-    firstTurnCourtesy: true,
-    startingCompensation: true,
-    twoPilesEnd: true,
-    completeCycleEnd: true,
-  });
+  const [variants, setVariants] = useState<GameVariants>(initialSettings?.variants || DEFAULT_VARIANTS);
 
   const handlePlayerCountChange = (count: number) => {
     setPlayerCount(count);
@@ -165,13 +158,7 @@ export const NewGameModal: React.FC<NewGameModalProps> = ({
   };
 
   const setOfficialRules = () => {
-    setVariants({
-      firstTurnCourtesy: false,
-      startingCompensation: false,
-      twoPilesEnd: false,
-      completeCycleEnd: false,
-      openResources2P: false,
-    });
+    setVariants({ ...DEFAULT_VARIANTS });
   };
 
   const setBalancedPack = () => {
@@ -593,18 +580,26 @@ export const NewGameModal: React.FC<NewGameModalProps> = ({
                     <div className="flex gap-2 text-[10px]">
                       <button
                         type="button"
-                        onClick={setBalancedPack}
-                        className="text-amber-300 hover:underline font-bold cursor-pointer"
+                        onClick={setOfficialRules}
+                        className={`cursor-pointer transition-colors ${
+                          !Object.values(variants).some(Boolean)
+                            ? 'text-amber-300 font-bold underline'
+                            : 'text-stone-400 hover:text-stone-200 hover:underline'
+                        }`}
                       >
-                        Pack Idéal
+                        Standard (Officiel)
                       </button>
                       <span className="text-stone-600">•</span>
                       <button
                         type="button"
-                        onClick={setOfficialRules}
-                        className="text-stone-400 hover:underline cursor-pointer"
+                        onClick={setBalancedPack}
+                        className={`cursor-pointer transition-colors ${
+                          Object.values(variants).filter(Boolean).length >= 4
+                            ? 'text-amber-300 font-bold underline'
+                            : 'text-stone-400 hover:text-stone-200 hover:underline'
+                        }`}
                       >
-                        Standard
+                        Pack Idéal (Variantes)
                       </button>
                     </div>
                   </div>
