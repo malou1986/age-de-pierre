@@ -26,3 +26,33 @@
 .animate-fade-in {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+@keyframes cupRattle {
+  0% { transform: rotate(0deg) translate(0, 0); }
+  15% { transform: rotate(-18deg) translate(-8px, -4px); }
+  30% { transform: rotate(18deg) translate(8px, 2px); }
+  45% { transform: rotate(-14deg) translate(-6px, -2px); }
+  60% { transform: rotate(15deg) translate(6px, 3px); }
+  75% { transform: rotate(-10deg) translate(-4px, -1px); }
+  90% { transform: rotate(8deg) translate(3px, 1px); }
+  100% { transform: rotate(0deg) translate(0, 0); }
+}
+
+.animate-cup-rattle {
+  animation: cupRattle 0.35s ease-in-out infinite;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

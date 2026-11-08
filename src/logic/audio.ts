@@ -60,29 +60,75 @@ class SoundEffects {
     }
   }
 
-  // Dice roll rattle sound
-  playDiceRoll() {
+  // Prehistoric leather cup shake: muffled hollow rattle of wooden dice inside leather
+  playDiceShake() {
     const ctx = this.getContext();
     if (!ctx) return;
     try {
-      for (let i = 0; i < 5; i++) {
-        setTimeout(() => {
-          if (!this.ctx) return;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(300 + Math.random() * 400, this.ctx.currentTime);
-          gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start();
-          osc.stop(this.ctx.currentTime + 0.06);
-        }, i * 45);
+      const now = ctx.currentTime;
+      for (let i = 0; i < 4; i++) {
+        const t = now + i * 0.07;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        osc.type = i % 2 === 0 ? 'triangle' : 'square';
+        osc.frequency.setValueAtTime(220 + Math.random() * 260, t);
+        osc.frequency.exponentialRampToValueAtTime(140 + Math.random() * 80, t + 0.05);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(800 + Math.random() * 400, t);
+        filter.Q.setValueAtTime(3, t);
+
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.055);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.06);
       }
     } catch {
       // Ignore
     }
+  }
+
+  // Wooden dice clatter and landing on felt/table
+  playDiceLand() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    try {
+      const now = ctx.currentTime;
+      [0, 0.04, 0.09, 0.14].forEach((delay, idx) => {
+        const t = now + delay;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(380 - idx * 60 + Math.random() * 40, t);
+        osc.frequency.exponentialRampToValueAtTime(70, t + 0.045);
+
+        gain.gain.setValueAtTime(0.22 / (idx * 0.5 + 1), t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.05);
+      });
+    } catch {
+      // Ignore
+    }
+  }
+
+  // Dice roll rattle sound
+  playDiceRoll() {
+    this.playDiceShake();
+    setTimeout(() => {
+      this.playDiceLand();
+    }, 320);
   }
 
   // Resource harvest chime

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CivilizationCard, PlayerState, ResourceType } from '../../types/game';
 import { sound } from '../../logic/audio';
 import { ResourceIcon } from '../Common/ResourceIcon';
+import { LeatherDiceCupRoll } from '../Common/LeatherDiceCupRoll';
 import { Dices, Check, Sparkles, Wrench, ArrowRight } from 'lucide-react';
 
 interface CardDiceRollModalProps {
@@ -18,16 +19,6 @@ const RESOURCE_INFO: Record<ResourceType, { name: string; divisor: number; color
   gold: { name: 'Or', divisor: 6, colorText: 'text-yellow-300', bgBadge: 'bg-yellow-950/80 border-yellow-600' },
 };
 
-// 2D Dice dot positions (percentages)
-const DICE_DOTS: Record<number, [number, number][]> = {
-  1: [[50, 50]],
-  2: [[25, 25], [75, 75]],
-  3: [[25, 25], [50, 50], [75, 75]],
-  4: [[25, 25], [75, 25], [25, 75], [75, 75]],
-  5: [[25, 25], [75, 25], [50, 50], [25, 75], [75, 75]],
-  6: [[25, 20], [75, 20], [25, 50], [75, 50], [25, 80], [75, 80]],
-};
-
 export const CardDiceRollModal: React.FC<CardDiceRollModalProps> = ({
   card,
   player,
@@ -41,25 +32,14 @@ export const CardDiceRollModal: React.FC<CardDiceRollModalProps> = ({
     : (card.classicImageUrl || card.imageUrl);
 
   const [hasRolled, setHasRolled] = useState(false);
-  const [isRolling, setIsRolling] = useState(false);
   const [diceValues, setDiceValues] = useState<number[]>([1, 1]);
   const [selectedTools, setSelectedTools] = useState<number[]>([]);
   const [tempToolsCount, setTempToolsCount] = useState<number>(0);
   const maxTempTools = player.temporaryTools || 0;
 
-  // Auto-roll for AI
-  useEffect(() => {
-    if (player.isAi) {
-      const timer = setTimeout(() => {
-        handleRoll();
-      }, 700);
-      return () => clearTimeout(timer);
-    }
-  }, [player.isAi]);
-
   // Once AI has rolled, auto-confirm
   useEffect(() => {
-    if (player.isAi && hasRolled && !isRolling) {
+    if (player.isAi && hasRolled) {
       const timer = setTimeout(() => {
         const diceSum = diceValues.reduce((s, v) => s + v, 0);
         const remainder = diceSum % resInfo.divisor;
@@ -74,34 +54,10 @@ export const CardDiceRollModal: React.FC<CardDiceRollModalProps> = ({
           });
         }
         onConfirm(diceValues, aiTools, 0);
-      }, 1200);
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [player.isAi, hasRolled, isRolling, diceValues, resInfo.divisor, player.toolTiles, player.toolsUsedThisRound, onConfirm]);
-
-  const handleRoll = () => {
-    setIsRolling(true);
-    sound.playDiceRoll();
-
-    let count = 0;
-    const interval = setInterval(() => {
-      setDiceValues([
-        Math.floor(Math.random() * 6) + 1,
-        Math.floor(Math.random() * 6) + 1,
-      ]);
-      count++;
-      if (count > 9) {
-        clearInterval(interval);
-        const finalDice = [
-          Math.floor(Math.random() * 6) + 1,
-          Math.floor(Math.random() * 6) + 1,
-        ];
-        setDiceValues(finalDice);
-        setIsRolling(false);
-        setHasRolled(true);
-      }
-    }, 60);
-  };
+  }, [player.isAi, hasRolled, diceValues, resInfo.divisor, player.toolTiles, player.toolsUsedThisRound, onConfirm]);
 
   const toggleTool = (idx: number) => {
     sound.playTool();
@@ -163,57 +119,20 @@ export const CardDiceRollModal: React.FC<CardDiceRollModalProps> = ({
 
         {/* Responsive Content: 2-column on landscape / 1-column on portrait */}
         <div className="grid grid-cols-1 landscape:grid-cols-2 md:landscape:grid-cols-2 gap-2 sm:gap-3 items-stretch flex-1 min-h-0 overflow-y-auto pr-0.5">
-          {/* Left Column: Dice Rolling Arena */}
-          <div className="bg-stone-950/90 rounded-xl p-2 sm:p-3 border border-stone-800 text-center flex flex-col justify-between space-y-1.5">
-            <div className="text-[9px] sm:text-[10px] text-stone-400">
-              {hasRolled ? 'Résultat des 2 dés :' : 'Lancez les 2 dés :'}
-            </div>
-
-            {/* 2 Dice Render */}
-            <div className="flex items-center justify-center gap-3 sm:gap-4 min-h-[50px] sm:min-h-[60px]">
-              {diceValues.map((val, idx) => (
-                <div
-                  key={idx}
-                  className={`relative w-10 h-10 sm:w-14 sm:h-14 rounded-xl shadow-lg flex items-center justify-center border-2 transition-transform duration-150 ${
-                    isRolling
-                      ? 'animate-spin border-amber-400 bg-amber-950/80 scale-105'
-                      : 'border-red-600/90 bg-gradient-to-br from-red-700 to-red-950 shadow-red-950/60'
-                  }`}
-                >
-                  {/* Dice dots */}
-                  <div className="relative w-full h-full p-1 sm:p-1.5">
-                    {DICE_DOTS[val]?.map(([x, y], dotIdx) => (
-                      <div
-                        key={dotIdx}
-                        className="absolute w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.8)] -translate-x-1/2 -translate-y-1/2"
-                        style={{ left: `${x}%`, top: `${y}%` }}
-                      />
-                    ))}
-                  </div>
-
-                  <span className="absolute -bottom-2 px-1 py-0.2 rounded-full bg-stone-950 text-[8px] sm:text-[9px] font-black text-amber-300 border border-stone-700">
-                    Dé {idx + 1}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Roll Button */}
-            {!hasRolled ? (
-              <button
-                onClick={handleRoll}
-                disabled={isRolling}
-                className="w-full py-2 sm:py-2.5 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black rounded-xl shadow-lg cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm transition-transform active:scale-95 disabled:opacity-50 shrink-0"
-              >
-                <Dices className="w-4 h-4 text-amber-950" />
-                <span>{isRolling ? 'Lancement...' : 'Lancer les 2 dés !'}</span>
-              </button>
-            ) : (
-              <div className="py-0.5 sm:py-1 bg-stone-900/90 rounded-lg border border-stone-800">
-                <div className="text-[8px] sm:text-[9px] text-stone-400 uppercase font-bold tracking-wider">Total des 2 dés</div>
-                <div className="text-lg sm:text-2xl font-black text-amber-400 leading-tight">{diceValues[0]} + {diceValues[1]} = {diceSum}</div>
-              </div>
-            )}
+          {/* Left Column: Prehistoric Leather Cup & 3D Wooden Dice Arena */}
+          <div className="flex flex-col justify-between h-full">
+            <LeatherDiceCupRoll
+              diceCount={2}
+              initialValues={diceValues}
+              hasRolled={hasRolled}
+              autoRoll={player.isAi}
+              onRollComplete={(values) => {
+                setDiceValues(values);
+                setHasRolled(true);
+              }}
+              rollButtonLabel="Secouer & Lancer les 2 dés !"
+              className="h-full"
+            />
           </div>
 
           {/* Right Column: Tools Selector & Harvest Confirmation */}

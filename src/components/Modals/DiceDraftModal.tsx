@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CivilizationCard, PlayerState, ResourceType } from '../../types/game';
 import { sound } from '../../logic/audio';
+import { haptic } from '../../logic/haptics';
 import { ResourceIcon } from '../Common/ResourceIcon';
-import { Dices, Check, Sparkles, User, Bot, ArrowRight } from 'lucide-react';
+import { LeatherCup, WoodenDie } from '../Common/LeatherDiceCupRoll';
+import { Dices, Check, Sparkles, User, Bot, ArrowRight, FastForward } from 'lucide-react';
 
 export interface DiceDraftReward {
   dieValue: number;
@@ -65,10 +67,36 @@ export const DiceDraftModal: React.FC<DiceDraftModalProps> = ({
   }, [buyerIndex, playerCount]);
 
   const [hasRolled, setHasRolled] = useState(false);
-  const [isRolling, setIsRolling] = useState(false);
+  const [cupState, setCupState] = useState<'idle' | 'shaking' | 'pouring' | 'settled'>('idle');
   const [diceValues, setDiceValues] = useState<number[]>(() =>
     Array.from({ length: playerCount }, () => Math.floor(Math.random() * 6) + 1)
   );
+
+  const isRolling = cupState === 'shaking' || cupState === 'pouring';
+  const animTimeoutRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const shakeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      animTimeoutRef.current.forEach(t => clearTimeout(t));
+      if (shakeIntervalRef.current) clearInterval(shakeIntervalRef.current);
+    };
+  }, []);
+
+  const skipRollAnimation = (finalValues?: number[]) => {
+    animTimeoutRef.current.forEach(t => clearTimeout(t));
+    animTimeoutRef.current = [];
+    if (shakeIntervalRef.current) {
+      clearInterval(shakeIntervalRef.current);
+      shakeIntervalRef.current = null;
+    }
+    const vals = finalValues || Array.from({ length: playerCount }, () => Math.floor(Math.random() * 6) + 1);
+    setDiceValues(vals);
+    setCupState('settled');
+    setHasRolled(true);
+    sound.playDiceLand();
+    haptic.medium();
+  };
 
   // Turn in draft order (0 to playerCount - 1)
   const [draftStep, setDraftStep] = useState(0);
@@ -78,34 +106,50 @@ export const DiceDraftModal: React.FC<DiceDraftModalProps> = ({
   const currentPickerIndex = draftOrder[draftStep];
   const currentPicker = allPlayers[currentPickerIndex];
 
-  // Function to roll the dice
+  // Function to roll the dice with prehistoric leather cup
   const handleRollDice = () => {
-    setIsRolling(true);
-    sound.playDiceRoll();
+    if (cupState === 'shaking' || cupState === 'pouring') return;
 
-    let count = 0;
-    const interval = setInterval(() => {
+    const finalValues = Array.from({ length: playerCount }, () => Math.floor(Math.random() * 6) + 1);
+
+    setCupState('shaking');
+    sound.playDiceShake();
+    haptic.diceRoll();
+
+    let shakeTicks = 0;
+    shakeIntervalRef.current = setInterval(() => {
       setDiceValues(Array.from({ length: playerCount }, () => Math.floor(Math.random() * 6) + 1));
-      count++;
-      if (count > 9) {
-        clearInterval(interval);
-        const finalValues = Array.from({ length: playerCount }, () => Math.floor(Math.random() * 6) + 1);
-        setDiceValues(finalValues);
-        setIsRolling(false);
-        setHasRolled(true);
+      shakeTicks++;
+      if (shakeTicks > 4 && shakeIntervalRef.current) {
+        clearInterval(shakeIntervalRef.current);
       }
-    }, 70);
+    }, 60);
+
+    const t1 = setTimeout(() => {
+      setCupState('pouring');
+      sound.playDiceLand();
+      haptic.medium();
+      setDiceValues(Array.from({ length: playerCount }, () => Math.floor(Math.random() * 6) + 1));
+    }, 320);
+
+    const t2 = setTimeout(() => {
+      setDiceValues(finalValues);
+      setCupState('settled');
+      setHasRolled(true);
+    }, 680);
+
+    animTimeoutRef.current.push(t1, t2);
   };
 
   // If buyer is AI, trigger automatic roll after 500ms
   useEffect(() => {
-    if (!hasRolled && !isRolling && buyerPlayer.isAi) {
+    if (!hasRolled && !isRolling && buyerPlayer.isAi && cupState === 'idle') {
       const timer = setTimeout(() => {
         handleRollDice();
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [hasRolled, isRolling, buyerPlayer.isAi]);
+  }, [hasRolled, isRolling, buyerPlayer.isAi, cupState]);
 
   // AI draft decision logic
   useEffect(() => {
@@ -227,27 +271,47 @@ export const DiceDraftModal: React.FC<DiceDraftModalProps> = ({
         </div>
 
         {/* Dice Rolling & Selection Area */}
-        <div className="bg-stone-950/90 border border-purple-900/40 rounded-2xl p-6 text-center space-y-5">
+        <div className="relative bg-stone-950/90 border border-purple-900/40 rounded-2xl p-4 sm:p-6 text-center space-y-4">
+          {/* Fast Skip during animation */}
+          {isRolling && (
+            <button
+              onClick={() => skipRollAnimation()}
+              className="absolute top-3 right-3 z-30 flex items-center gap-1 bg-stone-900/90 hover:bg-stone-800 text-stone-300 hover:text-amber-300 px-2.5 py-1 rounded-full border border-stone-700 text-xs font-bold shadow-md cursor-pointer transition-colors"
+              title="Passer l'animation"
+            >
+              <FastForward className="w-3.5 h-3.5 text-amber-400" />
+              <span>Passer</span>
+            </button>
+          )}
+
           {!hasRolled ? (
-            <div className="space-y-4 py-4">
-              <p className="text-sm text-stone-300">
+            <div className="flex flex-col items-center justify-center space-y-3 py-2">
+              <LeatherCup
+                state={cupState}
+                onClick={!isRolling && !buyerPlayer.isAi ? handleRollDice : undefined}
+                diceCount={playerCount}
+                size="normal"
+              />
+
+              <p className="text-xs sm:text-sm text-stone-300 max-w-sm">
                 {buyerPlayer.isAi
-                  ? `L'IA ${buyerPlayer.name} prépare le lancer des ${playerCount} dés...`
-                  : `Lancez les ${playerCount} dés pour révéler les récompenses disponibles !`}
+                  ? `L'IA ${buyerPlayer.name} secoue le gobelet en cuir pour les ${playerCount} dés...`
+                  : `Secouez le gobelet pour lancer les ${playerCount} dés de la tribu !`}
               </p>
+
               {!buyerPlayer.isAi && (
                 <button
                   onClick={handleRollDice}
                   disabled={isRolling}
-                  className="px-8 py-3.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-500 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-base rounded-2xl shadow-xl transition-all transform hover:scale-105 active:scale-95 cursor-pointer inline-flex items-center gap-2"
+                  className="px-6 py-2.5 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-black text-sm rounded-xl shadow-xl transition-all transform hover:scale-105 active:scale-95 cursor-pointer inline-flex items-center gap-2 border border-amber-300"
                 >
-                  <Dices className="w-5 h-5 animate-spin" />
-                  {isRolling ? 'Lancement en cours...' : `Lancer les ${playerCount} dés !`}
+                  <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
+                  <span>{isRolling ? 'Secouement du gobelet...' : `Secouer & Lancer les ${playerCount} dés !`}</span>
                 </button>
               )}
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {/* Turn indicator */}
               {!isFinished && currentPicker && (
                 <div
@@ -276,7 +340,7 @@ export const DiceDraftModal: React.FC<DiceDraftModalProps> = ({
               )}
 
               {/* The Rolled Dice Display */}
-              <div className="flex flex-wrap items-center justify-center gap-4 py-2">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 py-2">
                 {diceValues.map((val, idx) => {
                   const reward = DICE_REWARDS_MAP[val];
                   const isTaken = takenDieIndices.includes(idx);
@@ -287,29 +351,22 @@ export const DiceDraftModal: React.FC<DiceDraftModalProps> = ({
                     <div
                       key={idx}
                       onClick={() => canPick && selectDieForCurrentPlayer(idx, val)}
-                      className={`relative flex flex-col items-center justify-between p-3.5 rounded-2xl border-2 transition-all duration-200 select-none ${
+                      className={`relative flex flex-col items-center justify-between p-3 rounded-2xl border-2 transition-all duration-200 select-none ${
                         isTaken
                           ? 'bg-stone-950/60 border-stone-800 opacity-60 scale-95'
                           : canPick
                           ? 'bg-gradient-to-b from-stone-800 to-stone-900 border-amber-400 shadow-lg hover:border-amber-300 hover:scale-105 cursor-pointer ring-2 ring-amber-400/30 ring-offset-2 ring-offset-stone-950'
                           : 'bg-stone-900 border-stone-700 opacity-90'
                       }`}
-                      style={{ width: '115px', height: '145px' }}
+                      style={{ width: '115px', height: '150px' }}
                     >
-                      {/* Die Graphic */}
-                      <div className="relative w-14 h-14 bg-gradient-to-br from-amber-50 to-amber-200 rounded-xl border border-amber-300 shadow-md flex items-center justify-center">
-                        <svg viewBox="0 0 100 100" className="w-11 h-11">
-                          {(DICE_DOT_LAYOUTS[val] || []).map(([cx, cy], dotIdx) => (
-                            <circle
-                              key={dotIdx}
-                              cx={cx}
-                              cy={cy}
-                              r={10}
-                              fill="#1c1917"
-                            />
-                          ))}
-                        </svg>
-                      </div>
+                      {/* 3D Carved Beechwood Die */}
+                      <WoodenDie
+                        value={val}
+                        sizeClass="w-14 h-14"
+                        dotSizeClass="w-2.5 h-2.5"
+                        restingTilt={0}
+                      />
 
                       {/* Reward info */}
                       <div className="text-center mt-2 flex flex-col items-center">

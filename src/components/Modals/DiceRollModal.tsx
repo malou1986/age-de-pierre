@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BoardLocationId, PlayerState } from '../../types/game';
 import { getLocationInfo } from '../../logic/gameEngine';
 import { sound } from '../../logic/audio';
+import { LeatherDiceCupRoll } from '../Common/LeatherDiceCupRoll';
 import { Dices, Check, ArrowRight, Wrench } from 'lucide-react';
 
 interface DiceRollModalProps {
@@ -23,32 +24,12 @@ export const DiceRollModal: React.FC<DiceRollModalProps> = ({
   const divisor = info.diceDivisor || 2;
 
   const [hasRolled, setHasRolled] = useState(false);
-  const [isRolling, setIsRolling] = useState(false);
   const [diceValues, setDiceValues] = useState<number[]>(() => 
     Array.from({ length: meepleCount }, () => 1)
   );
   const [selectedTools, setSelectedTools] = useState<number[]>([]);
   const [tempToolsCount, setTempToolsCount] = useState<number>(0);
   const maxTempTools = player.temporaryTools || 0;
-
-  // Roll the dice
-  const handleRoll = () => {
-    setIsRolling(true);
-    sound.playDiceRoll();
-
-    let rolls = 0;
-    const interval = setInterval(() => {
-      setDiceValues(Array.from({ length: meepleCount }, () => Math.floor(Math.random() * 6) + 1));
-      rolls++;
-      if (rolls > 8) {
-        clearInterval(interval);
-        const finalDice = Array.from({ length: meepleCount }, () => Math.floor(Math.random() * 6) + 1);
-        setDiceValues(finalDice);
-        setIsRolling(false);
-        setHasRolled(true);
-      }
-    }, 60);
-  };
 
   // Toggle tool
   const toggleTool = (tileIndex: number) => {
@@ -97,36 +78,19 @@ export const DiceRollModal: React.FC<DiceRollModalProps> = ({
 
         {/* Responsive Content: 2-column on landscape / 1-column on portrait */}
         <div className="grid grid-cols-1 landscape:grid-cols-2 md:landscape:grid-cols-2 gap-2 sm:gap-3 items-stretch flex-1 min-h-0 overflow-y-auto pr-0.5">
-          {/* Left Column: Dice Rolling Arena */}
-          <div className="bg-stone-950/80 border border-stone-800 rounded-xl p-2 sm:p-3 text-center flex flex-col justify-between space-y-1.5">
-            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 min-h-[38px] sm:min-h-[46px]">
-              {diceValues.map((val, idx) => (
-                <div
-                  key={idx}
-                  className={`w-8 h-8 sm:w-11 sm:h-11 bg-gradient-to-br from-amber-50 to-amber-200 text-stone-900 font-black text-base sm:text-xl rounded-lg sm:rounded-xl border-2 border-amber-400 shadow-md flex items-center justify-center transform transition-all duration-150 ${
-                    isRolling ? 'rotate-12 scale-105' : 'hover:scale-105'
-                  }`}
-                >
-                  {val}
-                </div>
-              ))}
-            </div>
-
-            {!hasRolled ? (
-              <button
-                onClick={handleRoll}
-                disabled={isRolling}
-                className="w-full py-2 sm:py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-stone-950 font-black rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer shrink-0"
-              >
-                <Dices className="w-4 h-4" />
-                <span>{isRolling ? 'Lancement...' : 'Lancer les dés !'}</span>
-              </button>
-            ) : (
-              <div className="py-0.5 sm:py-1 bg-stone-900/90 rounded-lg border border-stone-800">
-                <div className="text-[8px] sm:text-[9px] text-stone-400 uppercase font-bold tracking-wider">Total des dés</div>
-                <div className="text-lg sm:text-2xl font-black text-amber-400 leading-tight">{diceSum}</div>
-              </div>
-            )}
+          {/* Left Column: Prehistoric Leather Cup & 3D Wooden Dice Arena */}
+          <div className="flex flex-col justify-between h-full">
+            <LeatherDiceCupRoll
+              diceCount={meepleCount}
+              initialValues={diceValues}
+              hasRolled={hasRolled}
+              onRollComplete={(values) => {
+                setDiceValues(values);
+                setHasRolled(true);
+              }}
+              rollButtonLabel={`Secouer & Lancer ${meepleCount} dé${meepleCount > 1 ? 's' : ''} !`}
+              className="h-full"
+            />
           </div>
 
           {/* Right Column: Tools Selector & Harvest Confirmation */}
