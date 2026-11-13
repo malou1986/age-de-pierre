@@ -106,8 +106,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-amber-300 to-amber-600 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] tracking-tight leading-none uppercase">
-            L'Âge de Pierre
+            Tribus
           </h1>
+          <div className="text-xs sm:text-sm font-bold text-amber-400 tracking-widest uppercase">
+            L'Aube des Hommes
+          </div>
 
           <p className="text-xs sm:text-sm md:text-base font-medium text-stone-300/90 max-w-lg mx-auto drop-shadow-md">
             Guide ta tribu préhistorique, chasse, récolte les ressources et bâtis la plus grande civilisation du Néolithique !

@@ -65,7 +65,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
         </div>
         <div>
           <h1 className="text-base sm:text-lg font-black tracking-tight text-amber-200">
-            L'Âge de Pierre
+            Tribus
           </h1>
           <div className="flex items-center gap-2 text-xs text-stone-400">
             <span className="font-bold text-stone-200">Manche {round}</span>

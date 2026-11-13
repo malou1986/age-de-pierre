@@ -1,0 +1,54 @@
+name: Build iOS App (Cloud Build)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # Déclenchement manuel en 1 clic depuis l'onglet Actions sur GitHub
+
+jobs:
+  build-ios:
+    name: Build & Package iOS App
+    runs-on: macos-14
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 22 (LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: 📦 Install npm dependencies
+        run: npm ci || npm install
+
+      - name: 🔨 Build Vite web app
+        run: npm run build
+
+      - name: 🔄 Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: ⚙️ Compile iOS Xcode Archive (Unsigned / Release)
+        run: |
+          cd ios/App
+          xcodebuild -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO \
+            archive -archivePath build/Tribus.xcarchive
+
+      - name: 📦 Compress xcarchive for download
+        run: |
+          cd ios/App/build
+          zip -r Tribus.xcarchive.zip Tribus.xcarchive
+
+      - name: 🚀 Upload iOS Artifact (Downloadable)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tribus-iOS-Archive
+          path: ios/App/build/Tribus.xcarchive.zip
+          retention-days: 30

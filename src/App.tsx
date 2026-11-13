@@ -919,12 +919,6 @@ export const App: React.FC = () => {
           onToggleFullscreen={handleToggleFullscreen}
         />
 
-        {/* Classic Board Interactive Zone Calibration Editor */}
-        <ClassicBoardZoneEditor
-          isOpen={isZoneEditorOpen}
-          onClose={() => setIsZoneEditorOpen(false)}
-        />
-
         {/* Modal Statistiques & Records */}
         {showStatsModal && (
           <StatsModal
@@ -1105,13 +1099,6 @@ export const App: React.FC = () => {
         onOpenFirstPlayerDraw={() => setShowFirstPlayerDrawModal(true)}
         onPauseGame={handlePauseGame}
         onGoHome={handlePauseGame}
-        onOpenZoneEditor={() => setIsZoneEditorOpen(true)}
-      />
-
-      {/* Classic Board Interactive Zone Calibration Editor */}
-      <ClassicBoardZoneEditor
-        isOpen={isZoneEditorOpen}
-        onClose={() => setIsZoneEditorOpen(false)}
       />
 
       {/* First Player Draw Lottery Modal */}
