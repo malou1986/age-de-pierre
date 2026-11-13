@@ -1,6 +1,7 @@
 import React from 'react';
 import { CivilizationCard, ResourceType } from '../../types/game';
 import { ResourceIcon } from '../Common/ResourceIcon';
+import { CultureIcon } from '../Common/CultureIcon';
 import { haptic } from '../../logic/haptics';
 
 interface CivilizationCardViewProps {
@@ -14,7 +15,7 @@ interface CivilizationCardViewProps {
 const GREEN_SYMBOLS: Record<string, { label: string; icon: string }> = {
   writing: { label: 'Écriture', icon: '📜' },
   pottery: { label: 'Poterie', icon: '🏺' },
-  transport: { label: 'Roue & Chariot', icon: '🪵' },
+  transport: { label: 'Roue & Chariot', icon: '🛞' },
   weaving: { label: 'Tissage', icon: '🧶' },
   art: { label: 'Art Rupestre', icon: '🎨' },
   music: { label: 'Flûte & Musique', icon: '🎵' },
@@ -183,7 +184,7 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
       return (
         <div className="bg-gradient-to-r from-emerald-950/90 via-stone-900 to-emerald-950/90 border border-emerald-500/70 rounded-2xl p-3 shadow-inner space-y-1.5">
           <div className="flex items-center gap-2.5">
-            <span className="text-2xl filter drop-shadow">{greenInfo.icon}</span>
+            <CultureIcon type={card.bottomBonus.greenSymbol!} size="md" className="filter drop-shadow" />
             <div className="text-left">
               <span className="text-[10px] uppercase tracking-wider block text-emerald-400 font-black">
                 Collection Verte (Série Culturelle K²)
@@ -322,7 +323,7 @@ export const CivilizationCardView: React.FC<CivilizationCardViewProps> = ({
         <div className="absolute bottom-0 inset-x-0 bg-stone-950/92 backdrop-blur-xs px-1 py-0.5 text-[8px] font-black text-center truncate border-t border-stone-700/80 z-10 pointer-events-none">
           {isGreen && greenInfo ? (
             <span className="text-emerald-300 flex items-center justify-center gap-1">
-              <span>{greenInfo.icon}</span>
+              <CultureIcon type={card.bottomBonus.greenSymbol!} size="xs" />
               <span>{greenInfo.label}</span>
               <span className="text-[7px] font-mono bg-emerald-900/80 px-1 rounded">K²</span>
             </span>

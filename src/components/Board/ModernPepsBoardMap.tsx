@@ -11,6 +11,7 @@ import { canPlaceMeeples, getZoneTotalMeeples } from '../../logic/gameEngine';
 import { TabletopCivilizationCard } from '../Cards/TabletopCivilizationCard';
 import { TabletopBuildingTile } from '../Cards/TabletopBuildingTile';
 import { ResourceIcon } from '../Common/ResourceIcon';
+import { CultureIcon } from '../Common/CultureIcon';
 import { 
   Wheat, 
   Crown, 
@@ -998,8 +999,8 @@ export const ModernPepsBoardMap: React.FC<ModernPepsBoardMapProps> = ({
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xl flex items-center justify-center">
-                      {inspectedCard.bottomBonus.type === 'green' ? (
-                        '🌿'
+                      {inspectedCard.bottomBonus.type === 'green' && inspectedCard.bottomBonus.greenSymbol ? (
+                        <CultureIcon type={inspectedCard.bottomBonus.greenSymbol} size="md" />
                       ) : inspectedCard.bottomBonus.sandType === 'builder' ? (
                         <ResourceIcon type="building" size="sm" className="w-5 h-5 drop-shadow" />
                       ) : inspectedCard.bottomBonus.sandType === 'farmer' ? (

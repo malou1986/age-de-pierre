@@ -3,7 +3,7 @@ import { CivilizationCard, GreenCultureSymbol, SandMultiplierType } from '../typ
 export const GREEN_SYMBOLS: { id: GreenCultureSymbol; label: string; icon: string }[] = [
   { id: 'writing', label: 'Écriture', icon: '📜' },
   { id: 'pottery', label: 'Poterie', icon: '🏺' },
-  { id: 'transport', label: 'Roue & Chariot', icon: '🪵' },
+  { id: 'transport', label: 'Roue & Chariot', icon: '🛞' },
   { id: 'weaving', label: 'Tissage', icon: '🧶' },
   { id: 'art', label: 'Art Rupestre', icon: '🎨' },
   { id: 'music', label: 'Flûte & Musique', icon: '🎵' },

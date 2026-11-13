@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { GameState, PlayerState, ResourceType } from '../../types/game';
+import { GameState, PlayerState, ResourceType, GreenCultureSymbol } from '../../types/game';
 import { ResourceIcon } from '../Common/ResourceIcon';
+import { CultureIcon } from '../Common/CultureIcon';
 import { GameLog } from '../GameLog';
 import { 
   Users, 
@@ -79,10 +80,10 @@ const PLAYER_THEMES: Record<string, {
   },
 };
 
-const ALL_GREEN_SYMBOLS = [
+const ALL_GREEN_SYMBOLS: { id: GreenCultureSymbol; label: string; icon: string }[] = [
   { id: 'writing', label: 'Écriture', icon: '📜' },
   { id: 'pottery', label: 'Poterie', icon: '🏺' },
-  { id: 'transport', label: 'Roue', icon: '⚙️' },
+  { id: 'transport', label: 'Roue', icon: '🛞' },
   { id: 'weaving', label: 'Tissage', icon: '🧶' },
   { id: 'art', label: 'Art', icon: '🎨' },
   { id: 'music', label: 'Musique', icon: '🎵' },
@@ -591,14 +592,16 @@ export const SmallWorldLeftBandeau: React.FC<SmallWorldLeftBandeauProps> = ({
                   return (
                     <div
                       key={sym.id}
-                      className={`p-1 rounded-lg border text-center transition-all ${
+                      className={`p-1 rounded-lg border text-center transition-all flex flex-col items-center justify-between ${
                         isOwned
                           ? 'bg-emerald-950/80 border-emerald-500/80 text-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.35)]'
                           : 'bg-stone-900/30 border-dashed border-stone-800 text-stone-600 opacity-40'
                       }`}
                       title={`${sym.label} : ${isOwned ? `Possédé (${count}x)` : 'Non possédé'}`}
                     >
-                      <div className="text-sm leading-tight">{sym.icon}</div>
+                      <div className="flex items-center justify-center my-0.5">
+                        <CultureIcon type={sym.id} size="sm" className={isOwned ? '' : 'grayscale opacity-50'} />
+                      </div>
                       <div className="text-[8px] font-bold truncate leading-tight mt-0.5">{sym.label}</div>
                       {isOwned && (
                         <div className="text-[8px] font-mono font-black text-emerald-300 leading-tight">

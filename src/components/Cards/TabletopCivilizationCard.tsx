@@ -1,6 +1,7 @@
 import React from 'react';
 import { CivilizationCard, ResourceType } from '../../types/game';
 import { ResourceIcon } from '../Common/ResourceIcon';
+import { CultureIcon } from '../Common/CultureIcon';
 import { haptic } from '../../logic/haptics';
 
 interface TabletopCivilizationCardProps {
@@ -27,7 +28,7 @@ const getPepsArtwork = (card: CivilizationCard): string => {
 const GREEN_SYMBOLS: Record<string, { label: string; icon: string }> = {
   writing: { label: 'Écriture', icon: '📜' },
   pottery: { label: 'Poterie', icon: '🏺' },
-  transport: { label: 'Roue', icon: '🪵' },
+  transport: { label: 'Roue', icon: '🛞' },
   weaving: { label: 'Tissage', icon: '🧶' },
   art: { label: 'Art', icon: '🎨' },
   music: { label: 'Musique', icon: '🎵' },
@@ -225,19 +226,19 @@ export const TabletopCivilizationCard: React.FC<TabletopCivilizationCardProps> =
       {/* 5. BOTTOM ROW: High-contrast culture symbol or sand figure plinth */}
       <div className="relative z-10 w-full min-w-0 p-0.5 sm:p-1 flex items-center justify-between pointer-events-none">
         {isGreen && greenInfo ? (
-          <div className="flex items-center justify-between w-full min-w-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] bg-emerald-950/90 backdrop-blur-xs px-1.5 py-0.5 rounded border border-emerald-400/70 overflow-hidden shadow-inner">
-            <span className={`${isLarge ? 'text-xl' : 'text-xs sm:text-sm'} shrink-0 leading-none filter drop-shadow`}>
-              {greenInfo.icon}
-            </span>
-            <span className={`${isLarge ? 'text-xs' : 'text-[8px] sm:text-[9px]'} font-black uppercase text-emerald-200 tracking-wider truncate mx-0.5`}>
-              {greenInfo.label}
-            </span>
-            <span className="text-[7px] font-mono bg-emerald-800/80 text-emerald-200 px-1 rounded font-black shrink-0">
+          <div className="flex items-center justify-between w-full min-w-0 drop-shadow-[0_4px_8px_rgba(0,0,0,0.95)] bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-950 backdrop-blur-md px-1.5 py-0.5 rounded-lg border-2 border-emerald-400/90 overflow-hidden shadow-[0_0_12px_rgba(16,185,129,0.35)]">
+            <div className="flex items-center gap-1 shrink-0 min-w-0">
+              <CultureIcon type={card.bottomBonus.greenSymbol!} size={isLarge ? 'sm' : 'xs'} className="shrink-0" />
+              <span className={`${isLarge ? 'text-xs' : 'text-[8px] sm:text-[9px]'} font-black uppercase text-emerald-100 tracking-wider truncate mx-0.5`}>
+                {greenInfo.label}
+              </span>
+            </div>
+            <span className="text-[7px] sm:text-[8px] font-black font-mono bg-gradient-to-r from-emerald-400 to-teal-300 text-stone-950 px-1 py-0.2 rounded shadow shrink-0">
               K²
             </span>
           </div>
         ) : sandInfo ? (
-          <div className="flex items-center justify-between w-full min-w-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] bg-amber-950/90 backdrop-blur-xs px-1.5 py-0.5 rounded border border-amber-400/70 overflow-hidden shadow-inner">
+          <div className="flex items-center justify-between w-full min-w-0 drop-shadow-[0_4px_8px_rgba(0,0,0,0.95)] bg-gradient-to-r from-amber-950 via-stone-900 to-amber-950 backdrop-blur-md px-1.5 py-0.5 rounded-lg border-2 border-amber-400/90 overflow-hidden shadow-[0_0_12px_rgba(245,158,11,0.35)]">
             <div className="flex items-center gap-1 shrink-0">
               <span 
                 className={`${isLarge ? 'text-lg' : 'text-xs sm:text-sm'} leading-none filter drop-shadow flex items-center justify-center`}
@@ -253,10 +254,10 @@ export const TabletopCivilizationCard: React.FC<TabletopCivilizationCardProps> =
                   sandInfo.icon
                 )}
               </span>
-              <span className={`font-black rounded px-1 py-0.2 shrink-0 ${
+              <span className={`font-black rounded px-1.5 py-0.2 shrink-0 ${
                 mult >= 2 
-                  ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-stone-950 border border-yellow-200 shadow text-[8px]' 
-                  : 'bg-amber-800/80 text-amber-200 text-[8px]'
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-stone-950 border border-yellow-200 shadow text-[9px]' 
+                  : 'bg-amber-800/90 text-amber-100 text-[8px]'
               }`}>
                 {mult}×
               </span>
